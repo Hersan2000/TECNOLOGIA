@@ -1,0 +1,2448 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ideas que transforman · Emprendimiento tecnológico para tu entorno</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --naranja:#ea580c; --naranja-claro:#ffedd5; --naranja-oscuro:#9a3412;
+  --coral:#f43f5e; --coral-claro:#ffe4e6; --coral-oscuro:#9f1239;
+  --amarillo:#eab308; --amarillo-claro:#fef9c3; --amarillo-oscuro:#854d0e;
+  --turquesa:#0891b2; --turquesa-claro:#cffafe; --turquesa-oscuro:#164e63;
+  --morado:#7c3aed; --morado-claro:#ede9fe; --morado-oscuro:#4c1d95;
+  --verde:#16a34a; --verde-claro:#dcfce7;
+  --rojo:#dc2626; --rojo-claro:#fee2e2;
+  --gris:#64748b; --gris-claro:#f1f5f9; --gris-oscuro:#1e293b;
+  --blanco:#fff; --negro:#0f172a;
+  --sombra:0 10px 30px rgba(15,23,42,.08);
+  --sombra-lg:0 20px 50px rgba(15,23,42,.14);
+  --radio:20px;
+  --fuente:'Segoe UI',system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+  --mono:'Consolas','Monaco','Courier New',monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0; font-family:var(--fuente); background:var(--gris-claro); color:var(--negro); line-height:1.7; -webkit-font-smoothing:antialiased;}
+body.locked{overflow:hidden}
+h1,h2,h3,h4{line-height:1.2; margin:0 0 .5rem}
+p{margin:0 0 1rem}
+
+/* LOGIN */
+#loginOverlay{
+  position:fixed; inset:0; z-index:2000;
+  background:radial-gradient(1000px 600px at 20% 10%,#9a3412 0%,transparent 60%),
+             radial-gradient(900px 500px at 85% 90%,#9f1239 0%,transparent 55%),
+             linear-gradient(160deg,#431407,#0f172a);
+  display:grid; place-items:center; padding:1.2rem;
+  transition:opacity .6s, visibility .6s;
+}
+#loginOverlay.hidden{opacity:0; visibility:hidden; pointer-events:none}
+.login-card{
+  background:#fff; border-radius:26px; padding:2.2rem 2rem;
+  max-width:500px; width:100%; box-shadow:0 30px 70px rgba(0,0,0,.4);
+  text-align:center; position:relative; overflow:hidden;
+  animation:aparecer .6s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes aparecer{from{opacity:0;transform:translateY(24px) scale(.96)}to{opacity:1;transform:none}}
+.login-card::before{content:""; position:absolute; top:0; left:0; right:0; height:6px;
+  background:linear-gradient(90deg,var(--naranja),var(--coral),var(--amarillo));}
+.login-emoji{font-size:3.4rem; line-height:1; margin-bottom:.5rem; display:block}
+.login-card h1{font-size:1.55rem; color:var(--naranja-oscuro); letter-spacing:-.4px}
+.login-card p.sub{font-size:.94rem; color:var(--gris); margin-bottom:1.5rem}
+.login-card input{width:100%; font-family:inherit; font-size:1.02rem; padding:.95rem 1.1rem;
+  border-radius:14px; border:2px solid #e2e8f0; background:#f8fafc; color:var(--negro);
+  transition:.2s; text-align:center; font-weight:600; margin-bottom:1rem;}
+.login-card input:focus{outline:none; border-color:var(--naranja); background:#fff; box-shadow:0 0 0 5px rgba(234,88,12,.14);}
+.login-card .btn{width:100%; justify-content:center}
+.login-error{font-size:.82rem; color:var(--rojo); margin-top:.7rem; min-height:1.2em; font-weight:700}
+.welcome-back{background:var(--naranja-claro); border:1.5px solid #fed7aa; border-radius:14px;
+  padding:1rem; margin-bottom:1.2rem; font-size:.92rem; color:var(--naranja-oscuro);}
+.welcome-back strong{font-size:1.05rem}
+.login-btns{display:flex; gap:.6rem; flex-wrap:wrap; justify-content:center}
+.login-btns .btn{flex:1; min-width:130px; justify-content:center}
+
+/* PROGRESO */
+#progresoGlobal{position:fixed; top:0; left:0; right:0; height:5px; background:rgba(255,255,255,.2); z-index:1000;}
+#progresoBarra{height:100%; width:0%; transition:width .6s cubic-bezier(.2,.8,.2,1);
+  background:linear-gradient(90deg,var(--naranja),var(--coral),var(--amarillo));
+  box-shadow:0 0 12px rgba(234,88,12,.6);}
+
+/* NAV */
+nav{position:sticky; top:0; z-index:900; background:rgba(255,255,255,.9); backdrop-filter:blur(14px);
+  border-bottom:1px solid #e2e8f0; padding:.55rem .8rem;}
+.nav-inner{max-width:1200px; margin:0 auto; display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;}
+.nav-brand{font-weight:800; font-size:.92rem; letter-spacing:.5px; color:var(--naranja-oscuro);
+  display:flex; align-items:center; gap:.45rem; margin-right:auto;}
+.nav-brand .dot{width:11px;height:11px;border-radius:50%;background:linear-gradient(135deg,var(--naranja),var(--coral));}
+.nav-user{font-size:.8rem; font-weight:800; color:var(--naranja-oscuro);
+  background:var(--naranja-claro); padding:.3rem .8rem; border-radius:999px;
+  display:flex; align-items:center; gap:.35rem;}
+.nav-links{display:flex; gap:.3rem; flex-wrap:wrap}
+.nav-links a{font-size:.8rem; font-weight:600; text-decoration:none; color:var(--gris-oscuro);
+  padding:.35rem .7rem; border-radius:999px; transition:.25s; white-space:nowrap;}
+.nav-links a:hover{background:var(--naranja-claro); color:var(--naranja-oscuro)}
+.nav-links a.active{background:var(--naranja-oscuro); color:#fff}
+#progresoPill{font-size:.72rem; font-weight:800; color:var(--naranja-oscuro); background:var(--naranja-claro);
+  padding:.3rem .7rem; border-radius:999px; white-space:nowrap;}
+
+/* HERO */
+header.hero{position:relative; overflow:hidden; color:#fff;
+  background:radial-gradient(1200px 600px at 15% -10%,#9a3412 0%,transparent 60%),
+             radial-gradient(900px 500px at 90% 10%,#9f1239 0%,transparent 55%),
+             linear-gradient(160deg,#431407,#0f172a);
+  padding:4.5rem 1.2rem 4rem;}
+.blob{position:absolute; border-radius:50%; filter:blur(70px); opacity:.4; animation:flotar 14s ease-in-out infinite}
+.blob.b1{width:340px;height:340px;background:#ea580c;top:-90px;left:-60px}
+.blob.b2{width:280px;height:280px;background:#f43f5e;bottom:-110px;right:-40px;animation-delay:-5s}
+.blob.b3{width:220px;height:220px;background:#eab308;top:40%;right:25%;animation-delay:-9s}
+@keyframes flotar{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(28px,-32px) scale(1.12)}}
+.hero-inner{position:relative; max-width:1000px; margin:0 auto; text-align:center}
+.badge-top{display:inline-flex; align-items:center; gap:.5rem; font-size:.76rem; font-weight:800;
+  letter-spacing:1.4px; text-transform:uppercase; color:#fdba74;
+  background:rgba(234,88,12,.18); border:1px solid rgba(253,186,116,.4);
+  padding:.42rem 1rem; border-radius:999px; margin-bottom:1.2rem;}
+header.hero h1{font-size:clamp(1.85rem,5.2vw,3.3rem); font-weight:900; letter-spacing:-1px; margin-bottom:.7rem;}
+header.hero h1 span{background:linear-gradient(90deg,#fdba74,#fda4af,#fde047);
+  -webkit-background-clip:text; background-clip:text; color:transparent;}
+.hero-sub{max-width:800px; margin:0 auto 1.6rem; color:#cbd5e1; font-size:clamp(.95rem,2.2vw,1.1rem)}
+.hero-sub strong{color:#fdba74}
+.hero-chips{display:flex; gap:.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:2rem}
+.chip{font-size:.74rem; font-weight:800; letter-spacing:.6px; padding:.34rem .8rem; border-radius:999px;
+  background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.22); color:#e2e8f0;}
+.hero-cta{display:flex; gap:.7rem; justify-content:center; flex-wrap:wrap}
+.btn{display:inline-flex; align-items:center; gap:.45rem; cursor:pointer; border:none;
+  font-family:inherit; font-size:.92rem; font-weight:800; padding:.8rem 1.5rem; border-radius:999px;
+  text-decoration:none; transition:transform .2s, box-shadow .2s, background .2s;}
+.btn-primary{background:linear-gradient(135deg,var(--naranja),var(--naranja-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(234,88,12,.4)}
+.btn-primary:hover{transform:translateY(-3px); box-shadow:0 16px 34px rgba(234,88,12,.5)}
+.btn-ghost{background:rgba(255,255,255,.1); color:#fff; border:1.5px solid rgba(255,255,255,.3)}
+.btn-ghost:hover{background:rgba(255,255,255,.2); transform:translateY(-3px)}
+.btn-amber{background:linear-gradient(135deg,var(--amarillo),var(--amarillo-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(234,179,8,.4)}
+.btn-amber:hover{transform:translateY(-3px)}
+.btn-coral{background:linear-gradient(135deg,var(--coral),var(--coral-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(244,63,94,.4)}
+.btn-coral:hover{transform:translateY(-3px)}
+.btn-turquesa{background:linear-gradient(135deg,var(--turquesa),var(--turquesa-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(8,145,178,.4)}
+.btn-turquesa:hover{transform:translateY(-3px)}
+.btn-morado{background:linear-gradient(135deg,var(--morado),var(--morado-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(124,58,237,.4)}
+.btn-morado:hover{transform:translateY(-3px)}
+
+/* LAYOUT */
+main{max-width:1200px; margin:0 auto; padding:0 1.1rem 5rem}
+section{padding:3.2rem 0 1rem; scroll-margin-top:70px}
+.sec-head{margin-bottom:1.8rem}
+.kicker{display:inline-block; font-size:.72rem; font-weight:900; letter-spacing:1.6px; text-transform:uppercase;
+  color:var(--naranja-oscuro); background:var(--naranja-claro); padding:.3rem .75rem; border-radius:999px; margin-bottom:.7rem;}
+.kicker.coral{color:var(--coral-oscuro); background:var(--coral-claro)}
+.kicker.amarillo{color:var(--amarillo-oscuro); background:var(--amarillo-claro)}
+.kicker.turquesa{color:var(--turquesa-oscuro); background:var(--turquesa-claro)}
+.kicker.morado{color:var(--morado-oscuro); background:var(--morado-claro)}
+.sec-head h2{font-size:clamp(1.5rem,3.6vw,2.15rem); font-weight:900; letter-spacing:-.6px}
+.sec-head p.lead{color:var(--gris); max-width:900px; font-size:1rem}
+.card{background:var(--blanco); border-radius:var(--radio); padding:1.6rem; box-shadow:var(--sombra); border:1px solid #e2e8f0;}
+.grid{display:grid; gap:1.1rem}
+.g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.reveal{opacity:0; transform:translateY(26px); transition:opacity .7s cubic-bezier(.2,.8,.2,1), transform .7s cubic-bezier(.2,.8,.2,1)}
+.reveal.in{opacity:1; transform:none}
+
+/* PILARES */
+.pilar{background:#fff; border-radius:16px; padding:1.3rem; border:1px solid #e2e8f0;
+  border-top:5px solid var(--naranja); box-shadow:var(--sombra); transition:.3s;}
+.pilar:hover{transform:translateY(-6px); box-shadow:var(--sombra-lg)}
+.pilar .ico{font-size:2rem; display:block; margin-bottom:.5rem}
+.pilar h4{font-size:1.05rem; color:var(--naranja-oscuro)}
+.pilar p{font-size:.9rem; color:var(--gris); margin:0}
+
+/* ========== TEORÍA EXPANDIDA ========== */
+.teoria{
+  background:#fff; border-radius:var(--radio); padding:1.6rem; box-shadow:var(--sombra);
+  border:1px solid #e2e8f0; margin-bottom:1.4rem;
+}
+.teoria h3{
+  color:var(--naranja-oscuro); font-size:1.15rem; margin-bottom:.8rem;
+  display:flex; align-items:center; gap:.5rem;
+}
+.teoria h3 .th-ico{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:34px; height:34px; border-radius:10px;
+  background:var(--naranja-claro); color:var(--naranja-oscuro);
+  font-size:1rem;
+}
+.teoria h4{
+  color:var(--naranja-oscuro); font-size:1rem; margin-top:1.2rem; margin-bottom:.5rem;
+  padding-left:.6rem; border-left:4px solid var(--naranja);
+}
+.teoria p{font-size:.94rem; color:var(--gris-oscuro); margin-bottom:.8rem}
+.teoria ul, .teoria ol{font-size:.92rem; color:var(--gris-oscuro); margin:0 0 1rem; padding-left:1.3rem}
+.teoria li{margin-bottom:.35rem}
+.teoria li strong{color:var(--naranja-oscuro)}
+.teoria .destacado{
+  background:linear-gradient(150deg,var(--naranja-claro),#fff);
+  border-left:4px solid var(--naranja); border-radius:0 12px 12px 0;
+  padding:.9rem 1.1rem; margin:1rem 0; font-size:.92rem;
+  color:var(--naranja-oscuro);
+}
+.teoria .destacado strong{color:var(--naranja-oscuro); font-weight:900}
+.teoria.coral .th-ico{background:var(--coral-claro); color:var(--coral-oscuro)}
+.teoria.coral h3{color:var(--coral-oscuro)}
+.teoria.coral h4{color:var(--coral-oscuro); border-color:var(--coral)}
+.teoria.coral li strong{color:var(--coral-oscuro)}
+.teoria.coral .destacado{background:linear-gradient(150deg,var(--coral-claro),#fff); border-color:var(--coral); color:var(--coral-oscuro)}
+.teoria.amarillo .th-ico{background:var(--amarillo-claro); color:var(--amarillo-oscuro)}
+.teoria.amarillo h3{color:var(--amarillo-oscuro)}
+.teoria.amarillo h4{color:var(--amarillo-oscuro); border-color:var(--amarillo)}
+.teoria.amarillo li strong{color:var(--amarillo-oscuro)}
+.teoria.amarillo .destacado{background:linear-gradient(150deg,var(--amarillo-claro),#fff); border-color:var(--amarillo); color:var(--amarillo-oscuro)}
+.teoria.turquesa .th-ico{background:var(--turquesa-claro); color:var(--turquesa-oscuro)}
+.teoria.turquesa h3{color:var(--turquesa-oscuro)}
+.teoria.turquesa h4{color:var(--turquesa-oscuro); border-color:var(--turquesa)}
+.teoria.turquesa li strong{color:var(--turquesa-oscuro)}
+.teoria.turquesa .destacado{background:linear-gradient(150deg,var(--turquesa-claro),#fff); border-color:var(--turquesa); color:var(--turquesa-oscuro)}
+.teoria.morado .th-ico{background:var(--morado-claro); color:var(--morado-oscuro)}
+.teoria.morado h3{color:var(--morado-oscuro)}
+.teoria.morado h4{color:var(--morado-oscuro); border-color:var(--morado)}
+.teoria.morado li strong{color:var(--morado-oscuro)}
+.teoria.morado .destacado{background:linear-gradient(150deg,var(--morado-claro),#fff); border-color:var(--morado); color:var(--morado-oscuro)}
+.teoria .ejemplo{
+  background:#f8fafc; border-radius:10px; padding:.7rem .9rem;
+  font-size:.85rem; color:var(--gris-oscuro); margin:.5rem 0;
+  border-left:3px solid var(--gris);
+}
+.teoria .ejemplo strong{color:var(--gris-oscuro)}
+.teoria .tabla-tipos{
+  width:100%; border-collapse:collapse; margin:.8rem 0 1rem;
+  font-size:.86rem;
+}
+.teoria .tabla-tipos th, .teoria .tabla-tipos td{
+  padding:.6rem .7rem; text-align:left;
+  border-bottom:1px solid #e2e8f0;
+}
+.teoria .tabla-tipos th{
+  background:var(--naranja-claro); color:var(--naranja-oscuro);
+  font-weight:900; font-size:.78rem; text-transform:uppercase; letter-spacing:.4px;
+}
+.teoria .tabla-tipos tr:nth-child(even) td{background:#f8fafc}
+.teoria .grid-teoria{
+  display:grid; gap:.8rem; grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  margin:1rem 0;
+}
+.teoria .bloque-teoria{
+  background:#f8fafc; border-radius:12px; padding:.9rem 1rem;
+  border-top:3px solid var(--naranja);
+}
+.teoria.coral .bloque-teoria{border-color:var(--coral)}
+.teoria.amarillo .bloque-teoria{border-color:var(--amarillo)}
+.teoria.turquesa .bloque-teoria{border-color:var(--turquesa)}
+.teoria.morado .bloque-teoria{border-color:var(--morado)}
+.teoria .bloque-teoria h5{
+  font-size:.88rem; font-weight:900; color:var(--naranja-oscuro);
+  margin:0 0 .4rem;
+}
+.teoria.coral .bloque-teoria h5{color:var(--coral-oscuro)}
+.teoria.amarillo .bloque-teoria h5{color:var(--amarillo-oscuro)}
+.teoria.turquesa .bloque-teoria h5{color:var(--turquesa-oscuro)}
+.teoria.morado .bloque-teoria h5{color:var(--morado-oscuro)}
+.teoria .bloque-teoria p{font-size:.85rem; margin:0; color:var(--gris)}
+.teoria .fases{
+  display:grid; gap:.6rem; grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  margin:1rem 0;
+}
+.teoria .fase{
+  background:#fff; border:2px solid var(--naranja-claro); border-radius:12px;
+  padding:.75rem; text-align:center; position:relative;
+}
+.teoria .fase .fase-num{
+  display:inline-block; font-size:.72rem; font-weight:900; background:var(--naranja);
+  color:#fff; padding:.15rem .55rem; border-radius:999px; margin-bottom:.35rem;
+}
+.teoria .fase h6{font-size:.85rem; font-weight:900; color:var(--naranja-oscuro); margin:.2rem 0}
+.teoria .fase p{font-size:.75rem; color:var(--gris); margin:0; line-height:1.35}
+
+/* ACTIVIDADES */
+.actividad{background:#fff; border-radius:var(--radio); padding:1.6rem; box-shadow:var(--sombra);
+  border:1px solid #e2e8f0; margin-top:1.6rem;}
+.actividad h3{color:var(--naranja-oscuro); font-size:1.15rem; margin-bottom:.3rem}
+.actividad .intro{font-size:.93rem; color:var(--gris); margin-bottom:1rem}
+
+/* ========== RETO 1: DETECTIVE DEL ENTORNO ========== */
+.escena-wrap{display:grid; gap:1rem; grid-template-columns:repeat(auto-fit,minmax(280px,1fr));}
+.escena-card{
+  background:linear-gradient(160deg,#e0f2fe,#fff); border-radius:18px; padding:1rem;
+  border:2px solid #bae6fd; transition:.3s;
+}
+.escena-card h4{color:var(--turquesa-oscuro); font-size:1rem; margin-bottom:.4rem; text-align:center}
+.escena-card .contador{
+  text-align:center; font-size:.78rem; color:var(--turquesa-oscuro); font-weight:800;
+  background:#fff; padding:.25rem .7rem; border-radius:999px; display:inline-block;
+  margin:0 auto .7rem;
+}
+.escena-svg{width:100%; height:auto; display:block; margin:0 auto; max-width:320px;}
+.hotspot{
+  fill:#fff; stroke:var(--coral); stroke-width:3; cursor:pointer; transition:.3s;
+}
+.hotspot:hover{fill:var(--coral-claro); stroke-width:4}
+.hotspot.detectado{fill:var(--verde); stroke:var(--verde); cursor:default}
+.hotspot.detectado + text{fill:#fff; font-weight:900}
+.necesidad-info{
+  margin-top:.7rem; background:#fff; border-radius:10px; padding:.6rem .8rem;
+  font-size:.82rem; color:var(--gris-oscuro); border-left:3px solid var(--coral);
+  min-height:3.6em; display:none;
+}
+.necesidad-info.show{display:block; animation:aparecer .4s}
+.escena-completada{
+  text-align:center; font-size:.78rem; color:var(--verde); font-weight:800;
+  margin-top:.4rem; opacity:0; transition:.4s;
+}
+.escena-completada.show{opacity:1}
+
+/* ========== RETO 2: TRAGAPERRAS ========== */
+.traga-wrap{
+  background:linear-gradient(160deg,#431407,#0f172a); border-radius:20px; padding:1.5rem 1rem;
+  box-shadow:inset 0 0 40px rgba(0,0,0,.4);
+}
+.traga-cols{display:grid; grid-template-columns:repeat(3, 1fr); gap:.6rem; margin-bottom:1.2rem}
+.traga-col{
+  background:rgba(255,255,255,.06); border:2px solid rgba(253,186,116,.25);
+  border-radius:14px; padding:.6rem; text-align:center; min-height:130px;
+  display:flex; flex-direction:column; justify-content:center; transition:.2s;
+}
+.traga-col.girando{animation:girando .12s linear infinite}
+@keyframes girando{0%{transform:translateY(0)}50%{transform:translateY(-6px)}100%{transform:translateY(0)}}
+.traga-col .col-lbl{
+  font-size:.65rem; letter-spacing:1.2px; text-transform:uppercase; color:#fdba74;
+  font-weight:900; margin-bottom:.4rem;
+}
+.traga-col .col-val{
+  font-size:1.6rem; margin-bottom:.3rem;
+}
+.traga-col .col-txt{
+  font-size:.82rem; color:#fff; font-weight:800; line-height:1.25;
+}
+.traga-botones{display:flex; gap:.6rem; justify-content:center; flex-wrap:wrap;}
+.traga-botones button{
+  font-family:inherit; font-size:.9rem; font-weight:900; padding:.75rem 1.4rem;
+  border-radius:999px; border:none; cursor:pointer; transition:.2s;
+}
+.traga-botones .btn-generar{background:linear-gradient(135deg,var(--amarillo),var(--naranja)); color:#431407; box-shadow:0 8px 22px rgba(234,179,8,.4)}
+.traga-botones .btn-generar:hover{transform:translateY(-2px)}
+.traga-botones .btn-generar:disabled{opacity:.5; cursor:not-allowed}
+.traga-botones .btn-guardar{background:linear-gradient(135deg,var(--verde),#166534); color:#fff}
+.traga-botones .btn-guardar:hover:not(:disabled){transform:translateY(-2px)}
+.traga-botones .btn-guardar:disabled{opacity:.4; cursor:not-allowed}
+.ideas-guardadas{
+  margin-top:1.2rem; background:rgba(255,255,255,.06); border-radius:14px; padding:1rem;
+  min-height:80px; border:1px solid rgba(253,186,116,.25);
+}
+.ideas-guardadas h4{font-size:.85rem; letter-spacing:.9px; text-transform:uppercase;
+  color:#fdba74; margin-bottom:.6rem; font-weight:900;}
+.idea-item{
+  background:rgba(255,255,255,.08); border-radius:10px; padding:.55rem .85rem;
+  font-size:.85rem; color:#fff; margin-bottom:.4rem; border-left:3px solid var(--amarillo);
+}
+.ideas-guardadas .vacio{font-size:.82rem; color:#94a3b8; font-style:italic}
+
+/* ========== RETO 3: MATRIZ ========== */
+.matriz-wrap{display:grid; grid-template-columns:1fr 1fr; gap:.6rem; max-width:720px; margin:0 auto;}
+.matriz-cuadrante{
+  border-radius:14px; padding:1rem; min-height:170px; display:flex; flex-direction:column;
+  border:3px dashed; transition:.3s;
+}
+.matriz-cuadrante.alto{background:linear-gradient(150deg,#dcfce7,#fff); border-color:var(--verde);}
+.matriz-cuadrante.bajo{background:linear-gradient(150deg,#fee2e2,#fff); border-color:var(--rojo);}
+.matriz-cuadrante.sel{border-style:solid; box-shadow:0 0 0 4px rgba(234,88,12,.25); border-color:var(--naranja)}
+.matriz-cuadrante h5{font-size:.8rem; text-transform:uppercase; letter-spacing:.6px; font-weight:900; margin:0 0 .5rem}
+.matriz-cuadrante.alto h5{color:#166534}
+.matriz-cuadrante.bajo h5{color:#991b1b}
+.matriz-cuadrante .desc{font-size:.72rem; color:var(--gris); margin-bottom:.5rem; font-weight:600}
+.matriz-ideas{display:flex; gap:.4rem; flex-direction:column; margin-bottom:1rem; flex-wrap:wrap}
+.idea-chip{
+  background:#fff; border:2px solid #e2e8f0; border-radius:10px; padding:.55rem .85rem;
+  font-size:.85rem; font-weight:700; cursor:pointer; transition:.2s; color:var(--gris-oscuro);
+}
+.idea-chip:hover{border-color:var(--naranja); background:var(--naranja-claro); color:var(--naranja-oscuro)}
+.idea-chip.sel{background:var(--naranja); color:#fff; border-color:var(--naranja-oscuro)}
+.idea-chip.colocada{opacity:.4; cursor:default; border-style:dashed}
+.cuadrante-ideas{display:flex; flex-direction:column; gap:.3rem; margin-top:.3rem}
+.cuadrante-idea{
+  background:#fff; border-radius:8px; padding:.4rem .6rem; font-size:.78rem;
+  font-weight:700; color:var(--naranja-oscuro); border:1px solid var(--naranja);
+}
+#matrizMsg{text-align:center; margin-top:1rem; font-weight:800; color:var(--naranja-oscuro); min-height:1.4em}
+
+/* ========== RETO 4: DAFO ========== */
+.dafo-grid{display:grid; gap:.8rem; grid-template-columns:1fr 1fr;}
+@media(max-width:700px){.dafo-grid{grid-template-columns:1fr}}
+.dafo-caja{border-radius:16px; padding:1rem; min-height:190px; border:2px solid;}
+.dafo-caja h4{font-size:.9rem; text-transform:uppercase; letter-spacing:.7px; font-weight:900; margin-bottom:.6rem; text-align:center;}
+.dafo-F{background:linear-gradient(150deg,#dcfce7,#fff); border-color:var(--verde)}
+.dafo-F h4{color:#166534}
+.dafo-D{background:linear-gradient(150deg,#fee2e2,#fff); border-color:var(--rojo)}
+.dafo-D h4{color:#991b1b}
+.dafo-O{background:linear-gradient(150deg,#dbeafe,#fff); border-color:#2563eb}
+.dafo-O h4{color:#1e40af}
+.dafo-A{background:linear-gradient(150deg,#fef3c7,#fff); border-color:#d97706}
+.dafo-A h4{color:#92400e}
+.dafo-item{
+  background:#fff; border-radius:10px; padding:.55rem .75rem; font-size:.82rem;
+  margin-bottom:.35rem; border-left:3px solid; font-weight:600; color:var(--gris-oscuro);
+}
+.dafo-F .dafo-item{border-color:var(--verde)}
+.dafo-D .dafo-item{border-color:var(--rojo)}
+.dafo-O .dafo-item{border-color:#2563eb}
+.dafo-A .dafo-item{border-color:#d97706}
+.dafo-pendientes{
+  background:#f8fafc; border:2px dashed #cbd5e1; border-radius:14px;
+  padding:1rem; margin-bottom:1rem; display:flex; flex-wrap:wrap; gap:.5rem;
+}
+.dafo-chip{
+  background:#fff; border:2px solid #e2e8f0; border-radius:10px; padding:.55rem .85rem;
+  font-size:.82rem; font-weight:700; cursor:pointer; transition:.2s; color:var(--gris-oscuro);
+}
+.dafo-chip:hover{border-color:var(--naranja); background:var(--naranja-claro); color:var(--naranja-oscuro)}
+.dafo-chip.sel{background:var(--naranja); color:#fff; border-color:var(--naranja-oscuro)}
+.dafo-chip.colocado{opacity:.35; pointer-events:none; border-style:dashed}
+#dafoMsg{text-align:center; margin-top:1rem; font-weight:800; color:var(--naranja-oscuro); min-height:1.4em;}
+
+/* ========== RETO 5: CANVAS ========== */
+.canvas-grid{
+  display:grid; grid-template-columns:repeat(5, 1fr); gap:.6rem; max-width:1000px; margin:0 auto;
+}
+@media(max-width:900px){.canvas-grid{grid-template-columns:repeat(2, 1fr)}}
+@media(max-width:520px){.canvas-grid{grid-template-columns:1fr}}
+.canvas-bloque{
+  background:#fff; border:2px solid #e2e8f0; border-radius:12px; padding:.7rem;
+  transition:.25s; display:flex; flex-direction:column; gap:.4rem;
+}
+.canvas-bloque:hover{border-color:var(--naranja)}
+.canvas-bloque.completo{background:linear-gradient(150deg,#ffedd5,#fff); border-color:var(--naranja)}
+.canvas-bloque.span2{grid-column:span 2}
+.canvas-bloque.span5{grid-column:span 5}
+@media(max-width:900px){.canvas-bloque.span2, .canvas-bloque.span5{grid-column:span 2}}
+@media(max-width:520px){.canvas-bloque.span2, .canvas-bloque.span5{grid-column:span 1}}
+.canvas-bloque h5{
+  font-size:.7rem; text-transform:uppercase; letter-spacing:.7px;
+  color:var(--naranja-oscuro); font-weight:900; margin:0;
+}
+.canvas-bloque .cb-ico{font-size:1.3rem}
+.canvas-bloque select{
+  width:100%; font-family:inherit; font-size:.82rem; padding:.5rem .6rem;
+  border-radius:8px; border:1.5px solid #e2e8f0; background:#fff; color:var(--negro);
+  cursor:pointer;
+}
+.canvas-bloque select:focus{outline:none; border-color:var(--naranja)}
+.canvas-bloque .cb-val{
+  font-size:.78rem; color:var(--gris-oscuro); font-weight:700; margin:0;
+  padding:.4rem .5rem; border-radius:8px; background:var(--naranja-claro); min-height:2.6em;
+  display:none;
+}
+.canvas-bloque .cb-val.show{display:block}
+
+/* QUIZ */
+.q{background:#fff; border-radius:16px; padding:1.3rem 1.4rem; box-shadow:var(--sombra);
+  border:1px solid #e2e8f0; margin-bottom:1rem;}
+.q-num{display:inline-block; font-size:.72rem; font-weight:900; letter-spacing:1px; color:#fff;
+  background:var(--naranja-oscuro); padding:.2rem .6rem; border-radius:8px; margin-bottom:.6rem;}
+.q h4{font-size:1rem; margin-bottom:.9rem}
+.opts{display:grid; gap:.5rem}
+.opt{text-align:left; font-family:inherit; font-size:.9rem; font-weight:600; cursor:pointer;
+  padding:.7rem .9rem; border-radius:12px; border:2px solid #e2e8f0; background:#f8fafc; color:var(--gris-oscuro);
+  transition:.2s; display:flex; gap:.6rem; align-items:flex-start;}
+.opt:hover:not(:disabled){border-color:var(--naranja); background:var(--naranja-claro); color:var(--naranja-oscuro); transform:translateX(4px)}
+.opt:disabled{cursor:default}
+.opt .letter{flex:0 0 24px; height:24px; border-radius:7px; background:#e2e8f0; color:var(--gris-oscuro);
+  display:grid; place-items:center; font-size:.75rem; font-weight:900;}
+.opt.correct{background:#dcfce7; border-color:#16a34a; color:#14532d}
+.opt.correct .letter{background:#16a34a; color:#fff}
+.opt.wrong{background:#fee2e2; border-color:#dc2626; color:#7f1d1d}
+.opt.wrong .letter{background:#dc2626; color:#fff}
+.expl{margin-top:.85rem; font-size:.86rem; background:#fff7ed; border-left:4px solid var(--naranja);
+  padding:.7rem .9rem; border-radius:0 10px 10px 0; color:var(--gris-oscuro); display:none;}
+.expl.show{display:block}
+
+/* VOCABULARIO */
+.voc-grid{display:grid; gap:.6rem; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); margin-bottom:1rem}
+.voc-term{text-align:left; font-family:inherit; font-size:.88rem; font-weight:800; cursor:pointer;
+  padding:.85rem 1rem; border-radius:14px; border:2px solid #e2e8f0; background:#fff;
+  color:var(--gris-oscuro); transition:.25s; display:flex; align-items:center; gap:.5rem;}
+.voc-term:hover{border-color:var(--naranja); background:var(--naranja-claro); color:var(--naranja-oscuro); transform:translateY(-3px)}
+.voc-term.active{background:var(--naranja-oscuro); color:#fff; border-color:var(--naranja-oscuro)}
+#vocDef{max-height:0; overflow:hidden; transition:max-height .5s cubic-bezier(.2,.8,.2,1), padding .3s;
+  background:linear-gradient(150deg,#9a3412,#431407); color:#fff; border-radius:16px; padding:0 1.4rem;}
+#vocDef.show{max-height:440px; padding:1.3rem 1.4rem}
+#vocDef h4{color:#fdba74; font-size:1.05rem; margin-bottom:.5rem}
+#vocDef p{color:#fed7aa; font-size:.92rem; margin:0}
+
+/* CERTIFICADO */
+#certificado{background:linear-gradient(150deg,#9a3412,#431407); color:#fff; border-radius:26px;
+  padding:2.4rem 1.8rem; box-shadow:var(--sombra-lg); text-align:center; position:relative; overflow:hidden;}
+#certificado::before{content:""; position:absolute; inset:14px; border:2px solid rgba(253,186,116,.35);
+  border-radius:18px; pointer-events:none;}
+#certificado h2{color:#fdba74; font-size:1.5rem; margin-bottom:.3rem}
+#certificado p.sub{color:#fed7aa; font-size:.95rem; max-width:560px; margin:0 auto 1.4rem}
+.cert-name{font-size:clamp(1.6rem,5vw,2.4rem); font-weight:900; letter-spacing:-.5px; margin:.6rem 0 1rem;
+  background:linear-gradient(90deg,#fdba74,#fda4af,#fde047); -webkit-background-clip:text; background-clip:text; color:transparent;}
+.cert-stats{display:grid; gap:.7rem; grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  max-width:820px; margin:0 auto 1.6rem;}
+.cert-stat{background:rgba(255,255,255,.09); border:1px solid rgba(253,186,116,.3);
+  border-radius:14px; padding:.8rem .6rem; text-align:center;}
+.cert-stat .num{font-size:1.35rem; font-weight:900; color:#fde047; line-height:1}
+.cert-stat .lbl{font-size:.7rem; color:#fed7aa; text-transform:uppercase; letter-spacing:.9px; font-weight:800; margin-top:.3rem}
+.cert-warn{background:rgba(253,224,71,.14); border:1px solid rgba(253,224,71,.4);
+  color:#fef3c7; font-size:.86rem; padding:.7rem 1rem; border-radius:12px;
+  max-width:600px; margin:0 auto 1.2rem;}
+.cert-note{font-size:.78rem; color:#94a3b8; margin-top:1rem; max-width:560px; margin-left:auto; margin-right:auto;}
+
+/* Toast */
+#toast{position:fixed; bottom:1.4rem; left:50%; transform:translate(-50%,140%); z-index:1200;
+  background:var(--negro); color:#fff; font-weight:700; font-size:.88rem; padding:.85rem 1.4rem;
+  border-radius:999px; box-shadow:var(--sombra-lg); transition:transform .45s cubic-bezier(.2,.8,.2,1);
+  display:flex; align-items:center; gap:.55rem; max-width:92vw; text-align:center;}
+#toast.show{transform:translate(-50%,0)}
+
+footer{background:var(--negro); color:#94a3b8; text-align:center; padding:2.6rem 1.2rem; font-size:.85rem;}
+footer strong{color:#fdba74}
+
+@media(max-width:640px){
+  .card{padding:1.2rem}
+  .nav-brand span.txt{display:none}
+  .traga-col .col-val{font-size:1.2rem}
+}
+</style>
+</head>
+<body class="locked">
+
+<div id="loginOverlay">
+  <div class="login-card" id="loginCard"></div>
+</div>
+
+<div id="progresoGlobal"><div id="progresoBarra"></div></div>
+
+<nav>
+  <div class="nav-inner">
+    <div class="nav-brand"><span class="dot"></span><span class="txt">Ideas que transforman</span></div>
+    <div class="nav-user">👤 <span id="navUserName">—</span></div>
+    <div class="nav-links">
+      <a href="#intro">Inicio</a>
+      <a href="#observacion">Observa</a>
+      <a href="#ideacion">Idear</a>
+      <a href="#analisis">Analiza</a>
+      <a href="#planificacion">Planifica</a>
+      <a href="#quiz">Quiz</a>
+      <a href="#certificado">Certificado</a>
+    </div>
+    <div id="progresoPill">0 / 6 retos</div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+  <div class="hero-inner">
+    <div class="badge-top">💡 Emprendimiento tecnológico</div>
+    <h1>Ideas que <span>transforman</span> tu entorno</h1>
+    <p class="hero-sub">
+      Hola, <strong id="heroNombre">amigo/a</strong>. Aprende a <strong>observar</strong> el entorno,
+      <strong>detectar necesidades</strong>, <strong>idear soluciones tecnológicas emprendedoras</strong>
+      y <strong>planificarlas</strong> con criterios de sostenibilidad y eficiencia. Todo con actividades
+      interactivas y tu certificado final.
+    </p>
+    <div class="hero-chips">
+      <span class="chip">🔍 Observación</span>
+      <span class="chip">💡 Ideación</span>
+      <span class="chip">📊 Análisis</span>
+      <span class="chip">🚀 Planificación</span>
+    </div>
+    <div class="hero-cta">
+      <a href="#intro" class="btn btn-primary">🚀 Empezar</a>
+      <a href="#certificado" class="btn btn-ghost">🏆 Mi certificado</a>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============ INTRO ============ -->
+  <section id="intro">
+    <div class="sec-head reveal">
+      <span class="kicker">Punto de partida</span>
+      <h2>Del problema real a la solución emprendedora</h2>
+      <p class="lead">
+        Las mejores ideas tecnológicas no nacen de la nada: nacen de <strong>observar con atención</strong>
+        el entorno más cercano, detectar necesidades concretas, idear soluciones creativas, analizarlas
+        con criterios de sostenibilidad y eficiencia, y <strong>planificarlas</strong> paso a paso.
+        Ese es el camino del emprendimiento tecnológico con impacto social.
+      </p>
+    </div>
+
+    <!-- TEORÍA AMPLIADA: INTRO -->
+    <div class="teoria reveal">
+      <h3><span class="th-ico">📘</span> ¿Qué es el emprendimiento tecnológico?</h3>
+      <p>
+        El <strong>emprendimiento tecnológico</strong> es la actitud y el proceso de identificar
+        oportunidades, idear soluciones basadas en tecnología, evaluar su viabilidad y planificarlas
+        para <strong>generar valor real</strong> en la sociedad. No consiste solo en "montar una
+        empresa": también incluye proyectos escolares, soluciones comunitarias, mejoras en el
+        entorno y cualquier iniciativa que aporte algo nuevo y útil.
+      </p>
+
+      <h4>Las 3 dimensiones del emprendimiento tecnológico</h4>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>🎨 Creatividad</h5>
+          <p>Generar ideas nuevas combinando elementos conocidos de formas distintas. Se entrena con técnicas específicas.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🎯 Viabilidad</h5>
+          <p>Comprobar que la idea se puede llevar a la práctica con los recursos disponibles (técnicos, económicos, humanos, temporales).</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🌱 Sostenibilidad</h5>
+          <p>Asegurar que el proyecto se mantiene en el tiempo sin agotar recursos ni generar impactos negativos.</p>
+        </div>
+      </div>
+
+      <h4>El ciclo del emprendimiento: observar, idear, analizar, planificar</h4>
+      <p>
+        Todo proyecto tecnológico con impacto sigue un ciclo iterativo, no lineal. Cada vuelta
+        del ciclo mejora la solución:
+      </p>
+      <div class="fases">
+        <div class="fase">
+          <span class="fase-num">FASE 1</span>
+          <h6>🔍 Observar</h6>
+          <p>Detectar necesidades reales del entorno.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">FASE 2</span>
+          <h6>💡 Idear</h6>
+          <p>Generar muchas ideas creativas sin filtro.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">FASE 3</span>
+          <h6>📊 Analizar</h6>
+          <p>Evaluar las ideas con criterios objetivos.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">FASE 4</span>
+          <h6>🚀 Planificar</h6>
+          <p>Convertir la idea ganadora en proyecto.</p>
+        </div>
+      </div>
+
+      <h4>¿Qué hace que una idea sea emprendedora?</h4>
+      <ul>
+        <li><strong>Resuelve una necesidad real:</strong> no una inventada, sino una que afecta a personas concretas.</li>
+        <li><strong>Genera valor para alguien:</strong> la gente lo usaría porque mejora su vida, su tiempo o su entorno.</li>
+        <li><strong>Es viable:</strong> se puede hacer con los recursos disponibles o alcanzables.</li>
+        <li><strong>Es sostenible:</strong> se mantiene en el tiempo sin agotar recursos ni generar impactos negativos.</li>
+        <li><strong>Aporta algo nuevo o mejor:</strong> innova en el producto, el proceso, el modelo o el enfoque.</li>
+      </ul>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> el emprendimiento no es "tener una idea genial y hacerse
+        rico". Es <strong>detectar un problema, imaginar una solución, comprobar que funciona y
+        ponerla al servicio de las personas</strong>. La creatividad, el análisis y la planificación
+        son las tres patas de cualquier proyecto emprendedor.
+      </div>
+    </div>
+
+    <div class="grid g4">
+      <div class="pilar reveal" style="border-top-color:var(--turquesa)">
+        <span class="ico">🔍</span>
+        <h4>Observar</h4>
+        <p>Mirar el entorno con ojos de detective: detectar problemas concretos, necesidades reales y posibilidades de mejora.</p>
+      </div>
+      <div class="pilar reveal" style="border-top-color:var(--amarillo)">
+        <span class="ico">💡</span>
+        <h4>Idear</h4>
+        <p>Generar muchas ideas, combinarlas y quedarse con las más creativas, viables e innovadoras.</p>
+      </div>
+      <div class="pilar reveal" style="border-top-color:var(--coral)">
+        <span class="ico">📊</span>
+        <h4>Analizar</h4>
+        <p>Evaluar cada idea con criterios de impacto, viabilidad, sostenibilidad y eficiencia.</p>
+      </div>
+      <div class="pilar reveal" style="border-top-color:var(--naranja)">
+        <span class="ico">🚀</span>
+        <h4>Planificar</h4>
+        <p>Convertir la idea ganadora en un proyecto concreto con recursos, actividades y valor para la comunidad.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== RETO 1: DETECTIVE DEL ENTORNO ========== -->
+  <section id="observacion">
+    <div class="sec-head reveal">
+      <span class="kicker turquesa">Etapa 1</span>
+      <h2>🔍 Observa: el entorno habla</h2>
+      <p class="lead">
+        Antes de idear soluciones hay que <strong>detectar necesidades</strong>. Un buen equipo
+        emprendedor observa con atención el colegio, el barrio y su propia casa, y anota todo lo que
+        podría mejorarse.
+      </p>
+    </div>
+
+    <!-- TEORÍA EXPANDIDA: OBSERVACIÓN -->
+    <div class="teoria turquesa reveal">
+      <h3><span class="th-ico">🔬</span> La observación del entorno</h3>
+      <p>
+        La <strong>observación del entorno</strong> es la primera fase de cualquier proceso
+        emprendedor. Consiste en mirar con atención el contexto cercano para detectar
+        <strong>necesidades, problemas y posibilidades de mejora</strong> que puedan ser resueltos
+        con tecnología.
+      </p>
+
+      <h4>¿Qué es una necesidad?</h4>
+      <p>
+        Una <strong>necesidad</strong> es la diferencia entre la situación actual y la situación
+        deseada. Puede ser un problema, una carencia o una oportunidad de mejora. En tecnología
+        distinguimos tres tipos:
+      </p>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>Necesidad real</h5>
+          <p>Afecta a personas concretas y puede verificarse con datos, entrevistas u observación. Ejemplo: "las personas mayores no saben pedir cita online".</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>Necesidad sentida</h5>
+          <p>La persona la percibe subjetivamente, aunque no siempre sea la más urgente. Ejemplo: "quiero una app más bonita".</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>Necesidad latente</h5>
+          <p>No se manifiesta hasta que aparece la solución. Ejemplo: nadie pedía smartphone hasta que existió.</p>
+        </div>
+      </div>
+
+      <h4>Técnicas para observar el entorno</h4>
+      <p>
+        Observar bien no es "mirar por encima". Se necesitan métodos sistemáticos:
+      </p>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Técnica</th>
+          <th>Qué permite descubrir</th>
+          <th>Ejemplo</th>
+        </tr>
+        <tr>
+          <td><strong>Observación directa</strong></td>
+          <td>Comportamientos reales en su contexto natural.</td>
+          <td>Ver cómo los compañeros usan los espacios del centro.</td>
+        </tr>
+        <tr>
+          <td><strong>Entrevista</strong></td>
+          <td>Motivaciones, frustraciones y experiencias en profundidad.</td>
+          <td>Hablar con personas mayores sobre trámites digitales.</td>
+        </tr>
+        <tr>
+          <td><strong>Encuesta</strong></td>
+          <td>Datos cuantitativos de muchas personas.</td>
+          <td>Preguntar a todo el alumnado qué problema le gustaría resolver.</td>
+        </tr>
+        <tr>
+          <td><strong>Focus group</strong></td>
+          <td>Opinión colectiva y debate sobre un tema.</td>
+          <td>Reunir a 6 vecinos para hablar del reciclaje en el barrio.</td>
+        </tr>
+        <tr>
+          <td><strong>Análisis documental</strong></td>
+          <td>Datos ya existentes: informes, estadísticas, estudios.</td>
+          <td>Consultar el INE sobre residuos electrónicos en Canarias.</td>
+        </tr>
+        <tr>
+          <td><strong>Mapa del entorno</strong></td>
+          <td>Visualizar recursos y carencias en el territorio.</td>
+          <td>Dibujar un mapa del barrio con puntos limpios y vertederos.</td>
+        </tr>
+      </table>
+
+      <h4>El Design Thinking: observar como diseñadores</h4>
+      <p>
+        El <strong>Design Thinking</strong> es una metodología de innovación centrada en las
+        personas. Su primera fase es precisamente <strong>empatizar</strong>: ponerse en el lugar
+        de quien tiene el problema. Se compone de 5 fases:
+      </p>
+      <div class="fases">
+        <div class="fase">
+          <span class="fase-num">1</span>
+          <h6>Empatizar</h6>
+          <p>Ponerse en el lugar de las personas afectadas.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">2</span>
+          <h6>Definir</h6>
+          <p>Formular el problema con claridad.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">3</span>
+          <h6>Idear</h6>
+          <p>Generar muchas soluciones posibles.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">4</span>
+          <h6>Prototipar</h6>
+          <p>Construir versiones rápidas de la solución.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">5</span>
+          <h6>Evaluar</h6>
+          <p>Probar con usuarios y mejorar.</p>
+        </div>
+      </div>
+
+      <h4>El análisis del contexto: PESTEL</h4>
+      <p>
+        Antes de lanzar una idea conviene analizar el <strong>contexto</strong> en el que se va a
+        desarrollar. El modelo <strong>PESTEL</strong> estudia seis factores:
+      </p>
+      <ul>
+        <li><strong>P · Político:</strong> normativas, subvenciones, apoyo institucional.</li>
+        <li><strong>E · Económico:</strong> poder adquisitivo, costes, financiación disponible.</li>
+        <li><strong>S · Social:</strong> demografía, hábitos, valores de la comunidad.</li>
+        <li><strong>T · Tecnológico:</strong> infraestructuras, acceso a internet, dispositivos.</li>
+        <li><strong>E · Ecológico:</strong> impacto ambiental, sostenibilidad, recursos.</li>
+        <li><strong>L · Legal:</strong> leyes aplicables, protección de datos, propiedad intelectual.</li>
+      </ul>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> observar no es solo "ver". Es aplicar técnicas
+        sistemáticas para <strong>descubrir necesidades reales</strong> antes de imaginar
+        soluciones. Las mejores ideas nacen de problemas bien comprendidos, no de suposiciones.
+      </div>
+    </div>
+
+    <div class="actividad reveal" style="border-top:6px solid var(--turquesa)">
+      <span class="kicker turquesa">🎮 Reto 1 · Detective del entorno</span>
+      <h3>Encuentra las necesidades ocultas</h3>
+      <p class="intro">
+        Cada escena esconde 4 <strong>puntos calientes</strong> (círculos rojos). Púlsalos para descubrir
+        la necesidad tecnológica que representan. Cuando hayas encontrado las 12, completarás el reto.
+      </p>
+
+      <div class="escena-wrap" id="escenaWrap"></div>
+      <div style="text-align:center; margin-top:1.2rem; font-weight:900; color:var(--turquesa-oscuro); font-size:1.1rem">
+        Necesidades detectadas: <span id="detectiveTotal">0</span> / 12
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== RETO 2: TRAGAPERRAS ========== -->
+  <section id="ideacion">
+    <div class="sec-head reveal">
+      <span class="kicker amarillo">Etapa 2</span>
+      <h2>💡 Idea: combina, crea, imagina</h2>
+      <p class="lead">
+        La creatividad no es magia: es un músculo que se entrena combinando elementos conocidos de
+        maneras nuevas. Cuantas más ideas generes, más probabilidades tienes de dar con una solución
+        excelente.
+      </p>
+    </div>
+
+    <!-- TEORÍA EXPANDIDA: IDEACIÓN -->
+    <div class="teoria amarillo reveal">
+      <h3><span class="th-ico">💡</span> La ideación: generar soluciones creativas</h3>
+      <p>
+        La <strong>ideación</strong> es la fase en la que se generan muchas ideas para resolver un
+        problema. Es un proceso creativo, pero no improvisado: existen <strong>técnicas concretas</strong>
+        que ayudan a producir más y mejores ideas.
+      </p>
+
+      <h4>Pensamiento divergente y convergente</h4>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>Pensamiento divergente</h5>
+          <p>Generar muchas ideas distintas sin juzgarlas. Es la fase de "abrir el abanico" y explorar todas las posibilidades. No importa la calidad, solo la cantidad y la variedad.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>Pensamiento convergente</h5>
+          <p>Seleccionar las mejores ideas y mejorarlas. Es la fase de "cerrar el abanico": aplicar criterios, combinar, descartar.</p>
+        </div>
+      </div>
+      <div class="destacado">
+        <strong>💡 Regla de oro:</strong> <em>no mezcles</em> las dos fases. Criticar una idea
+        mientras se generan mata la creatividad. Primero se produce mucho, después se selecciona.
+      </div>
+
+      <h4>Técnicas de creatividad más usadas</h4>
+
+      <h5 style="font-size:.95rem; margin-top:1rem; color:var(--amarillo-oscuro)">1. Lluvia de ideas (brainstorming)</h5>
+      <p>Reglas básicas:</p>
+      <ul>
+        <li>Cuantas más ideas, mejor.</li>
+        <li>No criticar ninguna idea durante la generación.</li>
+        <li>Se permiten ideas "locas" o imposibles.</li>
+        <li>Se pueden combinar y mejorar ideas de otras personas.</li>
+      </ul>
+
+      <h5 style="font-size:.95rem; margin-top:1rem; color:var(--amarillo-oscuro)">2. SCAMPER: 7 preguntas mágicas</h5>
+      <p>Para mejorar o reinventar un producto, aplica estas 7 preguntas:</p>
+      <table class="tabla-tipos">
+        <tr><th>Letra</th><th>Pregunta</th><th>Ejemplo</th></tr>
+        <tr><td><strong>S</strong> · Sustituir</td><td>¿Qué puedo sustituir?</td><td>Cambiar plástico por material reciclado.</td></tr>
+        <tr><td><strong>C</strong> · Combinar</td><td>¿Qué puedo combinar?</td><td>Un reloj + sensor de salud.</td></tr>
+        <tr><td><strong>A</strong> · Adaptar</td><td>¿Qué puedo adaptar de otro ámbito?</td><td>Usar sensores de coche en sillas de ruedas.</td></tr>
+        <tr><td><strong>M</strong> · Modificar</td><td>¿Qué puedo cambiar (forma, color, tamaño)?</td><td>Hacer una app más simple para mayores.</td></tr>
+        <tr><td><strong>P</strong> · Poner otro uso</td><td>¿Para qué más puede servir?</td><td>Una caja de zapatos como maceta.</td></tr>
+        <tr><td><strong>E</strong> · Eliminar</td><td>¿Qué puedo quitar?</td><td>Simplificar una app quitando pasos.</td></tr>
+        <tr><td><strong>R</strong> · Reordenar</td><td>¿Puedo cambiar el orden o invertirlo?</td><td>Hacer el registro antes que el uso.</td></tr>
+      </table>
+
+      <h5 style="font-size:.95rem; margin-top:1rem; color:var(--amarillo-oscuro)">3. Combinación aleatoria de elementos</h5>
+      <p>
+        Consiste en <strong>combinar al azar elementos de distintos ámbitos</strong> y forzar la
+        conexión para generar ideas nuevas. Es la técnica que usa el juego del "tragaperras" de
+        esta aplicación: combina una <em>necesidad</em>, una <em>tecnología</em> y un
+        <em>colectivo</em>, y a partir de ahí imagina soluciones.
+      </p>
+
+      <h5 style="font-size:.95rem; margin-top:1rem; color:var(--amarillo-oscuro)">4. Mapas mentales</h5>
+      <p>
+        Colocar el problema en el centro y ramificar ideas alrededor. Permite visualizar
+        relaciones y detectar conexiones inesperadas.
+      </p>
+
+      <h5 style="font-size:.95rem; margin-top:1rem; color:var(--amarillo-oscuro)">5. Analogías</h5>
+      <p>
+        Buscar soluciones en ámbitos completamente distintos. Ejemplo: la naturaleza lleva millones
+        de años resolviendo problemas de eficiencia; muchas innovaciones tecnológicas se inspiran en
+        ella (<strong>biomímesis</strong>).
+      </p>
+
+      <h5 style="font-size:.95rem; margin-top:1rem; color:var(--amarillo-oscuro)">6. Preguntas "¿Y si...?"</h5>
+      <p>
+        Formular hipótesis disruptivas que rompen las reglas actuales. Ejemplo: <em>¿y si el móvil
+        no tuviera pantalla?</em> A partir de ahí surgen ideas como los asistentes de voz.
+      </p>
+
+      <h4>Las preguntas "How Might We"</h4>
+      <p>
+        Un truco muy potente para enfocar la ideación: convertir el problema en una pregunta
+        abierta que empieza por <strong>"¿Cómo podríamos...?"</strong>.
+      </p>
+      <div class="ejemplo">
+        <strong>Problema:</strong> las personas mayores no saben pedir cita online.<br>
+        <strong>Preguntas HMW:</strong><br>
+        ¿Cómo podríamos hacer que pedir cita sea tan fácil como llamar por teléfono?<br>
+        ¿Cómo podríamos simplificar la app para alguien que nunca ha usado internet?<br>
+        ¿Cómo podríamos usar la voz para que no haya que escribir?
+      </div>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> la creatividad no es un don, es una <strong>habilidad
+        entrenable</strong>. Cuanto más practicas técnicas de ideación, más fácil te resulta
+        generar ideas nuevas y útiles. La cantidad de ideas genera calidad.
+      </div>
+    </div>
+
+    <div class="actividad reveal" style="border-top:6px solid var(--amarillo)">
+      <span class="kicker amarillo">🎮 Reto 2 · Generador de ideas</span>
+      <h3>La máquina de ideas emprendedoras</h3>
+      <p class="intro">
+        Pulsa <strong>Generar idea</strong> para combinar aleatoriamente una necesidad, una tecnología
+        y un colectivo. Si la combinación te parece interesante, guárdala. Necesitas guardar <strong>3 ideas</strong>
+        para completar el reto.
+      </p>
+
+      <div class="traga-wrap">
+        <div class="traga-cols">
+          <div class="traga-col" id="colNec">
+            <div class="col-lbl">Necesidad</div>
+            <div class="col-val">❓</div>
+            <div class="col-txt">Pulsa generar</div>
+          </div>
+          <div class="traga-col" id="colTec">
+            <div class="col-lbl">Tecnología</div>
+            <div class="col-val">❓</div>
+            <div class="col-txt">Pulsa generar</div>
+          </div>
+          <div class="traga-col" id="colCol">
+            <div class="col-lbl">Colectivo</div>
+            <div class="col-val">❓</div>
+            <div class="col-txt">Pulsa generar</div>
+          </div>
+        </div>
+        <div class="traga-botones">
+          <button class="btn-generar" id="btnGenerar">🎰 Generar idea</button>
+          <button class="btn-guardar" id="btnGuardarIdea" disabled>💾 Guardar idea</button>
+        </div>
+        <div class="ideas-guardadas" id="ideasGuardadas">
+          <h4>💡 Mis ideas guardadas</h4>
+          <p class="vacio">Aún no has guardado ninguna idea. Genera y guarda las que más te gusten.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== RETO 3: MATRIZ ========== -->
+  <section id="analisis">
+    <div class="sec-head reveal">
+      <span class="kicker coral">Etapa 3</span>
+      <h2>📊 Analiza: ¿qué idea merece la pena?</h2>
+      <p class="lead">
+        Tener muchas ideas está bien, pero hay que elegir. Una buena idea emprendedora debe tener
+        <strong>impacto</strong> en las personas y ser <strong>viable</strong> con los recursos
+        disponibles. Además, conviene analizarla con una mirada estratégica (DAFO) antes de
+        comprometerse con ella.
+      </p>
+    </div>
+
+    <!-- TEORÍA EXPANDIDA: ANÁLISIS -->
+    <div class="teoria coral reveal">
+      <h3><span class="th-ico">📊</span> Cómo evaluar y seleccionar ideas</h3>
+      <p>
+        Una vez generadas muchas ideas, hay que <strong>filtrarlas y seleccionar las mejores</strong>.
+        Esto se hace aplicando <strong>criterios objetivos</strong>, no por intuición. Los criterios
+        más importantes son: <strong>impacto</strong>, <strong>viabilidad</strong>,
+        <strong>sostenibilidad</strong> y <strong>eficiencia</strong>.
+      </p>
+
+      <h4>Los 4 criterios fundamentales</h4>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>🎯 Impacto</h5>
+          <p>¿A cuántas personas beneficia? ¿En qué medida mejora su vida o su entorno? Un mayor impacto justifica más esfuerzo.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🔧 Viabilidad</h5>
+          <p>¿Se puede hacer con los recursos disponibles (técnicos, económicos, humanos, temporales)? ¿O requiere algo inalcanzable?</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🌱 Sostenibilidad</h5>
+          <p>¿Se puede mantener en el tiempo sin agotar recursos? ¿Genera impactos negativos en el entorno?</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>⚡ Eficiencia</h5>
+          <p>¿Consigue el resultado con el mínimo esfuerzo y recursos? ¿Es la mejor relación coste-beneficio?</p>
+        </div>
+      </div>
+
+      <h4>La matriz de priorización</h4>
+      <p>
+        La <strong>matriz de priorización</strong> es una herramienta que cruza dos criterios
+        (normalmente <strong>impacto</strong> y <strong>viabilidad</strong>) para clasificar ideas
+        en cuatro cuadrantes:
+      </p>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Cuadrante</th>
+          <th>Características</th>
+          <th>¿Qué hacer?</th>
+        </tr>
+        <tr>
+          <td><strong>🏆 Prioridad máxima</strong></td>
+          <td>Alto impacto · Alta viabilidad</td>
+          <td>¡Adelante! Es la mejor opción.</td>
+        </tr>
+        <tr>
+          <td><strong>🌟 Potencial</strong></td>
+          <td>Alto impacto · Baja viabilidad</td>
+          <td>Buscar recursos externos o replantear. Buen objetivo a largo plazo.</td>
+        </tr>
+        <tr>
+          <td><strong>⚡ Rápida</strong></td>
+          <td>Bajo impacto · Alta viabilidad</td>
+          <td>Puede servir como primer paso o proyecto complementario.</td>
+        </tr>
+        <tr>
+          <td><strong>🚫 Descartar</strong></td>
+          <td>Bajo impacto · Baja viabilidad</td>
+          <td>No merece la pena. Mejor invertir el tiempo en otra idea.</td>
+        </tr>
+      </table>
+
+      <h4>El análisis DAFO</h4>
+      <p>
+        El <strong>DAFO</strong> (o <strong>FODA</strong> en Latinoamérica, o <strong>SWOT</strong>
+        en inglés) es una herramienta estratégica que analiza cuatro dimensiones de una idea o
+        proyecto:
+      </p>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>💪 Fortalezas (internas +)</h5>
+          <p>Aspectos positivos del proyecto o del equipo. Lo que ya funciona bien y nos diferencia.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>⚠️ Debilidades (internas −)</h5>
+          <p>Limitaciones internas: falta de conocimientos, recursos escasos, experiencia limitada.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🚀 Oportunidades (externas +)</h5>
+          <p>Factores del entorno que pueden favorecer el proyecto: tendencias, ayudas, demanda creciente.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🌩️ Amenazas (externas −)</h5>
+          <p>Factores externos que pueden perjudicarlo: competencia, cambios normativos, falta de interés.</p>
+        </div>
+      </div>
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> las <strong>Fortalezas y Debilidades</strong> son
+        <em>internas</em> (dependen de nosotros), mientras que las <strong>Oportunidades y
+        Amenazas</strong> son <em>externas</em> (vienen del entorno). Confundirlas es el error más
+        frecuente al hacer un DAFO.
+      </div>
+
+      <h4>La propuesta de valor</h4>
+      <p>
+        La <strong>propuesta de valor</strong> es la razón por la que alguien elegiría tu solución
+        frente a otras alternativas. Responde a la pregunta: <em>¿qué aporta mi idea que no aportan
+        las demás?</em>. Una buena propuesta de valor debe ser:
+      </p>
+      <ul>
+        <li><strong>Clara:</strong> se entiende en una frase.</li>
+        <li><strong>Concreta:</strong> no vale "es mejor", hay que decir en qué.</li>
+        <li><strong>Relevante:</strong> responde a lo que realmente le importa al usuario.</li>
+        <li><strong>Diferenciada:</strong> destaca algo que otros no ofrecen.</li>
+      </ul>
+
+      <div class="ejemplo">
+        <strong>Ejemplo de propuesta de valor:</strong><br>
+        ❌ Mala: "Nuestra app es muy buena y ayuda a la gente".<br>
+        ✅ Buena: "Nuestra app permite pedir cita médica en 2 clics con la voz, sin escribir ni recordar contraseñas".
+      </div>
+    </div>
+
+    <!-- RETO 3: MATRIZ -->
+    <div class="actividad reveal" style="border-top:6px solid var(--verde)">
+      <span class="kicker" style="background:var(--verde-claro); color:#166534">🎮 Reto 3 · Matriz de priorización</span>
+      <h3>Coloca cada idea en su cuadrante</h3>
+      <p class="intro">
+        Selecciona una idea y luego pulsa el cuadrante donde crees que encaja según su
+        <strong>impacto social</strong> (eje vertical) y su <strong>viabilidad técnica/económica</strong> (eje horizontal).
+      </p>
+
+      <div class="matriz-ideas" id="matrizIdeas"></div>
+
+      <div style="display:flex; justify-content:space-between; font-size:.75rem; color:var(--gris); font-weight:800; text-transform:uppercase; letter-spacing:.5px; padding:0 .6rem;">
+        <span>← Baja viabilidad</span>
+        <span>Alta viabilidad →</span>
+      </div>
+
+      <div class="matriz-wrap" style="margin-top:.4rem">
+        <div class="matriz-cuadrante alto" data-tipo="alto">
+          <h5>🏆 Prioridad máxima</h5>
+          <div class="desc">Alto impacto · Alta viabilidad</div>
+          <div class="cuadrante-ideas" id="czAltoAlto"></div>
+        </div>
+        <div class="matriz-cuadrante bajo" data-tipo="potencial">
+          <h5>🌟 Potencial</h5>
+          <div class="desc">Alto impacto · Baja viabilidad</div>
+          <div class="cuadrante-ideas" id="czAltoBajo"></div>
+        </div>
+        <div class="matriz-cuadrante bajo" data-tipo="rapida">
+          <h5>⚡ Rápida</h5>
+          <div class="desc">Bajo impacto · Alta viabilidad</div>
+          <div class="cuadrante-ideas" id="czBajoAlto"></div>
+        </div>
+        <div class="matriz-cuadrante bajo" data-tipo="descartar">
+          <h5>🚫 Descartar</h5>
+          <div class="desc">Bajo impacto · Baja viabilidad</div>
+          <div class="cuadrante-ideas" id="czBajoBajo"></div>
+        </div>
+      </div>
+
+      <div id="matrizMsg"></div>
+    </div>
+
+    <!-- RETO 4: DAFO -->
+    <div class="actividad reveal" style="border-top:6px solid var(--morado)">
+      <span class="kicker morado">🎮 Reto 4 · Análisis DAFO</span>
+      <h3>Fortalezas, Debilidades, Oportunidades y Amenazas</h3>
+      <p class="intro">
+        Aplica el análisis DAFO a esta idea emprendedora: <em>«App comunitaria para compartir
+        herramientas y objetos de bricolaje entre vecinos del barrio»</em>. Selecciona cada tarjeta y
+        pulsa la caja correspondiente.
+      </p>
+
+      <div class="dafo-pendientes" id="dafoPendientes"></div>
+
+      <div class="dafo-grid">
+        <div class="dafo-caja dafo-F" data-tipo="F">
+          <h4>💪 Fortalezas (internas +)</h4>
+          <div id="dafoF"></div>
+        </div>
+        <div class="dafo-caja dafo-D" data-tipo="D">
+          <h4>⚠️ Debilidades (internas −)</h4>
+          <div id="dafoD"></div>
+        </div>
+        <div class="dafo-caja dafo-O" data-tipo="O">
+          <h4>🚀 Oportunidades (externas +)</h4>
+          <div id="dafoO"></div>
+        </div>
+        <div class="dafo-caja dafo-A" data-tipo="A">
+          <h4>🌩️ Amenazas (externas −)</h4>
+          <div id="dafoA"></div>
+        </div>
+      </div>
+
+      <div id="dafoMsg"></div>
+    </div>
+  </section>
+
+  <!-- ========== RETO 5: CANVAS ========== -->
+  <section id="planificacion">
+    <div class="sec-head reveal">
+      <span class="kicker">Etapa 4</span>
+      <h2>🚀 Planifica: convierte la idea en proyecto</h2>
+      <p class="lead">
+        La mejor idea del mundo no vale nada sin un plan. El <strong>lienzo de modelo de negocio</strong>
+        (o canvas) es una herramienta visual que te obliga a pensar en todos los elementos clave de tu
+        proyecto emprendedor: desde el problema que resuelves hasta los recursos que necesitas.
+      </p>
+    </div>
+
+    <!-- TEORÍA EXPANDIDA: PLANIFICACIÓN -->
+    <div class="teoria naranja reveal">
+      <h3><span class="th-ico">🚀</span> Del lienzo a la acción: planificar el proyecto</h3>
+      <p>
+        Planificar un proyecto emprendedor significa <strong>traducir una idea en un plan
+        concreto</strong>: qué problema resuelves, para quién, cómo, con qué recursos, en cuánto
+        tiempo y con qué resultados. Existen herramientas muy visuales que ayudan a hacerlo sin
+        perderse.
+      </p>
+
+      <h4>El Business Model Canvas</h4>
+      <p>
+        El <strong>Business Model Canvas</strong> (lienzo de modelo de negocio) es una herramienta
+        creada por Alexander Osterwalder que resume en un solo folio los 9 bloques clave de
+        cualquier proyecto o empresa:
+      </p>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>❗ Problema</h5>
+          <p>¿Qué necesidad real resuelves? ¿Por qué es importante?</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>💡 Solución</h5>
+          <p>¿Qué producto o servicio ofreces para resolver ese problema?</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>✨ Propuesta de valor</h5>
+          <p>¿Qué te diferencia? ¿Por qué te elegirían a ti?</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>👥 Segmento de usuarios</h5>
+          <p>¿A quién va dirigido? ¿A qué grupo concreto de personas?</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>📢 Canales</h5>
+          <p>¿Cómo llegas a esos usuarios? ¿Cómo se enteran de tu solución?</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🔧 Recursos clave</h5>
+          <p>¿Qué necesitas para funcionar? (personas, materiales, tecnología)</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>⚙️ Actividades clave</h5>
+          <p>¿Qué acciones son imprescindibles para entregar la solución?</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>💰 Estructura de costes</h5>
+          <p>¿Cuánto cuesta poner en marcha y mantener el proyecto?</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>📈 Fuentes de ingresos</h5>
+          <p>¿Cómo se financia? (cuotas, ayudas, patrocinios, ventas…)</p>
+        </div>
+      </div>
+
+      <h4>El Lean Canvas: para proyectos innovadores</h4>
+      <p>
+        El <strong>Lean Canvas</strong> es una variante del Business Model Canvas, pensada para
+        proyectos nuevos. Sustituye algunos bloques por otros más adecuados para emprendimiento:
+      </p>
+      <ul>
+        <li><strong>Problema</strong> (en vez de "recursos clave").</li>
+        <li><strong>Métricas clave</strong> (en vez de "actividades clave").</li>
+        <li><strong>Ventaja injusta</strong> (lo que es difícil de copiar).</li>
+        <li><strong>Canales, segmentos, propuesta de valor</strong> se mantienen.</li>
+      </ul>
+
+      <h4>El MVP: Minimum Viable Product</h4>
+      <p>
+        El <strong>MVP (Producto Mínimo Viable)</strong> es la versión más sencilla de tu solución
+        que permite comprobar si resuelve el problema. No se trata de hacer algo malo: se trata de
+        hacer <strong>solo lo esencial</strong> para aprender rápido y con poco coste.
+      </p>
+      <div class="ejemplo">
+        <strong>Ejemplo de MVP:</strong><br>
+        Quieres crear una app para compartir herramientas entre vecinos. En vez de programar la
+        app completa, empiezas con un <strong>grupo de WhatsApp del edificio</strong> donde la
+        gente pone fotos de sus herramientas y pregunta. Si funciona, ya tienes validada la idea
+        y puedes dar el salto a la app.
+      </div>
+
+      <h4>El ciclo de validación</h4>
+      <p>
+        Todo proyecto emprendedor debe seguir un ciclo iterativo de validación. No se trata de
+        hacer un plan perfecto, sino de <strong>probar, medir y mejorar</strong>:
+      </p>
+      <div class="fases">
+        <div class="fase">
+          <span class="fase-num">1</span>
+          <h6>Construir</h6>
+          <p>Hacer la versión más simple de la idea (MVP).</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">2</span>
+          <h6>Medir</h6>
+          <p>Recoger datos sobre cómo lo usan las personas.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">3</span>
+          <h6>Aprender</h6>
+          <p>Analizar los resultados y ver qué funciona y qué no.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">4</span>
+          <h6>Mejorar</h6>
+          <p>Reformular el proyecto y volver a empezar el ciclo.</p>
+        </div>
+      </div>
+
+      <h4>La sostenibilidad y la eficiencia como criterios</h4>
+      <p>
+        Dos criterios que no pueden faltar en ningún proyecto tecnológico actual:
+      </p>
+      <ul>
+        <li>
+          <strong>🌱 Sostenibilidad:</strong> el proyecto debe poder mantenerse en el tiempo sin
+          agotar recursos. No vale hacer algo muy bonito durante un mes y luego abandonarlo. Hay que
+          pensar en la continuidad: ¿quién seguirá manteniéndolo? ¿con qué recursos? ¿cómo se
+          reciclarán los materiales?
+        </li>
+        <li>
+          <strong>⚡ Eficiencia:</strong> el proyecto debe conseguir el máximo resultado con los
+          mínimos recursos. No se trata de gastar menos por gastar, sino de no desperdiciar. Mejor
+          una solución simple y bien hecha que una complicada y mal acabada.
+        </li>
+      </ul>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> planificar no es hacer un plan rígido que se cumple
+        al pie de la letra. Planificar es <strong>tener claro a dónde vas y cómo vas a llegar</strong>,
+        siendo flexible para adaptarte a lo que aprendes por el camino. El mejor plan es el que
+        se ajusta continuamente a la realidad.
+      </div>
+    </div>
+
+    <div class="actividad reveal" style="border-top:6px solid var(--naranja)">
+      <span class="kicker">🎮 Reto 5 · Canvas emprendedor</span>
+      <h3>Construye el lienzo de tu proyecto</h3>
+      <p class="intro">
+        Elige una opción en cada uno de los 9 bloques del canvas. Cuando los completes todos,
+        tendrás un proyecto emprendedor coherente, viable y sostenible.
+      </p>
+
+      <div class="canvas-grid" id="canvasGrid"></div>
+
+      <div id="canvasMsg" style="text-align:center;margin-top:1.4rem;font-weight:900;color:var(--naranja-oscuro);font-size:1.05rem;min-height:1.4em"></div>
+    </div>
+
+    <!-- VOCABULARIO -->
+    <div class="actividad reveal" style="border-top:6px solid var(--naranja-oscuro)">
+      <span class="kicker">📚 Vocabulario clave</span>
+      <h3>Diccionario interactivo</h3>
+      <p class="intro">Pulsa sobre cualquier término para ver su explicación detallada.</p>
+      <div class="voc-grid" id="vocGrid"></div>
+      <div id="vocDef"></div>
+    </div>
+  </section>
+
+  <!-- ========== QUIZ ========== -->
+  <section id="quiz">
+    <div class="sec-head reveal">
+      <span class="kicker coral">🎯 Reto 6 · Cuestionario final</span>
+      <h2>Comprueba lo que has aprendido</h2>
+      <p class="lead">10 preguntas sobre observación, ideación, análisis, emprendimiento y planificación tecnológica.</p>
+    </div>
+    <div id="quizContainer"></div>
+    <div id="quizResult" style="display:none;text-align:center;padding:1.8rem;border-radius:var(--radio);color:#fff;background:linear-gradient(135deg,#9a3412,#431407);box-shadow:var(--sombra-lg)">
+      <div id="quizScore" style="font-size:3rem;font-weight:900;line-height:1;margin-bottom:.4rem">0/10</div>
+      <h3 id="quizTitle" style="color:#fff">¡Buen trabajo!</h3>
+      <p id="quizMsg" style="color:#fed7aa;max-width:560px;margin:0 auto"></p>
+    </div>
+  </section>
+
+  <!-- ========== CERTIFICADO ========== -->
+  <section id="certificado">
+    <div id="certificado">
+      <h2>🏆 Tu certificado de aprovechamiento</h2>
+      <p class="sub">Al completar las actividades obtendrás un certificado personalizado con tus resultados, que podrás descargar en PDF.</p>
+
+      <div class="cert-name" id="certNombre">—</div>
+
+      <div class="cert-stats" id="certStats"></div>
+
+      <div class="cert-warn" id="certWarn" style="display:none">
+        ⚠️ Aún no has completado ninguna actividad. Termina al menos una para generar tu certificado.
+      </div>
+
+      <button class="btn btn-amber" id="btnCertificado" style="font-size:1rem;padding:.95rem 2rem">
+        📄 Descargar certificado en PDF
+      </button>
+      <p class="cert-note">El PDF se genera como imagen rasterizada: el texto no es editable ni seleccionable, garantizando su integridad.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p style="margin-bottom:.4rem"><strong>Ideas que transforman</strong> · Emprendimiento tecnológico para tu entorno</p>
+  <p style="margin:0;font-size:.8rem">Aplicación educativa interactiva · Tu progreso se guarda en este navegador</p>
+</footer>
+
+<div id="toast"></div>
+
+<script>
+/* ================================================================
+   1. ESTADO PERSISTENTE
+================================================================ */
+const LS_KEY = 'ideasTransforman_v2';
+const RETOS_TOTALES = 6;
+
+let estado = {
+  nombre: '',
+  retos: [],
+  scores: {
+    detective: 0,
+    ideas: 0,
+    matriz: 0,
+    dafo: 0,
+    canvas: 0,
+    quiz: 0
+  },
+  iniciado: null
+};
+
+function guardarEstado(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(estado)); }catch(e){} }
+function cargarEstado(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(raw){
+      const d = JSON.parse(raw);
+      if(d && typeof d === 'object'){
+        estado = Object.assign(estado, d);
+        estado.scores = Object.assign({detective:0,ideas:0,matriz:0,dafo:0,canvas:0,quiz:0}, d.scores || {});
+        estado.retos = Array.isArray(d.retos) ? d.retos : [];
+      }
+    }
+  }catch(e){}
+}
+
+/* ================================================================
+   2. PROGRESO
+================================================================ */
+function actualizarProgreso(){
+  const n = estado.retos.length;
+  document.getElementById('progresoPill').textContent = n + ' / ' + RETOS_TOTALES + ' retos';
+  document.getElementById('progresoBarra').style.width = (n / RETOS_TOTALES * 100) + '%';
+}
+function completarReto(id, msg){
+  if(!estado.retos.includes(id)) estado.retos.push(id);
+  guardarEstado();
+  actualizarProgreso();
+  actualizarCertificado();
+  if(msg) toast(msg);
+}
+let toastTimer;
+function toast(texto){
+  const t = document.getElementById('toast');
+  t.innerHTML = '🏅 ' + texto;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 3500);
+}
+
+/* ================================================================
+   3. LOGIN
+================================================================ */
+const overlay = document.getElementById('loginOverlay');
+const card = document.getElementById('loginCard');
+
+function mostrarLogin(){
+  if(estado.nombre){
+    card.innerHTML = `
+      <span class="login-emoji">💡</span>
+      <h1>¡Hola de nuevo!</h1>
+      <p class="sub">Hemos guardado tu progreso en este navegador.</p>
+      <div class="welcome-back">
+        Continuar como <strong>${escaparHTML(estado.nombre)}</strong><br>
+        <span style="font-size:.82rem">Retos completados: ${estado.retos.length} / ${RETOS_TOTALES}</span>
+      </div>
+      <div class="login-btns">
+        <button class="btn btn-primary" id="btnContinuar">▶ Continuar</button>
+        <button class="btn btn-ghost" id="btnCambiar" style="background:#f1f5f9;color:#0f172a;border-color:#e2e8f0">👤 Cambiar nombre</button>
+      </div>
+    `;
+    document.getElementById('btnContinuar').addEventListener('click', iniciarApp);
+    document.getElementById('btnCambiar').addEventListener('click', ()=>{
+      estado.nombre = '';
+      estado.retos = [];
+      estado.scores = {detective:0,ideas:0,matriz:0,dafo:0,canvas:0,quiz:0};
+      estado.iniciado = null;
+      guardarEstado();
+      renderLoginForm();
+    });
+  } else {
+    renderLoginForm();
+  }
+}
+
+function renderLoginForm(){
+  card.innerHTML = `
+    <span class="login-emoji">💡</span>
+    <h1>Bienvenido/a a Ideas que Transforman</h1>
+    <p class="sub">Antes de empezar, dinos cómo te llamas. Tu progreso se guardará en este navegador para que puedas continuar cuando quieras.</p>
+    <input type="text" id="inputNombre" placeholder="Escribe tu nombre" maxlength="40" autocomplete="off">
+    <button class="btn btn-primary" id="btnEntrar">🚀 Comenzar la aventura</button>
+    <div class="login-error" id="loginError"></div>
+  `;
+  const inp = document.getElementById('inputNombre');
+  const btn = document.getElementById('btnEntrar');
+  const err = document.getElementById('loginError');
+  const submit = ()=>{
+    const v = inp.value.trim();
+    if(v.length < 2){ err.textContent = 'Por favor, introduce al menos 2 caracteres.'; inp.focus(); return; }
+    estado.nombre = v;
+    estado.iniciado = new Date().toISOString();
+    guardarEstado();
+    iniciarApp();
+  };
+  btn.addEventListener('click', submit);
+  inp.addEventListener('keydown', e=>{ if(e.key === 'Enter') submit(); });
+  setTimeout(()=>inp.focus(), 200);
+}
+
+function iniciarApp(){
+  overlay.classList.add('hidden');
+  document.body.classList.remove('locked');
+  document.getElementById('navUserName').textContent = estado.nombre;
+  document.getElementById('heroNombre').textContent = estado.nombre;
+  actualizarProgreso();
+  actualizarCertificado();
+}
+
+function escaparHTML(s){
+  return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ================================================================
+   4. REVEAL
+================================================================ */
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach((e,i)=>{
+    if(e.isIntersecting){
+      setTimeout(()=>e.target.classList.add('in'), i*70);
+      io.unobserve(e.target);
+    }
+  });
+},{threshold:.12, rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+/* ================================================================
+   5. NAV ACTIVO
+================================================================ */
+const secciones = [...document.querySelectorAll('section[id]')];
+const navLinks = [...document.querySelectorAll('.nav-links a')];
+window.addEventListener('scroll', ()=>{
+  let actual = '';
+  secciones.forEach(s=>{ if(window.scrollY >= s.offsetTop - 120) actual = s.id; });
+  navLinks.forEach(a=>a.classList.toggle('active', a.getAttribute('href') === '#'+actual));
+});
+
+/* ================================================================
+   6. RETO 1 · DETECTIVE DEL ENTORNO
+================================================================ */
+const escenasData = [
+  {
+    id:'colegio',
+    nombre:'🏫 En el instituto',
+    spots:[
+      {x:40,  y:85,  r:11, nec:'Las aulas se calientan mucho en primavera y el aire acondicionado consume mucha energía.'},
+      {x:200, y:105, r:11, nec:'Los contenedores de reciclaje del patio se llenan rápido y no hay separación de residuos.'},
+      {x:280, y:80,  r:11, nec:'Falta un sistema accesible para que el alumnado con movilidad reducida llegue a la segunda planta.'},
+      {x:120, y:150, r:11, nec:'Se pierden muchos objetos perdidos porque no hay un registro digital de objetos encontrados.'}
+    ]
+  },
+  {
+    id:'barrio',
+    nombre:'🏘️ En el barrio',
+    spots:[
+      {x:70,  y:110, r:11, nec:'Las personas mayores del barrio no saben usar el móvil para pedir cita médica online.'},
+      {x:190, y:60,  r:11, nec:'No hay puntos de recogida de residuos electrónicos en un radio de 2 km.'},
+      {x:280, y:130, r:11, nec:'Las paradas de guagua no tienen información en tiempo real de cuándo llega el próximo bus.'},
+      {x:130, y:170, r:11, nec:'Existen varios solares abandonados que se han convertido en vertederos improvisados.'}
+    ]
+  },
+  {
+    id:'casa',
+    nombre:'🏠 En casa',
+    spots:[
+      {x:80,  y:90,  r:11, nec:'Los electrodomésticos viejos siguen enchufados consumiendo energía en standby.'},
+      {x:210, y:80,  r:11, nec:'No hay forma de saber cuánta electricidad consume cada aparato para poder ahorrar.'},
+      {x:290, y:150, r:11, nec:'Se tiran muchos alimentos porque no se planifican las comidas ni se controla la caducidad.'},
+      {x:100, y:160, r:11, nec:'El agua caliente tarda mucho en llegar y se desperdician litros cada día.'}
+    ]
+  }
+];
+
+let detectiveDetectadas = 0;
+
+function initDetective(){
+  const cont = document.getElementById('escenaWrap');
+  if(!cont) return;
+  cont.innerHTML = '';
+  detectiveDetectadas = 0;
+  document.getElementById('detectiveTotal').textContent = '0';
+
+  escenasData.forEach(esc=>{
+    const div = document.createElement('div');
+    div.className = 'escena-card';
+    const spotsSVG = esc.spots.map((s, i)=>`
+      <circle class="hotspot" data-esc="${esc.id}" data-i="${i}" cx="${s.x}" cy="${s.y}" r="${s.r}"/>
+    `).join('');
+    div.innerHTML = `
+      <h4>${esc.nombre}</h4>
+      <div style="text-align:center"><span class="contador" id="cont_${esc.id}">0 / 4</span></div>
+      <svg class="escena-svg" viewBox="0 0 360 220" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="360" height="220" fill="${esc.id === 'colegio' ? '#e0f2fe' : esc.id === 'barrio' ? '#fef9c3' : '#fce7f3'}" rx="14"/>
+        ${esc.id === 'colegio' ? `
+          <rect x="60" y="50" width="240" height="120" fill="#bae6fd" stroke="#0369a1" stroke-width="2" rx="6"/>
+          <rect x="90" y="80" width="40" height="40" fill="#7dd3fc" stroke="#075985" stroke-width="2"/>
+          <rect x="150" y="80" width="40" height="40" fill="#7dd3fc" stroke="#075985" stroke-width="2"/>
+          <rect x="210" y="80" width="40" height="40" fill="#7dd3fc" stroke="#075985" stroke-width="2"/>
+          <rect x="140" y="130" width="80" height="40" fill="#92400e" stroke="#451a03" stroke-width="2"/>
+          <text x="180" y="30" text-anchor="middle" font-size="14" font-weight="bold" fill="#0c4a6e">COLEGIO</text>
+        ` : ''}
+        ${esc.id === 'barrio' ? `
+          <rect x="30" y="40" width="90" height="90" fill="#fde68a" stroke="#a16207" stroke-width="2"/>
+          <rect x="150" y="60" width="90" height="70" fill="#fde68a" stroke="#a16207" stroke-width="2"/>
+          <rect x="260" y="40" width="70" height="90" fill="#fde68a" stroke="#a16207" stroke-width="2"/>
+          <rect x="30" y="150" width="300" height="40" fill="#a3a3a3" stroke="#525252" stroke-width="2"/>
+          <line x1="60" y1="150" x2="60" y2="190" stroke="#fafafa" stroke-width="2" stroke-dasharray="5,5"/>
+          <line x1="180" y1="150" x2="180" y2="190" stroke="#fafafa" stroke-width="2" stroke-dasharray="5,5"/>
+          <line x1="300" y1="150" x2="300" y2="190" stroke="#fafafa" stroke-width="2" stroke-dasharray="5,5"/>
+        ` : ''}
+        ${esc.id === 'casa' ? `
+          <rect x="80" y="60" width="200" height="110" fill="#fbcfe8" stroke="#9d174d" stroke-width="2"/>
+          <polygon points="60,60 180,20 300,60" fill="#dc2626" stroke="#7f1d1d" stroke-width="2"/>
+          <rect x="150" y="120" width="60" height="50" fill="#92400e" stroke="#451a03" stroke-width="2"/>
+          <rect x="100" y="90" width="30" height="30" fill="#7dd3fc" stroke="#075985" stroke-width="2"/>
+          <rect x="230" y="90" width="30" height="30" fill="#7dd3fc" stroke="#075985" stroke-width="2"/>
+        ` : ''}
+        ${spotsSVG}
+      </svg>
+      <div class="necesidad-info" id="info_${esc.id}"></div>
+      <div class="escena-completada" id="comp_${esc.id}">✓ Escena completada</div>
+    `;
+    cont.appendChild(div);
+
+    div.querySelectorAll('.hotspot').forEach(c=>{
+      c.addEventListener('click', ()=>{
+        if(c.classList.contains('detectado')) return;
+        c.classList.add('detectado');
+        const i = parseInt(c.dataset.i, 10);
+        const nec = esc.spots[i].nec;
+        const info = document.getElementById(`info_${esc.id}`);
+        info.innerHTML = `<strong>🔍 Necesidad detectada:</strong><br>${nec}`;
+        info.classList.add('show');
+
+        const detectadas = div.querySelectorAll('.hotspot.detectado').length;
+        document.getElementById(`cont_${esc.id}`).textContent = detectadas + ' / 4';
+        detectiveDetectadas++;
+        document.getElementById('detectiveTotal').textContent = detectiveDetectadas;
+
+        if(detectadas === 4){
+          document.getElementById(`comp_${esc.id}`).classList.add('show');
+        }
+
+        if(detectiveDetectadas > estado.scores.detective){
+          estado.scores.detective = detectiveDetectadas;
+          guardarEstado();
+          actualizarCertificado();
+        }
+        if(detectiveDetectadas === 12){
+          completarReto('detective', '¡Detective del entorno completado!');
+        }
+      });
+    });
+  });
+}
+
+initDetective();
+
+/* ================================================================
+   7. RETO 2 · GENERADOR DE IDEAS
+================================================================ */
+const necesidades = [
+  {ico:'📱', txt:'Brecha digital en personas mayores'},
+  {ico:'♻️', txt:'Exceso de residuos electrónicos'},
+  {ico:'🚌', txt:'Falta de información en el transporte público'},
+  {ico:'💧', txt:'Desperdicio de agua en edificios públicos'},
+  {ico:'🌞', txt:'Alto consumo energético en viviendas'},
+  {ico:'♿', txt:'Barreras de accesibilidad en espacios públicos'},
+  {ico:'🍽️', txt:'Desperdicio alimentario en comedores'},
+  {ico:'📚', txt:'Falta de materiales educativos accesibles'}
+];
+
+const tecnologias = [
+  {ico:'📱', txt:'App móvil de código abierto'},
+  {ico:'🌐', txt:'Plataforma web colaborativa'},
+  {ico:'🔬', txt:'Sensores Arduino/Raspberry Pi'},
+  {ico:'🖨️', txt:'Impresión 3D de bajo coste'},
+  {ico:'🛰️', txt:'Datos abiertos y mapas colaborativos'},
+  {ico:'🤖', txt:'Chatbot de ayuda automatizada'},
+  {ico:'🔋', txt:'Energía solar fotovoltaica'},
+  {ico:'📡', txt:'Red de comunicaciones LoRa'}
+];
+
+const colectivos = [
+  {ico:'👵', txt:'Personas mayores del barrio'},
+  {ico:'🧑‍🎓', txt:'Alumnado de secundaria'},
+  {ico:'🦽', txt:'Personas con diversidad funcional'},
+  {ico:'🏘️', txt:'Comunidad vecinal'},
+  {ico:'🧑‍🏫', txt:'Profesorado del centro'},
+  {ico:'🌱', txt:'Colectivos ambientales'},
+  {ico:'👨‍👩‍👧', txt:'Familias jóvenes'},
+  {ico:'🚴', txt:'Usuarios de movilidad activa'}
+];
+
+let ideaActual = null;
+let ideasGuardadas = [];
+let girando = false;
+
+function aleatorio(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+function renderColumna(id, item){
+  const col = document.getElementById(id);
+  col.querySelector('.col-val').textContent = item.ico;
+  col.querySelector('.col-txt').textContent = item.txt;
+}
+
+function generarIdea(){
+  if(girando) return;
+  girando = true;
+  document.getElementById('btnGenerar').disabled = true;
+  document.getElementById('btnGuardarIdea').disabled = true;
+
+  const cols = ['colNec','colTec','colCol'];
+  cols.forEach(c=>document.getElementById(c).classList.add('girando'));
+
+  let ticks = 0;
+  const interval = setInterval(()=>{
+    renderColumna('colNec', aleatorio(necesidades));
+    renderColumna('colTec', aleatorio(tecnologias));
+    renderColumna('colCol', aleatorio(colectivos));
+    ticks++;
+    if(ticks > 12){
+      clearInterval(interval);
+      cols.forEach(c=>document.getElementById(c).classList.remove('girando'));
+      const n = aleatorio(necesidades);
+      const t = aleatorio(tecnologias);
+      const c = aleatorio(colectivos);
+      renderColumna('colNec', n);
+      renderColumna('colTec', t);
+      renderColumna('colCol', c);
+      ideaActual = {n, t, c};
+      document.getElementById('btnGenerar').disabled = false;
+      document.getElementById('btnGuardarIdea').disabled = false;
+      girando = false;
+    }
+  }, 100);
+}
+
+function guardarIdea(){
+  if(!ideaActual) return;
+  if(ideasGuardadas.length >= 3){
+    toast('Ya tienes 3 ideas guardadas. ¡Pasa al siguiente reto!');
+    return;
+  }
+  const idea = `${ideaActual.t.ico} ${ideaActual.t.txt} para ${ideaActual.c.txt}, resolviendo: ${ideaActual.n.txt}`;
+  ideasGuardadas.push(idea);
+  ideaActual = null;
+  document.getElementById('btnGuardarIdea').disabled = true;
+  renderIdeasGuardadas();
+
+  if(ideasGuardadas.length > estado.scores.ideas){
+    estado.scores.ideas = ideasGuardadas.length;
+    guardarEstado();
+    actualizarCertificado();
+  }
+  if(ideasGuardadas.length === 3){
+    completarReto('ideas', '¡Generador de ideas completado!');
+  }
+}
+
+function renderIdeasGuardadas(){
+  const cont = document.getElementById('ideasGuardadas');
+  if(ideasGuardadas.length === 0){
+    cont.innerHTML = `<h4>💡 Mis ideas guardadas</h4><p class="vacio">Aún no has guardado ninguna idea. Genera y guarda las que más te gusten.</p>`;
+    return;
+  }
+  cont.innerHTML = `<h4>💡 Mis ideas guardadas (${ideasGuardadas.length}/3)</h4>` +
+    ideasGuardadas.map(i=>`<div class="idea-item">${i}</div>`).join('');
+}
+
+document.getElementById('btnGenerar').addEventListener('click', generarIdea);
+document.getElementById('btnGuardarIdea').addEventListener('click', guardarIdea);
+
+/* ================================================================
+   8. RETO 3 · MATRIZ DE PRIORIZACIÓN
+================================================================ */
+const ideasMatriz = [
+  {id:'m1', txt:'App para compartir apuntes entre compañeros', tipo:'rapida'},
+  {id:'m2', txt:'Red de sensores para medir la calidad del aire del barrio', tipo:'potencial'},
+  {id:'m3', txt:'Taller de alfabetización digital para mayores', tipo:'alto'},
+  {id:'m4', txt:'Robot doméstico que ordena tu habitación', tipo:'descartar'}
+];
+
+let ideaSeleccionadaMatriz = null;
+let colocadasMatriz = 0;
+
+function initMatriz(){
+  const cont = document.getElementById('matrizIdeas');
+  if(!cont) return;
+  cont.innerHTML = '';
+  cont.style.flexDirection = 'row';
+  cont.style.flexWrap = 'wrap';
+  ideasMatriz.forEach(i=>{
+    const chip = document.createElement('div');
+    chip.className = 'idea-chip';
+    chip.dataset.id = i.id;
+    chip.textContent = i.txt;
+    chip.addEventListener('click', ()=>{
+      if(chip.classList.contains('colocada')) return;
+      cont.querySelectorAll('.idea-chip').forEach(c=>c.classList.remove('sel'));
+      chip.classList.add('sel');
+      ideaSeleccionadaMatriz = i;
+    });
+    cont.appendChild(chip);
+  });
+
+  document.querySelectorAll('.matriz-cuadrante').forEach(cz=>{
+    cz.addEventListener('click', ()=>{
+      if(!ideaSeleccionadaMatriz){
+        toast('Selecciona primero una idea');
+        return;
+      }
+      const tipo = cz.dataset.tipo;
+      const correcto = tipo === ideaSeleccionadaMatriz.tipo;
+
+      const ideaBox = document.createElement('div');
+      ideaBox.className = 'cuadrante-idea';
+      if(!correcto){
+        ideaBox.style.background = '#fee2e2';
+        ideaBox.style.borderColor = '#dc2626';
+        ideaBox.style.color = '#7f1d1d';
+      }
+      ideaBox.textContent = ideaSeleccionadaMatriz.txt + (correcto ? ' ✓' : ' (revisar)');
+      cz.querySelector('.cuadrante-ideas').appendChild(ideaBox);
+
+      const chip = document.querySelector(`.idea-chip[data-id="${ideaSeleccionadaMatriz.id}"]`);
+      if(chip) chip.classList.add('colocada');
+
+      colocadasMatriz++;
+      const msg = document.getElementById('matrizMsg');
+      if(correcto){
+        msg.textContent = `✅ ¡Bien! Colocación correcta (${colocadasMatriz}/4).`;
+      } else {
+        msg.innerHTML = `⚠️ Esa idea encaja mejor en otro cuadrante. Aun así la hemos colocado (${colocadasMatriz}/4).<br><span style="font-size:.85rem;color:var(--gris)">Pista: ${ideaSeleccionadaMatriz.tipo === 'alto' ? 'alto impacto y alta viabilidad' : ideaSeleccionadaMatriz.tipo === 'potencial' ? 'alto impacto pero baja viabilidad' : ideaSeleccionadaMatriz.tipo === 'rapida' ? 'bajo impacto pero alta viabilidad' : 'bajo impacto y baja viabilidad'}</span>`;
+      }
+
+      ideaSeleccionadaMatriz = null;
+      if(colocadasMatriz > estado.scores.matriz){
+        estado.scores.matriz = colocadasMatriz;
+        guardarEstado();
+        actualizarCertificado();
+      }
+      if(colocadasMatriz === 4){
+        completarReto('matriz', '¡Matriz de priorización completada!');
+      }
+    });
+  });
+}
+
+initMatriz();
+
+/* ================================================================
+   9. RETO 4 · DAFO
+================================================================ */
+const dafoElementos = [
+  {id:'d1', txt:'Usa tecnología libre y accesible para todos', tipo:'F'},
+  {id:'d2', txt:'Depende de que muchos vecinos se registren', tipo:'D'},
+  {id:'d3', txt:'Crece el interés por la economía colaborativa', tipo:'O'},
+  {id:'d4', txt:'Podrían aparecer apps competidoras con más presupuesto', tipo:'A'},
+  {id:'d5', txt:'Reduce costes y fomenta la reutilización', tipo:'F'},
+  {id:'d6', txt:'El equipo fundador tiene poca experiencia en marketing', tipo:'D'},
+  {id:'d7', txt:'Los ayuntamientos buscan proyectos vecinales que apoyar', tipo:'O'},
+  {id:'d8', txt:'La desconfianza entre vecinos puede frenar su uso', tipo:'A'}
+];
+
+let dafoSeleccion = null;
+let dafoColocados = 0;
+
+function initDafo(){
+  const pend = document.getElementById('dafoPendientes');
+  if(!pend) return;
+  pend.innerHTML = '';
+  const mezcla = [...dafoElementos].sort(()=>Math.random()-0.5);
+  mezcla.forEach(d=>{
+    const chip = document.createElement('div');
+    chip.className = 'dafo-chip';
+    chip.dataset.id = d.id;
+    chip.textContent = d.txt;
+    chip.addEventListener('click', ()=>{
+      if(chip.classList.contains('colocado')) return;
+      pend.querySelectorAll('.dafo-chip').forEach(c=>c.classList.remove('sel'));
+      chip.classList.add('sel');
+      dafoSeleccion = d;
+    });
+    pend.appendChild(chip);
+  });
+
+  document.querySelectorAll('.dafo-caja').forEach(caja=>{
+    caja.addEventListener('click', ()=>{
+      if(!dafoSeleccion) { toast('Selecciona primero una tarjeta'); return; }
+      const tipo = caja.dataset.tipo;
+      const correcto = tipo === dafoSeleccion.tipo;
+      const cont = document.getElementById('dafo' + tipo);
+      const item = document.createElement('div');
+      item.className = 'dafo-item';
+      if(!correcto){
+        item.style.background = '#fee2e2';
+        item.style.borderColor = '#dc2626';
+        item.style.color = '#7f1d1d';
+      }
+      item.textContent = dafoSeleccion.txt + (correcto ? ' ✓' : ' (revisar)');
+      cont.appendChild(item);
+
+      const chip = document.querySelector(`.dafo-chip[data-id="${dafoSeleccion.id}"]`);
+      if(chip) chip.classList.add('colocado');
+
+      dafoColocados++;
+      const msg = document.getElementById('dafoMsg');
+      if(correcto){
+        msg.textContent = `✅ ¡Bien! Clasificación correcta (${dafoColocados}/8).`;
+      } else {
+        msg.innerHTML = `⚠️ Esa tarjeta pertenece a otra categoría. Aun así la hemos colocado (${dafoColocados}/8).<br><span style="font-size:.85rem;color:var(--gris)">Pista: la respuesta correcta era ${dafoSeleccion.tipo === 'F' ? 'Fortaleza' : dafoSeleccion.tipo === 'D' ? 'Debilidad' : dafoSeleccion.tipo === 'O' ? 'Oportunidad' : 'Amenaza'}.</span>`;
+      }
+      dafoSeleccion = null;
+
+      if(dafoColocados > estado.scores.dafo){
+        estado.scores.dafo = dafoColocados;
+        guardarEstado();
+        actualizarCertificado();
+      }
+      if(dafoColocados === 8){
+        completarReto('dafo', '¡Análisis DAFO completado!');
+      }
+    });
+  });
+}
+
+initDafo();
+
+/* ================================================================
+   10. RETO 5 · CANVAS EMPRENDEDOR
+================================================================ */
+const canvasBloques = [
+  {
+    id:'problema',
+    ico:'❗',
+    nombre:'Problema',
+    span:1,
+    opciones:[
+      'Los vecinos no tienen acceso fácil a herramientas de bricolaje',
+      'El alumnado no encuentra recursos educativos adaptados',
+      'Las personas mayores no saben hacer trámites digitales'
+    ]
+  },
+  {
+    id:'solucion',
+    ico:'💡',
+    nombre:'Solución',
+    span:1,
+    opciones:[
+      'App comunitaria para compartir herramientas entre vecinos',
+      'Plataforma abierta de recursos educativos accesibles',
+      'Taller itinerante de alfabetización digital'
+    ]
+  },
+  {
+    id:'propuesta',
+    ico:'✨',
+    nombre:'Propuesta de valor',
+    span:1,
+    opciones:[
+      'Ahorra dinero y fomenta la reutilización',
+      'Aprendizaje accesible para todas las personas',
+      'Acompañamiento digital cercano y gratuito'
+    ]
+  },
+  {
+    id:'usuarios',
+    ico:'👥',
+    nombre:'Segmento de usuarios',
+    span:1,
+    opciones:[
+      'Vecinos del barrio que necesitan herramientas puntualmente',
+      'Alumnado y profesorado de secundaria',
+      'Personas mayores que quieren autonomía digital'
+    ]
+  },
+  {
+    id:'canales',
+    ico:'📢',
+    nombre:'Canales',
+    span:1,
+    opciones:[
+      'App móvil + carteles en el mercado del barrio',
+      'Web abierta + redes sociales del centro',
+      'Talleres presenciales en centros cívicos'
+    ]
+  },
+  {
+    id:'recursos',
+    ico:'🔧',
+    nombre:'Recursos clave',
+    span:2,
+    opciones:[
+      'Hardware libre, voluntariado y local comunitario',
+      'Docentes, alumnado y software libre',
+      'Voluntariado senior + materiales impresos'
+    ]
+  },
+  {
+    id:'actividades',
+    ico:'⚙️',
+    nombre:'Actividades clave',
+    span:2,
+    opciones:[
+      'Registro de herramientas, reservas y devoluciones',
+      'Producción de contenidos accesibles y difusión',
+      'Formación de voluntarios y sesiones semanales'
+    ]
+  },
+  {
+    id:'costes',
+    ico:'💰',
+    nombre:'Estructura de costes',
+    span:1,
+    opciones:[
+      'Desarrollo app, hosting, materiales y difusión',
+      'Producción de contenidos y accesibilidad',
+      'Material didáctico, transporte y local'
+    ]
+  },
+  {
+    id:'ingresos',
+    ico:'📈',
+    nombre:'Fuentes de ingresos',
+    span:1,
+    opciones:[
+      'Cuotas simbólicas + subvenciones municipales',
+      'Subvenciones educativas + patrocinios locales',
+      'Ayudas públicas + colaboración de entidades sociales'
+    ]
+  }
+];
+
+let canvasSelecciones = {};
+
+function initCanvas(){
+  const cont = document.getElementById('canvasGrid');
+  if(!cont) return;
+  cont.innerHTML = '';
+  canvasBloques.forEach(b=>{
+    const div = document.createElement('div');
+    div.className = 'canvas-bloque' + (b.span === 2 ? ' span2' : b.span === 5 ? ' span5' : '');
+    div.id = 'cb_' + b.id;
+    div.innerHTML = `
+      <div style="display:flex;align-items:center;gap:.4rem">
+        <span class="cb-ico">${b.ico}</span>
+        <h5>${b.nombre}</h5>
+      </div>
+      <select data-bloque="${b.id}">
+        <option value="">— Selecciona —</option>
+        ${b.opciones.map((o,i)=>`<option value="${i}">${o}</option>`).join('')}
+      </select>
+      <p class="cb-val"></p>
+    `;
+    cont.appendChild(div);
+
+    const sel = div.querySelector('select');
+    sel.addEventListener('change', ()=>{
+      const idx = sel.value;
+      const val = div.querySelector('.cb-val');
+      if(idx === ''){
+        val.classList.remove('show');
+        delete canvasSelecciones[b.id];
+      } else {
+        val.textContent = b.opciones[idx];
+        val.classList.add('show');
+        canvasSelecciones[b.id] = b.opciones[idx];
+      }
+      div.classList.toggle('completo', idx !== '');
+      actualizarCanvas();
+    });
+  });
+}
+
+function actualizarCanvas(){
+  const total = canvasBloques.length;
+  const completos = Object.keys(canvasSelecciones).length;
+  const msg = document.getElementById('canvasMsg');
+
+  if(completos > estado.scores.canvas){
+    estado.scores.canvas = completos;
+    guardarEstado();
+    actualizarCertificado();
+  }
+
+  if(completos === 0){
+    msg.textContent = '';
+  } else if(completos < total){
+    msg.textContent = `📋 Bloques completados: ${completos} / ${total}`;
+  } else {
+    msg.innerHTML = `🏆 ¡Canvas completo! Tu proyecto emprendedor está perfectamente definido.<br><span style="font-size:.85rem;color:var(--gris)">Ahora podrías presentarlo a un concurso de emprendimiento o llevarlo a la práctica.</span>`;
+    completarReto('canvas', '¡Canvas emprendedor completado!');
+  }
+}
+
+initCanvas();
+
+/* ================================================================
+   11. VOCABULARIO
+================================================================ */
+const vocabulario = [
+  {ico:'🔍', t:'Observación del entorno', d:'Fase inicial del proceso emprendedor en la que se mira con atención el contexto cercano (colegio, barrio, casa) para detectar necesidades, problemas y posibilidades de mejora que puedan ser resueltos con tecnología.'},
+  {ico:'💡', t:'Ideación', d:'Proceso creativo de generar muchas ideas para resolver un problema. Se apoya en técnicas como la lluvia de ideas, SCAMPER, analogías, combinaciones aleatorias o mapas mentales.'},
+  {ico:'🎯', t:'Necesidad real', d:'Problema concreto que afecta a personas concretas y que puede verificarse mediante observación, entrevistas o datos. Las mejores ideas emprendedoras resuelven necesidades reales, no imaginadas.'},
+  {ico:'💎', t:'Propuesta de valor', d:'Razón por la que alguien elegiría tu solución frente a otras. Responde a la pregunta: ¿qué aporta tu idea que no aportan las alternativas? Debe ser clara, concreta y relevante para el usuario.'},
+  {ico:'👥', t:'Segmento de usuarios', d:'Grupo concreto de personas al que va dirigida la solución. Cuanto más específico, mejor. No es lo mismo "todo el mundo" que "vecinos del barrio que necesitan herramientas puntualmente".'},
+  {ico:'📊', t:'Viabilidad', d:'Grado en que una idea puede llevarse a la práctica con los recursos disponibles (técnicos, económicos, humanos, temporales). Una idea muy buena pero inviable no es emprendedora.'},
+  {ico:'🌱', t:'Sostenibilidad', d:'Capacidad de un proyecto de mantenerse en el tiempo sin agotar recursos ni generar impactos negativos. Incluye dimensión ambiental, económica y social.'},
+  {ico:'⚖️', t:'Matriz de priorización', d:'Herramienta que cruza dos criterios (normalmente impacto y viabilidad) para clasificar ideas en cuatro cuadrantes: prioridad máxima, potencial, rápida y descartar. Ayuda a decidir en qué invertir esfuerzo.'},
+  {ico:'🧭', t:'Análisis DAFO', d:'Herramienta estratégica que analiza cuatro dimensiones de una idea o proyecto: Fortalezas y Debilidades (internas), Oportunidades y Amenazas (externas). Permite anticipar riesgos y aprovechar puntos fuertes.'},
+  {ico:'🎨', t:'Canvas (lienzo)', d:'Herramienta visual que resume en un solo folio los 9 elementos clave de un modelo de negocio o proyecto emprendedor: problema, solución, propuesta de valor, usuarios, canales, recursos, actividades, costes e ingresos.'},
+  {ico:'🚀', t:'Emprendimiento tecnológico', d:'Actitud y proceso de identificar oportunidades, idear soluciones basadas en tecnología, evaluar su viabilidad y planificarlas para generar valor real en la sociedad.'},
+  {ico:'🔄', t:'Iteración', d:'Proceso de mejora continua. En emprendimiento, las ideas no se diseñan perfectas desde el principio: se prueban, se aprenden lecciones y se reformulan. Cada versión es mejor que la anterior.'},
+  {ico:'🎯', t:'Impacto social', d:'Efecto positivo verificable que un proyecto genera sobre las personas o el entorno. Se mide con indicadores concretos: número de beneficiarios, problemas resueltos, recursos ahorrados, etc.'},
+  {ico:'⚙️', t:'Estrategia de resolución de problemas', d:'Método estructurado para abordar un problema: definirlo bien, analizar sus causas, generar alternativas, evaluarlas y elegir la mejor. Aplicable a cualquier reto tecnológico o social.'},
+  {ico:'🎨', t:'Design Thinking', d:'Metodología de innovación centrada en las personas, con 5 fases: empatizar, definir, idear, prototipar y evaluar. Muy usada en emprendimiento tecnológico.'},
+  {ico:'📋', t:'MVP (Producto Mínimo Viable)', d:'Versión más simple de una solución que permite comprobar si resuelve el problema. Sirve para aprender rápido y con poco coste antes de invertir en la versión final.'},
+  {ico:'🔬', t:'Focus group', d:'Técnica de investigación que reúne a un grupo pequeño de personas para debatir sobre un tema concreto y conocer sus opiniones en profundidad.'},
+  {ico:'🔍', t:'PESTEL', d:'Herramienta de análisis del contexto que estudia 6 factores externos: Políticos, Económicos, Sociales, Tecnológicos, Ecológicos y Legales.'}
+];
+
+(function initVoc(){
+  const grid = document.getElementById('vocGrid');
+  const defBox = document.getElementById('vocDef');
+  if(!grid) return;
+  vocabulario.forEach((v)=>{
+    const b = document.createElement('button');
+    b.className = 'voc-term';
+    b.innerHTML = `<span style="font-size:1.1rem">${v.ico}</span><span>${v.t}</span>`;
+    b.addEventListener('click', ()=>{
+      const yaActivo = b.classList.contains('active');
+      grid.querySelectorAll('.voc-term').forEach(x=>x.classList.remove('active'));
+      if(yaActivo){
+        defBox.classList.remove('show');
+        setTimeout(()=>{ defBox.innerHTML=''; }, 500);
+        return;
+      }
+      b.classList.add('active');
+      defBox.innerHTML = `<h4>${v.ico} ${v.t}</h4><p>${v.d}</p>`;
+      defBox.classList.add('show');
+    });
+    grid.appendChild(b);
+  });
+})();
+
+/* ================================================================
+   12. QUIZ FINAL
+================================================================ */
+const preguntasQuiz = [
+  {q:'¿Cuál es el primer paso del proceso emprendedor según lo aprendido?',
+   o:['Diseñar una app','Observar y analizar el entorno cercano para detectar necesidades','Buscar financiación','Comprar materiales'],
+   c:1, e:'Antes de idear soluciones hay que observar y analizar el entorno. Las mejores ideas nacen de necesidades reales, no de la imaginación sin base.'},
+  {q:'¿Qué significa que una idea sea "viable"?',
+   o:['Que es muy barata','Que puede llevarse a la práctica con los recursos disponibles','Que es muy popular','Que es muy complicada'],
+   c:1, e:'La viabilidad mide si una idea se puede implementar con los recursos técnicos, económicos, humanos y temporales disponibles.'},
+  {q:'¿Para qué sirve la matriz de priorización?',
+   o:['Para generar más ideas','Para clasificar ideas según su impacto y viabilidad y decidir en qué invertir esfuerzo','Para decorar la pared del aula','Para eliminar todas las ideas'],
+   c:1, e:'La matriz cruza impacto y viabilidad para colocar cada idea en uno de cuatro cuadrantes: prioridad máxima, potencial, rápida o descartar.'},
+  {q:'¿Cuál es un elemento INTERNO en un análisis DAFO?',
+   o:['Una amenaza','Una oportunidad','Una fortaleza','Ninguno de los anteriores'],
+   c:2, e:'Fortalezas y Debilidades son internas al proyecto o equipo; Oportunidades y Amenazas son externas al entorno.'},
+  {q:'¿Cuántos bloques tiene típicamente un canvas o lienzo de modelo de negocio simplificado?',
+   o:['3','5','9','15'],
+   c:2, e:'El canvas clásico tiene 9 bloques: problema, solución, propuesta de valor, segmento de usuarios, canales, recursos clave, actividades clave, estructura de costes y fuentes de ingresos.'},
+  {q:'¿Qué es la propuesta de valor?',
+   o:['El dinero que vas a ganar','La razón por la que alguien elegiría tu solución frente a otras alternativas','El número de empleados que necesitas','La ubicación del local'],
+   c:1, e:'La propuesta de valor es lo que diferencia tu solución: qué aporta que no aportan las alternativas y por qué el usuario la elegiría.'},
+  {q:'¿Cuál de estas ideas sería MENOS emprendedora?',
+   o:['App para compartir herramientas entre vecinos','Taller de alfabetización digital para mayores','Robot que hace los deberes por ti','Red de sensores para medir la calidad del aire'],
+   c:2, e:'Un robot que haga los deberes no genera valor real (no resuelve una necesidad legítima) y además impide el aprendizaje. No es emprendedora.'},
+  {q:'¿Por qué es importante iterar en un proyecto emprendedor?',
+   o:['Porque queda más bonito','Porque las ideas no nacen perfectas y hay que probarlas, aprender y mejorar','Porque lo exige la ley','Porque así se tarda más'],
+   c:1, e:'La iteración es clave en emprendimiento: probar, medir, aprender y reformular. Cada versión es mejor que la anterior.'},
+  {q:'¿Qué caracteriza a una necesidad "real"?',
+   o:['Que es muy famosa en redes sociales','Que afecta a personas concretas y puede verificarse con datos u observación','Que la ha dicho un famoso','Que es muy difícil de resolver'],
+   c:1, e:'Una necesidad real afecta a personas concretas y se puede verificar mediante observación, entrevistas o datos. No basta con suponerla.'},
+  {q:'¿Qué papel juega la sostenibilidad en el emprendimiento tecnológico?',
+   o:['Ninguno, solo importa el beneficio económico','Es un criterio clave: un proyecto debe mantenerse en el tiempo sin agotar recursos ni generar impactos negativos','Solo importa para las grandes empresas','Es un obstáculo para innovar'],
+   c:1, e:'La sostenibilidad es un criterio fundamental del emprendimiento contemporáneo: abarca lo ambiental, lo económico y lo social.'}
+];
+
+let quizRespondidas = 0, quizAciertos = 0;
+
+(function initQuiz(){
+  const cont = document.getElementById('quizContainer');
+  if(!cont) return;
+  preguntasQuiz.forEach((p, i)=>{
+    const div = document.createElement('div');
+    div.className = 'q reveal';
+    div.innerHTML = `
+      <span class="q-num">PREGUNTA ${i+1}</span>
+      <h4>${p.q}</h4>
+      <div class="opts">
+        ${p.o.map((o,j)=>`
+          <button class="opt" data-i="${i}" data-j="${j}">
+            <span class="letter">${String.fromCharCode(65+j)}</span>
+            <span>${o}</span>
+          </button>`).join('')}
+      </div>
+      <div class="expl"></div>
+    `;
+    cont.appendChild(div);
+    io.observe(div);
+    const btns = div.querySelectorAll('.opt');
+    const expl = div.querySelector('.expl');
+    btns.forEach(b=>{
+      b.addEventListener('click', ()=>{
+        const j = parseInt(b.dataset.j,10);
+        btns.forEach(x=>x.disabled = true);
+        btns.forEach(x=>{ if(parseInt(x.dataset.j,10) === p.c) x.classList.add('correct'); });
+        if(j !== p.c) b.classList.add('wrong');
+        else quizAciertos++;
+        expl.innerHTML = (j === p.c ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>Respuesta incorrecta.</strong> ') + p.e;
+        expl.classList.add('show');
+        quizRespondidas++;
+        if(quizRespondidas === preguntasQuiz.length) mostrarResultadoQuiz();
+      });
+    });
+  });
+})();
+
+function mostrarResultadoQuiz(){
+  const res = document.getElementById('quizResult');
+  document.getElementById('quizScore').textContent = quizAciertos + '/' + preguntasQuiz.length;
+  const pct = Math.round(quizAciertos / preguntasQuiz.length * 100);
+  let titulo, msg;
+  if(pct === 100){ titulo = '🏆 ¡Perfecto!'; msg = 'Dominas el proceso de ideación y planificación de soluciones tecnológicas emprendedoras.'; }
+  else if(pct >= 75){ titulo = '🌟 ¡Muy bien!'; msg = 'Tienes una comprensión sólida del proceso emprendedor. Repasa las preguntas falladas para afinar los detalles.'; }
+  else if(pct >= 50){ titulo = '👍 Buen intento'; msg = 'Vas por el camino correcto. Vuelve a las secciones de observación, ideación, análisis y planificación.'; }
+  else { titulo = '📚 A seguir aprendiendo'; msg = 'Revisa con calma cada sección y vuelve a intentarlo.'; }
+  document.getElementById('quizTitle').textContent = titulo;
+  document.getElementById('quizMsg').textContent = msg;
+  res.style.display = 'block';
+  res.scrollIntoView({behavior:'smooth', block:'center'});
+  if(quizAciertos > estado.scores.quiz){
+    estado.scores.quiz = quizAciertos;
+    guardarEstado();
+    actualizarCertificado();
+  }
+  completarReto('quiz', '¡Cuestionario final completado! ' + quizAciertos + '/' + preguntasQuiz.length);
+}
+
+/* ================================================================
+   13. CERTIFICADO Y PDF RASTERIZADO
+================================================================ */
+function actualizarCertificado(){
+  const stats = document.getElementById('certStats');
+  const nombreEl = document.getElementById('certNombre');
+  const warn = document.getElementById('certWarn');
+  const btn = document.getElementById('btnCertificado');
+
+  nombreEl.textContent = estado.nombre || '—';
+
+  const s = estado.scores;
+  const nRetos = estado.retos.length;
+
+  const items = [
+    {num: (s.detective>0 ? s.detective + '/12' : '—'), lbl:'Detective'},
+    {num: (s.ideas>0 ? s.ideas + '/3' : '—'), lbl:'Ideas'},
+    {num: (s.matriz>0 ? s.matriz + '/4' : '—'), lbl:'Matriz'},
+    {num: (s.dafo>0 ? s.dafo + '/8' : '—'), lbl:'DAFO'},
+    {num: (s.canvas>0 ? s.canvas + '/9' : '—'), lbl:'Canvas'},
+    {num: (s.quiz>0 ? s.quiz + '/10' : '—'), lbl:'Cuestionario'},
+    {num: nRetos + '/' + RETOS_TOTALES, lbl:'Retos totales'}
+  ];
+
+  stats.innerHTML = items.map(it=>`
+    <div class="cert-stat">
+      <div class="num">${it.num}</div>
+      <div class="lbl">${it.lbl}</div>
+    </div>
+  `).join('');
+
+  if(nRetos === 0){
+    warn.style.display = 'block';
+    btn.disabled = true;
+    btn.style.opacity = .55;
+    btn.style.cursor = 'not-allowed';
+  } else {
+    warn.style.display = 'none';
+    btn.disabled = false;
+    btn.style.opacity = 1;
+    btn.style.cursor = 'pointer';
+  }
+}
+
+document.getElementById('btnCertificado').addEventListener('click', ()=>{
+  if(!estado.nombre){ toast('Introduce tu nombre primero'); return; }
+  if(estado.retos.length === 0){ toast('Completa al menos un reto para obtener el certificado'); return; }
+  generarPDFRasterizado();
+});
+
+function generarPDFRasterizado(){
+  if(!(window.jspdf && window.jspdf.jsPDF)){
+    toast('No se ha podido cargar la librería PDF. Inténtalo de nuevo.');
+    return;
+  }
+  try{
+    const DPI = 300;
+    const W_MM = 297, H_MM = 210;
+    const W = Math.round(W_MM / 25.4 * DPI);
+    const H = Math.round(H_MM / 25.4 * DPI);
+    const mm = v => v / 25.4 * DPI;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = '#fff7ed';
+    ctx.fillRect(0,0,W,H);
+
+    ctx.strokeStyle = '#9a3412';
+    ctx.lineWidth = mm(2);
+    ctx.strokeRect(mm(10), mm(10), W-mm(20), H-mm(20));
+    ctx.lineWidth = mm(0.5);
+    ctx.strokeRect(mm(14), mm(14), W-mm(28), H-mm(28));
+
+    ctx.fillStyle = '#9a3412';
+    ctx.fillRect(mm(14), mm(14), mm(20), mm(3));
+    ctx.fillRect(mm(14), mm(14), mm(3), mm(20));
+    ctx.fillRect(W-mm(34), mm(14), mm(20), mm(3));
+    ctx.fillRect(W-mm(17), mm(14), mm(3), mm(20));
+    ctx.fillRect(mm(14), H-mm(17), mm(20), mm(3));
+    ctx.fillRect(mm(14), H-mm(34), mm(3), mm(20));
+    ctx.fillRect(W-mm(34), H-mm(17), mm(20), mm(3));
+    ctx.fillRect(W-mm(17), H-mm(34), mm(3), mm(20));
+
+    ctx.fillStyle = '#9a3412';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = `bold ${mm(9)}px Arial, sans-serif`;
+    ctx.fillText('CERTIFICADO DE APROVECHAMIENTO', W/2, mm(38));
+
+    ctx.fillStyle = '#64748b';
+    ctx.font = `${mm(4)}px Arial, sans-serif`;
+    ctx.fillText('Ideas que Transforman · Emprendimiento tecnológico para tu entorno', W/2, mm(48));
+
+    ctx.strokeStyle = '#eab308';
+    ctx.lineWidth = mm(0.8);
+    ctx.beginPath();
+    ctx.moveTo(W/2 - mm(60), mm(53));
+    ctx.lineTo(W/2 + mm(60), mm(53));
+    ctx.stroke();
+
+    ctx.fillStyle = '#475569';
+    ctx.font = `${mm(4.5)}px Arial, sans-serif`;
+    ctx.fillText('Se certifica que', W/2, mm(68));
+
+    ctx.fillStyle = '#0f172a';
+    ctx.font = `bold ${mm(14)}px Arial, sans-serif`;
+    ctx.fillText(estado.nombre, W/2, mm(85));
+
+    ctx.fillStyle = '#334155';
+    ctx.font = `${mm(4)}px Arial, sans-serif`;
+    ctx.fillText('ha completado las actividades interactivas de la aplicación educativa sobre ideación', W/2, mm(97));
+    ctx.fillText('y planificación de soluciones tecnológicas emprendedoras, obteniendo:', W/2, mm(104));
+
+    const s = estado.scores;
+    const resultados = [
+      ['Detective del entorno', s.detective>0 ? s.detective + ' / 12 necesidades' : 'No realizado'],
+      ['Ideas emprendedoras guardadas', s.ideas>0 ? s.ideas + ' / 3' : 'No realizado'],
+      ['Matriz de priorización', s.matriz>0 ? s.matriz + ' / 4 ideas' : 'No realizado'],
+      ['Análisis DAFO', s.dafo>0 ? s.dafo + ' / 8 elementos' : 'No realizado'],
+      ['Canvas emprendedor', s.canvas>0 ? s.canvas + ' / 9 bloques' : 'No realizado'],
+      ['Cuestionario final', s.quiz>0 ? s.quiz + ' / 10' : 'No realizado'],
+      ['Retos completados', estado.retos.length + ' / ' + RETOS_TOTALES]
+    ];
+
+    const tableX = mm(60);
+    const tableY = mm(116);
+    const rowH = mm(9);
+    const colW1 = mm(110), colW2 = mm(70);
+    const totalW = colW1 + colW2;
+
+    ctx.fillStyle = '#9a3412';
+    ctx.fillRect(tableX, tableY, totalW, mm(9));
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `bold ${mm(3.6)}px Arial, sans-serif`;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('ACTIVIDAD', tableX + mm(4), tableY + mm(4.5));
+    ctx.fillText('RESULTADO', tableX + colW1 + mm(4), tableY + mm(4.5));
+
+    resultados.forEach((row, i)=>{
+      const y = tableY + mm(9) + i * rowH;
+      if(i % 2 === 0){
+        ctx.fillStyle = '#ffedd5';
+        ctx.fillRect(tableX, y, totalW, rowH);
+      }
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = mm(0.2);
+      ctx.strokeRect(tableX, y, totalW, rowH);
+      ctx.fillStyle = '#1e293b';
+      ctx.font = `${mm(3.6)}px Arial, sans-serif`;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(row[0], tableX + mm(4), y + rowH/2);
+      ctx.font = `bold ${mm(3.6)}px Arial, sans-serif`;
+      ctx.fillText(row[1], tableX + colW1 + mm(4), y + rowH/2);
+    });
+
+    const fecha = new Date().toLocaleDateString('es-ES', {day:'numeric', month:'long', year:'numeric'});
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#64748b';
+    ctx.font = `${mm(3.5)}px Arial, sans-serif`;
+    ctx.fillText('Fecha de emisión: ' + fecha, W/2, H - mm(24));
+    ctx.font = `${mm(3)}px Arial, sans-serif`;
+    ctx.fillText('Este certificado acredita la realización de las actividades interactivas de la aplicación educativa.', W/2, H - mm(17));
+
+    const imgData = canvas.toDataURL('image/png');
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
+    doc.addImage(imgData, 'PNG', 0, 0, W_MM, H_MM, undefined, 'FAST');
+    doc.save('Certificado_IdeasTransforman_' + estado.nombre.replace(/[^a-zA-Z0-9]/g,'_') + '.pdf');
+    toast('¡Certificado descargado!');
+  } catch(err){
+    console.error(err);
+    toast('No se pudo generar el PDF.');
+  }
+}
+
+/* ================================================================
+   14. INICIALIZACIÓN
+================================================================ */
+cargarEstado();
+mostrarLogin();
+actualizarProgreso();
+</script>
+</body>
+</html>
