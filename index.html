@@ -3,14 +3,238 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tecnologia</title>
+    <title>Generador Avanzado de index.html para GitHub</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        h1, h2 {
+            color: #1a1a1a;
+        }
+        .panel {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .form-col {
+            flex: 1;
+            min-width: 200px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+        input[type="text"], textarea, select {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccd0d5;
+            border-radius: 5px;
+            font-family: inherit;
+        }
+        input[type="color"] {
+            width: 100%;
+            height: 40px;
+            padding: 2px;
+            border: 1px solid #ccd0d5;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .link-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        .link-row input {
+            flex: 1;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1em;
+            transition: opacity 0.2s;
+        }
+        button:hover { opacity: 0.9; }
+        .btn-add { background-color: #28a745; color: white; }
+        .btn-remove { background-color: #dc3545; color: white; padding: 10px 15px; }
+        .btn-generate { background-color: #0056b3; color: white; width: 100%; font-size: 1.1em; padding: 15px; }
+        .btn-download { background-color: #17a2b8; color: white; width: 100%; margin-top: 15px; display: none; padding: 15px; font-size: 1.1em;}
+        #codeOutput {
+            width: 100%;
+            height: 250px;
+            margin-top: 15px;
+            box-sizing: border-box;
+            font-family: 'Courier New', Courier, monospace;
+            background: #2d2d2d;
+            color: #f8f8f2;
+            border-radius: 5px;
+            padding: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Generador Avanzado de GitHub Pages</h1>
+
+    <div class="panel">
+        <h2>1. Información de la Página</h2>
+        <div class="form-group">
+            <label for="pageTitle">Título principal (H1):</label>
+            <input type="text" id="pageTitle" placeholder="Ej: Mi Portafolio de Proyectos" value="Mi Portafolio de Proyectos">
+        </div>
+        <div class="form-group">
+            <label for="pageDesc">Descripción breve (Opcional):</label>
+            <textarea id="pageDesc" rows="2" placeholder="Ej: Aquí guardo todos los proyectos que he ido desarrollando..."></textarea>
+        </div>
+    </div>
+
+    <div class="panel">
+        <h2>2. Personalización Visual</h2>
+        <div class="form-row">
+            <div class="form-col">
+                <label for="fontFamily">Tipografía:</label>
+                <select id="fontFamily">
+                    <option value="'Segoe UI', Tahoma, Geneva, Verdana, sans-serif">Moderna (Segoe UI, Verdana)</option>
+                    <option value="'Times New Roman', Times, serif">Clásica (Times New Roman)</option>
+                    <option value="'Courier New', Courier, monospace">Programador (Monospace)</option>
+                    <option value="Arial, Helvetica, sans-serif">Limpia (Arial, Helvetica)</option>
+                    <option value="'Georgia', serif">Elegante (Georgia)</option>
+                </select>
+            </div>
+            <div class="form-col">
+                <label for="bgColor">Color de Fondo:</label>
+                <input type="color" id="bgColor" value="#f4f4f9">
+            </div>
+            <div class="form-col">
+                <label for="textColor">Color del Texto:</label>
+                <input type="color" id="textColor" value="#333333">
+            </div>
+            <div class="form-col">
+                <label for="btnColor">Color de los Enlaces:</label>
+                <input type="color" id="btnColor" value="#0366d6">
+            </div>
+            <div class="form-col">
+                <label for="btnHoverColor">Color al pasar el ratón:</label>
+                <input type="color" id="btnHoverColor" value="#024ea4">
+            </div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <h2>3. Enlaces a tus Archivos</h2>
+        <div id="linksContainer">
+            <div class="link-row">
+                <input type="text" class="link-text" placeholder="Título del enlace (Ej: Proyecto 1)">
+                <input type="text" class="link-url" placeholder="Nombre del archivo (Ej: proyecto1.html)">
+                <button type="button" class="btn-remove" onclick="removeRow(this)">X</button>
+            </div>
+        </div>
+        <button type="button" class="btn-add" onclick="addLinkRow()">+ Añadir otro enlace</button>
+    </div>
+
+    <button type="button" class="btn-generate" onclick="generateHTML()">Generar código de index.html</button>
+
+    <div class="panel" id="outputSection" style="display:none; margin-top: 20px;">
+        <h2>4. Vista previa y Descarga</h2>
+        <textarea id="codeOutput" readonly></textarea>
+        <button type="button" class="btn-download" id="downloadBtn" onclick="downloadFile()">Descargar index.html</button>
+    </div>
+
+    <script>
+        function addLinkRow() {
+            const container = document.getElementById('linksContainer');
+            const row = document.createElement('div');
+            row.className = 'link-row';
+            row.innerHTML = `
+                <input type="text" class="link-text" placeholder="Título del enlace">
+                <input type="text" class="link-url" placeholder="Nombre del archivo (Ej: archivo.html)">
+                <button type="button" class="btn-remove" onclick="removeRow(this)">X</button>
+            `;
+            container.appendChild(row);
+        }
+
+        function removeRow(button) {
+            const container = document.getElementById('linksContainer');
+            if (container.children.length > 1) {
+                button.parentElement.remove();
+            } else {
+                alert("Debes mantener al menos un enlace.");
+            }
+        }
+
+        function generateHTML() {
+            // Recoger valores de personalización
+            const title = document.getElementById('pageTitle').value || "Mis Proyectos";
+            const desc = document.getElementById('pageDesc').value;
+            const font = document.getElementById('fontFamily').value;
+            const bgColor = document.getElementById('bgColor').value;
+            const textColor = document.getElementById('textColor').value;
+            const btnColor = document.getElementById('btnColor').value;
+            const btnHoverColor = document.getElementById('btnHoverColor').value;
+
+            // Recoger enlaces
+            const texts = document.querySelectorAll('.link-text');
+            const urls = document.querySelectorAll('.link-url');
+            let linksList = '';
+
+            for (let i = 0; i < texts.length; i++) {
+                const linkText = texts[i].value.trim();
+                let linkUrl = urls[i].value.trim();
+
+                if (linkText !== '' && linkUrl !== '') {
+                    if (!linkUrl.endsWith('.html') && !linkUrl.startsWith('http')) {
+                        linkUrl += '.html';
+                    }
+                    linksList += `        <li><a href="${linkUrl}">${linkText}</a></li>\n`;
+                }
+            }
+
+            if (linksList === '') {
+                alert("Por favor completa al menos un enlace válido.");
+                return;
+            }
+
+            // Crear el bloque de descripción si existe
+            let descHTML = '';
+            if (desc.trim() !== '') {
+                descHTML = `\n    <p class="description">${desc.replace(/\n/g, '<br>')}</p>`;
+            }
+
+            // Generar el HTML final
+            const generatedCode = `<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${title}</title>
     <style>
         :root {
-            --bg-color: #f4f4f9;
-            --text-color: #50296a;
-            --btn-color: #10a26a;
-            --btn-hover: #7ba702;
-            --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --bg-color: ${bgColor};
+            --text-color: ${textColor};
+            --btn-color: ${btnColor};
+            --btn-hover: ${btnHoverColor};
+            --font-main: ${font};
         }
         
         body {
@@ -74,13 +298,34 @@
 <body>
 
     <div class="container">
-        <h1>Tecnologia</h1>
-    <p class="description">Aplicaciones de teoría</p>
+        <h1>${title}</h1>${descHTML}
         
         <ul>
-        <li><a href="AppC114ESO.html">Criterio 1.1 4º de ESO</a></li>
-        </ul>
+${linksList}        </ul>
     </div>
 
+</body>
+</html>`;
+
+            document.getElementById('codeOutput').value = generatedCode;
+            document.getElementById('outputSection').style.display = 'block';
+            document.getElementById('downloadBtn').style.display = 'block';
+            
+            // Hacer scroll hasta el resultado
+            document.getElementById('outputSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function downloadFile() {
+            const code = document.getElementById('codeOutput').value;
+            const blob = new Blob([code], { type: 'text/html' });
+            const link = document.createElement('a');
+            
+            link.href = URL.createObjectURL(blob);
+            link.download = 'index.html';
+            link.click();
+            
+            URL.revokeObjectURL(link.href);
+        }
+    </script>
 </body>
 </html>
