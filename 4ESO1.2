@@ -1,0 +1,2664 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Equipos que crean · Colaboración, herramientas digitales y fuentes fiables</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --indigo:#4f46e5; --indigo-claro:#e0e7ff; --indigo-oscuro:#312e81;
+  --lima:#65a30d; --lima-claro:#ecfccb; --lima-oscuro:#365314;
+  --cian:#0891b2; --cian-claro:#cffafe; --cian-oscuro:#164e63;
+  --rosa:#db2777; --rosa-claro:#fce7f3; --rosa-oscuro:#831843;
+  --rojo:#dc2626; --rojo-claro:#fee2e2;
+  --ambar:#d97706; --ambar-claro:#fef3c7;
+  --gris:#64748b; --gris-claro:#f1f5f9; --gris-oscuro:#1e293b;
+  --blanco:#fff; --negro:#0f172a;
+  --sombra:0 10px 30px rgba(15,23,42,.08);
+  --sombra-lg:0 20px 50px rgba(15,23,42,.14);
+  --radio:20px;
+  --fuente:'Segoe UI',system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+  --mono:'Consolas','Monaco','Courier New',monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0; font-family:var(--fuente); background:var(--gris-claro); color:var(--negro); line-height:1.7; -webkit-font-smoothing:antialiased;}
+body.locked{overflow:hidden}
+h1,h2,h3,h4{line-height:1.2; margin:0 0 .5rem}
+p{margin:0 0 1rem}
+
+/* LOGIN */
+#loginOverlay{
+  position:fixed; inset:0; z-index:2000;
+  background:radial-gradient(1000px 600px at 20% 10%,#312e81 0%,transparent 60%),
+             radial-gradient(900px 500px at 85% 90%,#365314 0%,transparent 55%),
+             linear-gradient(160deg,#1e1b4b,#0f172a);
+  display:grid; place-items:center; padding:1.2rem;
+  transition:opacity .6s, visibility .6s;
+}
+#loginOverlay.hidden{opacity:0; visibility:hidden; pointer-events:none}
+.login-card{
+  background:#fff; border-radius:26px; padding:2.2rem 2rem;
+  max-width:500px; width:100%; box-shadow:0 30px 70px rgba(0,0,0,.4);
+  text-align:center; position:relative; overflow:hidden;
+  animation:aparecer .6s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes aparecer{from{opacity:0;transform:translateY(24px) scale(.96)}to{opacity:1;transform:none}}
+.login-card::before{content:""; position:absolute; top:0; left:0; right:0; height:6px;
+  background:linear-gradient(90deg,var(--indigo),var(--cian),var(--lima));}
+.login-emoji{font-size:3.4rem; line-height:1; margin-bottom:.5rem; display:block}
+.login-card h1{font-size:1.55rem; color:var(--indigo-oscuro); letter-spacing:-.4px}
+.login-card p.sub{font-size:.94rem; color:var(--gris); margin-bottom:1.5rem}
+.login-card input{width:100%; font-family:inherit; font-size:1.02rem; padding:.95rem 1.1rem;
+  border-radius:14px; border:2px solid #e2e8f0; background:#f8fafc; color:var(--negro);
+  transition:.2s; text-align:center; font-weight:600; margin-bottom:1rem;}
+.login-card input:focus{outline:none; border-color:var(--indigo); background:#fff; box-shadow:0 0 0 5px rgba(79,70,229,.14);}
+.login-card .btn{width:100%; justify-content:center}
+.login-error{font-size:.82rem; color:var(--rojo); margin-top:.7rem; min-height:1.2em; font-weight:700}
+.welcome-back{background:var(--indigo-claro); border:1.5px solid #c7d2fe; border-radius:14px;
+  padding:1rem; margin-bottom:1.2rem; font-size:.92rem; color:var(--indigo-oscuro);}
+.welcome-back strong{font-size:1.05rem}
+.login-btns{display:flex; gap:.6rem; flex-wrap:wrap; justify-content:center}
+.login-btns .btn{flex:1; min-width:130px; justify-content:center}
+
+/* PROGRESO */
+#progresoGlobal{position:fixed; top:0; left:0; right:0; height:5px; background:rgba(255,255,255,.2); z-index:1000;}
+#progresoBarra{height:100%; width:0%; transition:width .6s cubic-bezier(.2,.8,.2,1);
+  background:linear-gradient(90deg,var(--indigo),var(--cian),var(--lima));
+  box-shadow:0 0 12px rgba(79,70,229,.6);}
+
+/* NAV */
+nav{position:sticky; top:0; z-index:900; background:rgba(255,255,255,.9); backdrop-filter:blur(14px);
+  border-bottom:1px solid #e2e8f0; padding:.55rem .8rem;}
+.nav-inner{max-width:1200px; margin:0 auto; display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;}
+.nav-brand{font-weight:800; font-size:.92rem; letter-spacing:.5px; color:var(--indigo-oscuro);
+  display:flex; align-items:center; gap:.45rem; margin-right:auto;}
+.nav-brand .dot{width:11px;height:11px;border-radius:50%;background:linear-gradient(135deg,var(--indigo),var(--lima));}
+.nav-user{font-size:.8rem; font-weight:800; color:var(--indigo-oscuro);
+  background:var(--indigo-claro); padding:.3rem .8rem; border-radius:999px;
+  display:flex; align-items:center; gap:.35rem;}
+.nav-links{display:flex; gap:.3rem; flex-wrap:wrap}
+.nav-links a{font-size:.8rem; font-weight:600; text-decoration:none; color:var(--gris-oscuro);
+  padding:.35rem .7rem; border-radius:999px; transition:.25s; white-space:nowrap;}
+.nav-links a:hover{background:var(--indigo-claro); color:var(--indigo-oscuro)}
+.nav-links a.active{background:var(--indigo-oscuro); color:#fff}
+#progresoPill{font-size:.72rem; font-weight:800; color:var(--indigo-oscuro); background:var(--indigo-claro);
+  padding:.3rem .7rem; border-radius:999px; white-space:nowrap;}
+
+/* HERO */
+header.hero{position:relative; overflow:hidden; color:#fff;
+  background:radial-gradient(1200px 600px at 15% -10%,#312e81 0%,transparent 60%),
+             radial-gradient(900px 500px at 90% 10%,#365314 0%,transparent 55%),
+             linear-gradient(160deg,#1e1b4b,#0f172a);
+  padding:4.5rem 1.2rem 4rem;}
+.blob{position:absolute; border-radius:50%; filter:blur(70px); opacity:.4; animation:flotar 14s ease-in-out infinite}
+.blob.b1{width:340px;height:340px;background:#4f46e5;top:-90px;left:-60px}
+.blob.b2{width:280px;height:280px;background:#65a30d;bottom:-110px;right:-40px;animation-delay:-5s}
+.blob.b3{width:220px;height:220px;background:#0891b2;top:40%;right:25%;animation-delay:-9s}
+@keyframes flotar{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(28px,-32px) scale(1.12)}}
+.hero-inner{position:relative; max-width:1000px; margin:0 auto; text-align:center}
+.badge-top{display:inline-flex; align-items:center; gap:.5rem; font-size:.76rem; font-weight:800;
+  letter-spacing:1.4px; text-transform:uppercase; color:#a5b4fc;
+  background:rgba(79,70,229,.18); border:1px solid rgba(165,180,252,.4);
+  padding:.42rem 1rem; border-radius:999px; margin-bottom:1.2rem;}
+header.hero h1{font-size:clamp(1.85rem,5.2vw,3.3rem); font-weight:900; letter-spacing:-1px; margin-bottom:.7rem;}
+header.hero h1 span{background:linear-gradient(90deg,#a5b4fc,#67e8f9,#bef264);
+  -webkit-background-clip:text; background-clip:text; color:transparent;}
+.hero-sub{max-width:800px; margin:0 auto 1.6rem; color:#cbd5e1; font-size:clamp(.95rem,2.2vw,1.1rem)}
+.hero-sub strong{color:#a5b4fc}
+.hero-chips{display:flex; gap:.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:2rem}
+.chip{font-size:.74rem; font-weight:800; letter-spacing:.6px; padding:.34rem .8rem; border-radius:999px;
+  background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.22); color:#e2e8f0;}
+.hero-cta{display:flex; gap:.7rem; justify-content:center; flex-wrap:wrap}
+.btn{display:inline-flex; align-items:center; gap:.45rem; cursor:pointer; border:none;
+  font-family:inherit; font-size:.92rem; font-weight:800; padding:.8rem 1.5rem; border-radius:999px;
+  text-decoration:none; transition:transform .2s, box-shadow .2s, background .2s;}
+.btn-primary{background:linear-gradient(135deg,var(--indigo),var(--indigo-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(79,70,229,.4)}
+.btn-primary:hover{transform:translateY(-3px); box-shadow:0 16px 34px rgba(79,70,229,.5)}
+.btn-ghost{background:rgba(255,255,255,.1); color:#fff; border:1.5px solid rgba(255,255,255,.3)}
+.btn-ghost:hover{background:rgba(255,255,255,.2); transform:translateY(-3px)}
+.btn-cian{background:linear-gradient(135deg,var(--cian),var(--cian-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(8,145,178,.4)}
+.btn-cian:hover{transform:translateY(-3px)}
+.btn-lima{background:linear-gradient(135deg,var(--lima),var(--lima-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(101,163,13,.4)}
+.btn-lima:hover{transform:translateY(-3px)}
+.btn-rosa{background:linear-gradient(135deg,var(--rosa),var(--rosa-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(219,39,119,.4)}
+.btn-rosa:hover{transform:translateY(-3px)}
+.btn-ambar{background:linear-gradient(135deg,var(--ambar),var(--ambar-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(217,119,6,.4)}
+.btn-ambar:hover{transform:translateY(-3px)}
+
+/* LAYOUT */
+main{max-width:1200px; margin:0 auto; padding:0 1.1rem 5rem}
+section{padding:3.2rem 0 1rem; scroll-margin-top:70px}
+.sec-head{margin-bottom:1.8rem}
+.kicker{display:inline-block; font-size:.72rem; font-weight:900; letter-spacing:1.6px; text-transform:uppercase;
+  color:var(--indigo-oscuro); background:var(--indigo-claro); padding:.3rem .75rem; border-radius:999px; margin-bottom:.7rem;}
+.kicker.lima{color:var(--lima-oscuro); background:var(--lima-claro)}
+.kicker.cian{color:var(--cian-oscuro); background:var(--cian-claro)}
+.kicker.rosa{color:var(--rosa-oscuro); background:var(--rosa-claro)}
+.kicker.ambar{color:#92400e; background:var(--ambar-claro)}
+.sec-head h2{font-size:clamp(1.5rem,3.6vw,2.15rem); font-weight:900; letter-spacing:-.6px}
+.sec-head p.lead{color:var(--gris); max-width:900px; font-size:1rem}
+.card{background:var(--blanco); border-radius:var(--radio); padding:1.6rem; box-shadow:var(--sombra); border:1px solid #e2e8f0;}
+.grid{display:grid; gap:1.1rem}
+.g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.reveal{opacity:0; transform:translateY(26px); transition:opacity .7s cubic-bezier(.2,.8,.2,1), transform .7s cubic-bezier(.2,.8,.2,1)}
+.reveal.in{opacity:1; transform:none}
+
+/* PILARES */
+.pilar{background:#fff; border-radius:16px; padding:1.3rem; border:1px solid #e2e8f0;
+  border-top:5px solid var(--indigo); box-shadow:var(--sombra); transition:.3s;}
+.pilar:hover{transform:translateY(-6px); box-shadow:var(--sombra-lg)}
+.pilar .ico{font-size:2rem; display:block; margin-bottom:.5rem}
+.pilar h4{font-size:1.05rem; color:var(--indigo-oscuro)}
+.pilar p{font-size:.9rem; color:var(--gris); margin:0}
+
+/* ========== TEORÍA EXPANDIDA ========== */
+.teoria{
+  background:#fff; border-radius:var(--radio); padding:1.6rem; box-shadow:var(--sombra);
+  border:1px solid #e2e8f0; margin-bottom:1.4rem;
+}
+.teoria h3{
+  color:var(--indigo-oscuro); font-size:1.15rem; margin-bottom:.8rem;
+  display:flex; align-items:center; gap:.5rem;
+}
+.teoria h3 .th-ico{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:34px; height:34px; border-radius:10px;
+  background:var(--indigo-claro); color:var(--indigo-oscuro);
+  font-size:1rem;
+}
+.teoria h4{
+  color:var(--indigo-oscuro); font-size:1rem; margin-top:1.2rem; margin-bottom:.5rem;
+  padding-left:.6rem; border-left:4px solid var(--indigo);
+}
+.teoria p{font-size:.94rem; color:var(--gris-oscuro); margin-bottom:.8rem}
+.teoria ul, .teoria ol{font-size:.92rem; color:var(--gris-oscuro); margin:0 0 1rem; padding-left:1.3rem}
+.teoria li{margin-bottom:.35rem}
+.teoria li strong{color:var(--indigo-oscuro)}
+.teoria .destacado{
+  background:linear-gradient(150deg,var(--indigo-claro),#fff);
+  border-left:4px solid var(--indigo); border-radius:0 12px 12px 0;
+  padding:.9rem 1.1rem; margin:1rem 0; font-size:.92rem;
+  color:var(--indigo-oscuro);
+}
+.teoria .destacado strong{color:var(--indigo-oscuro); font-weight:900}
+.teoria.cian .th-ico{background:var(--cian-claro); color:var(--cian-oscuro)}
+.teoria.cian h3{color:var(--cian-oscuro)}
+.teoria.cian h4{color:var(--cian-oscuro); border-color:var(--cian)}
+.teoria.cian li strong{color:var(--cian-oscuro)}
+.teoria.cian .destacado{background:linear-gradient(150deg,var(--cian-claro),#fff); border-color:var(--cian); color:var(--cian-oscuro)}
+.teoria.lima .th-ico{background:var(--lima-claro); color:var(--lima-oscuro)}
+.teoria.lima h3{color:var(--lima-oscuro)}
+.teoria.lima h4{color:var(--lima-oscuro); border-color:var(--lima)}
+.teoria.lima li strong{color:var(--lima-oscuro)}
+.teoria.lima .destacado{background:linear-gradient(150deg,var(--lima-claro),#fff); border-color:var(--lima); color:var(--lima-oscuro)}
+.teoria.rosa .th-ico{background:var(--rosa-claro); color:var(--rosa-oscuro)}
+.teoria.rosa h3{color:var(--rosa-oscuro)}
+.teoria.rosa h4{color:var(--rosa-oscuro); border-color:var(--rosa)}
+.teoria.rosa li strong{color:var(--rosa-oscuro)}
+.teoria.rosa .destacado{background:linear-gradient(150deg,var(--rosa-claro),#fff); border-color:var(--rosa); color:var(--rosa-oscuro)}
+.teoria.ambar .th-ico{background:var(--ambar-claro); color:#92400e}
+.teoria.ambar h3{color:#92400e}
+.teoria.ambar h4{color:#92400e; border-color:var(--ambar)}
+.teoria.ambar li strong{color:#92400e}
+.teoria.ambar .destacado{background:linear-gradient(150deg,var(--ambar-claro),#fff); border-color:var(--ambar); color:#92400e}
+.teoria .ejemplo{
+  background:#f8fafc; border-radius:10px; padding:.7rem .9rem;
+  font-size:.85rem; color:var(--gris-oscuro); margin:.5rem 0;
+  border-left:3px solid var(--gris);
+}
+.teoria .ejemplo strong{color:var(--gris-oscuro)}
+.teoria .tabla-tipos{
+  width:100%; border-collapse:collapse; margin:.8rem 0 1rem;
+  font-size:.86rem;
+}
+.teoria .tabla-tipos th, .teoria .tabla-tipos td{
+  padding:.6rem .7rem; text-align:left;
+  border-bottom:1px solid #e2e8f0;
+}
+.teoria .tabla-tipos th{
+  background:var(--indigo-claro); color:var(--indigo-oscuro);
+  font-weight:900; font-size:.78rem; text-transform:uppercase; letter-spacing:.4px;
+}
+.teoria .tabla-tipos tr:nth-child(even) td{background:#f8fafc}
+.teoria .grid-teoria{
+  display:grid; gap:.8rem; grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  margin:1rem 0;
+}
+.teoria .bloque-teoria{
+  background:#f8fafc; border-radius:12px; padding:.9rem 1rem;
+  border-top:3px solid var(--indigo);
+}
+.teoria.cian .bloque-teoria{border-color:var(--cian)}
+.teoria.lima .bloque-teoria{border-color:var(--lima)}
+.teoria.rosa .bloque-teoria{border-color:var(--rosa)}
+.teoria.ambar .bloque-teoria{border-color:var(--ambar)}
+.teoria .bloque-teoria h5{
+  font-size:.88rem; font-weight:900; color:var(--indigo-oscuro);
+  margin:0 0 .4rem;
+}
+.teoria.cian .bloque-teoria h5{color:var(--cian-oscuro)}
+.teoria.lima .bloque-teoria h5{color:var(--lima-oscuro)}
+.teoria.rosa .bloque-teoria h5{color:var(--rosa-oscuro)}
+.teoria.ambar .bloque-teoria h5{color:#92400e}
+.teoria .bloque-teoria p{font-size:.85rem; margin:0; color:var(--gris)}
+.teoria .fases{
+  display:grid; gap:.6rem; grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  margin:1rem 0;
+}
+.teoria .fase{
+  background:#fff; border:2px solid var(--indigo-claro); border-radius:12px;
+  padding:.75rem; text-align:center; position:relative;
+}
+.teoria .fase .fase-num{
+  display:inline-block; font-size:.72rem; font-weight:900; background:var(--indigo);
+  color:#fff; padding:.15rem .55rem; border-radius:999px; margin-bottom:.35rem;
+}
+.teoria .fase h6{font-size:.85rem; font-weight:900; color:var(--indigo-oscuro); margin:.2rem 0}
+.teoria .fase p{font-size:.75rem; color:var(--gris); margin:0; line-height:1.35}
+
+/* ACTIVIDADES */
+.actividad{background:#fff; border-radius:var(--radio); padding:1.6rem; box-shadow:var(--sombra);
+  border:1px solid #e2e8f0; margin-top:1.6rem;}
+.actividad h3{color:var(--indigo-oscuro); font-size:1.15rem; margin-bottom:.3rem}
+.actividad .intro{font-size:.93rem; color:var(--gris); margin-bottom:1rem}
+
+/* ========== RETO 1: ASIGNADOR DE ROLES ========== */
+.proyecto-card{
+  background:linear-gradient(150deg,#e0e7ff,#fff); border-left:6px solid var(--indigo);
+  border-radius:0 14px 14px 0; padding:1rem 1.2rem; margin-bottom:1.2rem;
+}
+.proyecto-card h4{color:var(--indigo-oscuro); font-size:1rem; margin-bottom:.3rem}
+.proyecto-card p{font-size:.9rem; margin:0; color:var(--gris-oscuro)}
+.roles-wrap{display:grid; gap:1rem; grid-template-columns:1fr 1fr;}
+@media(max-width:780px){.roles-wrap{grid-template-columns:1fr}}
+.roles-col h4{
+  font-size:.8rem; text-transform:uppercase; letter-spacing:.9px; color:var(--indigo-oscuro);
+  margin-bottom:.6rem; padding-left:.4rem;
+}
+.persona-item, .rol-item{
+  background:#fff; border:2px solid #e2e8f0; border-radius:14px; padding:.8rem 1rem;
+  margin-bottom:.6rem; transition:.25s;
+}
+.persona-item{cursor:pointer;}
+.persona-item:hover:not(.asignado){border-color:var(--indigo); background:var(--indigo-claro); transform:translateX(4px)}
+.persona-item.sel{background:var(--indigo); color:#fff; border-color:var(--indigo-oscuro)}
+.persona-item.asignado{background:var(--lima-claro); border-color:var(--lima); opacity:.85}
+.persona-item .per-nombre{font-size:.92rem; font-weight:900; margin-bottom:.2rem; display:flex; align-items:center; gap:.4rem}
+.persona-item .per-hab{font-size:.8rem; color:var(--gris); line-height:1.3}
+.persona-item.sel .per-hab{color:#e0e7ff}
+.persona-item.asignado .per-hab{color:var(--lima-oscuro)}
+.rol-item{cursor:pointer; position:relative;}
+.rol-item:hover{border-color:var(--indigo); box-shadow:var(--sombra)}
+.rol-item.correcto{border-color:var(--lima); background:linear-gradient(150deg,#ecfccb,#fff)}
+.rol-item.incorrecto{border-color:var(--rojo); background:linear-gradient(150deg,#fee2e2,#fff)}
+.rol-item .rol-nombre{font-size:.92rem; font-weight:900; color:var(--indigo-oscuro); margin-bottom:.3rem; display:flex; align-items:center; gap:.4rem}
+.rol-item.correcto .rol-nombre{color:var(--lima-oscuro)}
+.rol-item.incorrecto .rol-nombre{color:#991b1b}
+.rol-item .rol-desc{font-size:.8rem; color:var(--gris); margin-bottom:.3rem}
+.rol-item .rol-asignado{
+  font-size:.78rem; font-weight:800; padding:.25rem .6rem; border-radius:999px;
+  background:var(--indigo-claro); color:var(--indigo-oscuro); display:inline-block;
+}
+.rol-item.correcto .rol-asignado{background:var(--lima); color:#fff}
+.rol-item.incorrecto .rol-asignado{background:var(--rojo); color:#fff}
+#rolesMsg{text-align:center; margin-top:1.2rem; font-weight:800; color:var(--indigo-oscuro); min-height:1.4em}
+
+/* ========== RETO 2: FUENTES FIABLES ========== */
+.fuentes-wrap{display:grid; gap:.9rem; grid-template-columns:repeat(auto-fit,minmax(280px,1fr));}
+.fuente-card{
+  background:#fff; border:2px solid #e2e8f0; border-radius:16px; padding:1rem 1.1rem;
+  display:flex; flex-direction:column; gap:.7rem; transition:.3s;
+}
+.fuente-card .f-url{
+  font-family:'Courier New',monospace; font-size:.76rem; color:var(--cian-oscuro);
+  background:var(--cian-claro); padding:.35rem .6rem; border-radius:6px; word-break:break-all;
+}
+.fuente-card .f-titulo{font-size:.92rem; font-weight:900; color:var(--indigo-oscuro)}
+.fuente-card .f-desc{font-size:.82rem; color:var(--gris); line-height:1.4; margin:0}
+.fuente-btns{display:flex; gap:.4rem;}
+.fuente-btns button{
+  flex:1; font-family:inherit; font-size:.78rem; font-weight:800; cursor:pointer;
+  padding:.5rem .4rem; border-radius:10px; border:2px solid #e2e8f0; background:#f8fafc; color:var(--gris-oscuro);
+  transition:.2s;
+}
+.fuente-btns button:hover:not(:disabled){border-color:var(--indigo); background:var(--indigo-claro); color:var(--indigo-oscuro)}
+.fuente-btns button:disabled{cursor:default; opacity:.55}
+.fuente-btns button.correct{background:#dcfce7; border-color:#16a34a; color:#15803d; opacity:1}
+.fuente-btns button.wrong{background:#fee2e2; border-color:#dc2626; color:#b91c1c; opacity:1}
+.fuente-fb{
+  font-size:.8rem; border-radius:10px; padding:0; max-height:0; overflow:hidden; transition:.35s; color:var(--gris-oscuro);
+}
+.fuente-fb.show{max-height:220px; padding:.55rem .7rem; background:#f8fafc; border-left:3px solid var(--indigo)}
+.fuente-card.done{border-color:var(--indigo); background:#f8fafc}
+
+/* ========== RETO 3: SIMULADOR REUNIÓN ========== */
+.reunion-card{
+  background:linear-gradient(150deg,#fff,#f8fafc); border-radius:18px; padding:1.3rem;
+  margin-bottom:1.2rem; border:1px solid #e2e8f0; box-shadow:var(--sombra);
+}
+.reunion-card .rn-msg{
+  background:linear-gradient(150deg,#e0e7ff,#fff); border-left:5px solid var(--indigo);
+  border-radius:0 12px 12px 0; padding:.9rem 1.1rem; margin-bottom:1rem;
+  font-size:.93rem; color:var(--indigo-oscuro); font-style:italic;
+}
+.reunion-card .rn-msg::before{
+  content:'💬 Compañero/a:';
+  display:block; font-style:normal; font-weight:900; font-size:.76rem;
+  letter-spacing:.9px; text-transform:uppercase; color:var(--indigo); margin-bottom:.3rem;
+}
+.reunion-opciones{display:grid; gap:.55rem;}
+.reunion-op{
+  background:#fff; border:2px solid #e2e8f0; border-radius:12px; padding:.75rem .95rem;
+  font-size:.88rem; font-weight:600; cursor:pointer; transition:.2s; color:var(--gris-oscuro);
+  text-align:left; font-family:inherit;
+  display:flex; gap:.6rem; align-items:flex-start;
+}
+.reunion-op:hover:not(:disabled){border-color:var(--indigo); background:var(--indigo-claro); color:var(--indigo-oscuro); transform:translateX(4px)}
+.reunion-op:disabled{cursor:default}
+.reunion-op.correct{background:#dcfce7; border-color:#16a34a; color:#14532d}
+.reunion-op.wrong{background:#fee2e2; border-color:#dc2626; color:#7f1d1d}
+.reunion-op .ro-num{
+  flex:0 0 24px; height:24px; border-radius:7px; background:#e2e8f0; color:var(--gris-oscuro);
+  display:grid; place-items:center; font-size:.75rem; font-weight:900;
+}
+.reunion-op.correct .ro-num{background:#16a34a; color:#fff}
+.reunion-op.wrong .ro-num{background:#dc2626; color:#fff}
+.reunion-fb{
+  margin-top:.7rem; font-size:.85rem; background:#f8fafc; border-left:4px solid var(--indigo);
+  padding:.6rem .85rem; border-radius:0 10px 10px 0; display:none; color:var(--gris-oscuro);
+}
+.reunion-fb.show{display:block}
+
+/* ========== RETO 4: ORDENADOR DE FASES ========== */
+.fases-progreso{
+  display:flex; gap:.4rem; justify-content:center; flex-wrap:wrap; margin-bottom:1.2rem;
+}
+.fase-slot{
+  flex:1; min-width:80px; max-width:120px; text-align:center;
+  background:#f8fafc; border:2px dashed #cbd5e1; border-radius:12px; padding:.6rem .4rem;
+  font-size:.72rem; font-weight:800; color:var(--gris); letter-spacing:.5px; text-transform:uppercase;
+  transition:.3s; min-height:70px; display:flex; flex-direction:column; justify-content:center; gap:.2rem;
+}
+.fase-slot.activo{border-color:var(--indigo); background:var(--indigo-claro); color:var(--indigo-oscuro); border-style:solid}
+.fase-slot.lleno{border-style:solid; border-color:var(--lima); background:var(--lima-claro); color:var(--lima-oscuro)}
+.fase-slot .fs-num{font-size:1rem; font-weight:900}
+.fase-slot .fs-txt{font-size:.72rem; font-weight:800}
+.fases-disponibles{
+  display:grid; gap:.6rem; grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  margin-bottom:1rem;
+}
+.fase-card{
+  background:#fff; border:2px solid #e2e8f0; border-radius:14px; padding:.85rem 1rem;
+  cursor:pointer; transition:.2s; font-size:.86rem; color:var(--gris-oscuro);
+  display:flex; gap:.6rem; align-items:flex-start;
+}
+.fase-card:hover:not(.usada){border-color:var(--indigo); background:var(--indigo-claro); color:var(--indigo-oscuro); transform:translateY(-2px)}
+.fase-card.usada{opacity:.35; cursor:default; border-style:dashed}
+.fase-card .fc-ico{font-size:1.3rem; flex-shrink:0}
+.fase-card .fc-info{flex:1}
+.fase-card .fc-nombre{font-weight:900; font-size:.9rem; margin-bottom:.15rem; color:var(--indigo-oscuro)}
+.fase-card .fc-desc{font-size:.78rem; color:var(--gris); line-height:1.35}
+#fasesMsg{text-align:center; margin-top:1rem; font-weight:800; color:var(--indigo-oscuro); min-height:1.4em}
+
+/* ========== RETO 5: HERRAMIENTAS ========== */
+.herr-wrap{display:grid; gap:1rem; grid-template-columns:1fr 1fr;}
+@media(max-width:720px){.herr-wrap{grid-template-columns:1fr}}
+.herr-col h4{
+  font-size:.8rem; text-transform:uppercase; letter-spacing:.9px; color:var(--indigo-oscuro);
+  margin-bottom:.6rem; padding-left:.4rem;
+}
+.herr-item{
+  background:#fff; border:2px solid #e2e8f0; border-radius:14px; padding:.8rem 1rem;
+  margin-bottom:.55rem; cursor:pointer; transition:.25s; font-size:.88rem; font-weight:600;
+  color:var(--gris-oscuro);
+}
+.herr-item:hover:not(.matched){border-color:var(--indigo); background:var(--indigo-claro); color:var(--indigo-oscuro); transform:translateX(4px)}
+.herr-item.sel{background:var(--indigo); color:#fff; border-color:var(--indigo-oscuro)}
+.herr-item.matched{background:var(--lima-claro); border-color:var(--lima); color:var(--lima-oscuro); cursor:default; opacity:.85}
+.herr-item.matched::before{content:"✓"; font-weight:900; color:var(--lima); font-size:1rem; margin-right:.4rem}
+.herr-item.error{animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+#herrMsg{text-align:center; margin-top:1.2rem; font-weight:800; color:var(--indigo-oscuro); min-height:1.4em}
+
+/* QUIZ */
+.q{background:#fff; border-radius:16px; padding:1.3rem 1.4rem; box-shadow:var(--sombra);
+  border:1px solid #e2e8f0; margin-bottom:1rem;}
+.q-num{display:inline-block; font-size:.72rem; font-weight:900; letter-spacing:1px; color:#fff;
+  background:var(--indigo-oscuro); padding:.2rem .6rem; border-radius:8px; margin-bottom:.6rem;}
+.q h4{font-size:1rem; margin-bottom:.9rem}
+.opts{display:grid; gap:.5rem}
+.opt{text-align:left; font-family:inherit; font-size:.9rem; font-weight:600; cursor:pointer;
+  padding:.7rem .9rem; border-radius:12px; border:2px solid #e2e8f0; background:#f8fafc; color:var(--gris-oscuro);
+  transition:.2s; display:flex; gap:.6rem; align-items:flex-start;}
+.opt:hover:not(:disabled){border-color:var(--indigo); background:var(--indigo-claro); color:var(--indigo-oscuro); transform:translateX(4px)}
+.opt:disabled{cursor:default}
+.opt .letter{flex:0 0 24px; height:24px; border-radius:7px; background:#e2e8f0; color:var(--gris-oscuro);
+  display:grid; place-items:center; font-size:.75rem; font-weight:900;}
+.opt.correct{background:#dcfce7; border-color:#16a34a; color:#14532d}
+.opt.correct .letter{background:#16a34a; color:#fff}
+.opt.wrong{background:#fee2e2; border-color:#dc2626; color:#7f1d1d}
+.opt.wrong .letter{background:#dc2626; color:#fff}
+.expl{margin-top:.85rem; font-size:.86rem; background:#eef2ff; border-left:4px solid var(--indigo);
+  padding:.7rem .9rem; border-radius:0 10px 10px 0; color:var(--gris-oscuro); display:none;}
+.expl.show{display:block}
+
+/* VOCABULARIO */
+.voc-grid{display:grid; gap:.6rem; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); margin-bottom:1rem}
+.voc-term{text-align:left; font-family:inherit; font-size:.88rem; font-weight:800; cursor:pointer;
+  padding:.85rem 1rem; border-radius:14px; border:2px solid #e2e8f0; background:#fff;
+  color:var(--gris-oscuro); transition:.25s; display:flex; align-items:center; gap:.5rem;}
+.voc-term:hover{border-color:var(--indigo); background:var(--indigo-claro); color:var(--indigo-oscuro); transform:translateY(-3px)}
+.voc-term.active{background:var(--indigo-oscuro); color:#fff; border-color:var(--indigo-oscuro)}
+#vocDef{max-height:0; overflow:hidden; transition:max-height .5s cubic-bezier(.2,.8,.2,1), padding .3s;
+  background:linear-gradient(150deg,#312e81,#1e1b4b); color:#fff; border-radius:16px; padding:0 1.4rem;}
+#vocDef.show{max-height:440px; padding:1.3rem 1.4rem}
+#vocDef h4{color:#a5b4fc; font-size:1.05rem; margin-bottom:.5rem}
+#vocDef p{color:#c7d2fe; font-size:.92rem; margin:0}
+
+/* CERTIFICADO */
+#certificado{background:linear-gradient(150deg,#312e81,#1e1b4b); color:#fff; border-radius:26px;
+  padding:2.4rem 1.8rem; box-shadow:var(--sombra-lg); text-align:center; position:relative; overflow:hidden;}
+#certificado::before{content:""; position:absolute; inset:14px; border:2px solid rgba(165,180,252,.35);
+  border-radius:18px; pointer-events:none;}
+#certificado h2{color:#a5b4fc; font-size:1.5rem; margin-bottom:.3rem}
+#certificado p.sub{color:#c7d2fe; font-size:.95rem; max-width:560px; margin:0 auto 1.4rem}
+.cert-name{font-size:clamp(1.6rem,5vw,2.4rem); font-weight:900; letter-spacing:-.5px; margin:.6rem 0 1rem;
+  background:linear-gradient(90deg,#a5b4fc,#67e8f9,#bef264); -webkit-background-clip:text; background-clip:text; color:transparent;}
+.cert-stats{display:grid; gap:.7rem; grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  max-width:820px; margin:0 auto 1.6rem;}
+.cert-stat{background:rgba(255,255,255,.09); border:1px solid rgba(165,180,252,.3);
+  border-radius:14px; padding:.8rem .6rem; text-align:center;}
+.cert-stat .num{font-size:1.35rem; font-weight:900; color:#bef264; line-height:1}
+.cert-stat .lbl{font-size:.7rem; color:#c7d2fe; text-transform:uppercase; letter-spacing:.9px; font-weight:800; margin-top:.3rem}
+.cert-warn{background:rgba(190,242,100,.14); border:1px solid rgba(190,242,100,.4);
+  color:#ecfccb; font-size:.86rem; padding:.7rem 1rem; border-radius:12px;
+  max-width:600px; margin:0 auto 1.2rem;}
+.cert-note{font-size:.78rem; color:#94a3b8; margin-top:1rem; max-width:560px; margin-left:auto; margin-right:auto;}
+
+/* Toast */
+#toast{position:fixed; bottom:1.4rem; left:50%; transform:translate(-50%,140%); z-index:1200;
+  background:var(--negro); color:#fff; font-weight:700; font-size:.88rem; padding:.85rem 1.4rem;
+  border-radius:999px; box-shadow:var(--sombra-lg); transition:transform .45s cubic-bezier(.2,.8,.2,1);
+  display:flex; align-items:center; gap:.55rem; max-width:92vw; text-align:center;}
+#toast.show{transform:translate(-50%,0)}
+
+footer{background:var(--negro); color:#94a3b8; text-align:center; padding:2.6rem 1.2rem; font-size:.85rem;}
+footer strong{color:#a5b4fc}
+
+@media(max-width:640px){
+  .card{padding:1.2rem}
+  .nav-brand span.txt{display:none}
+  .fase-slot{min-width:60px; font-size:.65rem}
+}
+</style>
+</head>
+<body class="locked">
+
+<div id="loginOverlay">
+  <div class="login-card" id="loginCard"></div>
+</div>
+
+<div id="progresoGlobal"><div id="progresoBarra"></div></div>
+
+<nav>
+  <div class="nav-inner">
+    <div class="nav-brand"><span class="dot"></span><span class="txt">Equipos que crean</span></div>
+    <div class="nav-user">👤 <span id="navUserName">—</span></div>
+    <div class="nav-links">
+      <a href="#intro">Inicio</a>
+      <a href="#equipo">Equipo</a>
+      <a href="#iterativo">Iteración</a>
+      <a href="#fuentes">Fuentes</a>
+      <a href="#herramientas">Herramientas</a>
+      <a href="#quiz">Quiz</a>
+      <a href="#certificado">Certificado</a>
+    </div>
+    <div id="progresoPill">0 / 6 retos</div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+  <div class="hero-inner">
+    <div class="badge-top">🤝 Colaboración digital</div>
+    <h1>Equipos que <span>crean</span>, procesos que <span>mejoran</span></h1>
+    <p class="hero-sub">
+      Hola, <strong id="heroNombre">amigo/a</strong>. Aprende a trabajar en equipo con
+      <strong>herramientas digitales</strong>, aplicar un <strong>proceso iterativo</strong> de validación,
+      seleccionar <strong>fuentes fiables</strong> y difundir soluciones con rigor. Todo con actividades
+      interactivas y tu certificado final.
+    </p>
+    <div class="hero-chips">
+      <span class="chip">👥 Trabajo colaborativo</span>
+      <span class="chip">🔄 Proceso iterativo</span>
+      <span class="chip">🔍 Fuentes fiables</span>
+      <span class="chip">🛠️ Herramientas digitales</span>
+    </div>
+    <div class="hero-cta">
+      <a href="#intro" class="btn btn-primary">🚀 Empezar</a>
+      <a href="#certificado" class="btn btn-ghost">🏆 Mi certificado</a>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============ INTRO ============ -->
+  <section id="intro">
+    <div class="sec-head reveal">
+      <span class="kicker">Punto de partida</span>
+      <h2>Un buen proyecto se construye en equipo</h2>
+      <p class="lead">
+        Ningún proyecto tecnológico complejo se hace en solitario. Detrás de cada solución hay un
+        <strong>equipo</strong> que reparte roles, usa <strong>herramientas digitales</strong> para
+        coordinarse, contrasta <strong>fuentes fiables</strong>, y trabaja con un
+        <strong>proceso iterativo</strong> en el que cada versión mejora la anterior hasta llegar a
+        una solución que merece la pena difundir.
+      </p>
+    </div>
+
+    <div class="teoria reveal">
+      <h3><span class="th-ico">📘</span> ¿Qué es la gestión colaborativa de proyectos?</h3>
+      <p>
+        La <strong>gestión colaborativa de proyectos</strong> es el conjunto de estrategias,
+        herramientas y actitudes que permiten a un equipo trabajar de forma coordinada para alcanzar
+        un objetivo común. A diferencia del trabajo individual, exige <strong>comunicación
+        continua</strong>, <strong>reparto de responsabilidades</strong> y <strong>mecanismos de
+        validación</strong> compartidos.
+      </p>
+
+      <h4>¿Por qué trabajar en equipo? Ventajas y dificultades</h4>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>✅ Ventajas del trabajo en equipo</h5>
+          <p>Más ideas, más puntos de vista, reparto de carga, aprendizaje entre iguales, mayor calidad y velocidad de resolución.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>⚠️ Dificultades frecuentes</h5>
+          <p>Coordinación complicada, conflictos entre personas, pérdida de información, retrasos por dependencias, "polizones" que no aportan.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🎯 La clave está en la gestión</h5>
+          <p>No basta con "juntarse". Hay que organizarse: roles claros, canales definidos, plazos acordados y procesos de validación.</p>
+        </div>
+      </div>
+
+      <h4>Las 5 etapas del desarrollo de un equipo (modelo de Tuckman)</h4>
+      <p>
+        El psicólogo Bruce Tuckman describió en 1965 las fases por las que pasa cualquier equipo
+        desde su formación hasta su disolución. Conocerlas ayuda a entender por qué al principio
+        cuesta más trabajar juntos:
+      </p>
+      <div class="fases">
+        <div class="fase">
+          <span class="fase-num">1</span>
+          <h6>Forming</h6>
+          <p>Se conocen, hay cortesía y cautela. Todo parece bien.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">2</span>
+          <h6>Storming</h6>
+          <p>Aparecen los conflictos: choques de ideas, egos, primeras tensiones.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">3</span>
+          <h6>Norming</h6>
+          <p>Se acuerdan normas, roles y formas de trabajo. Baja la tensión.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">4</span>
+          <h6>Performing</h6>
+          <p>El equipo funciona con autonomía, se apoya y produce buenos resultados.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">5</span>
+          <h6>Adjourning</h6>
+          <p>Fin del proyecto: se cierra, se evalúa y se celebra lo conseguido.</p>
+        </div>
+      </div>
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> los conflictos de la fase <em>storming</em> son normales
+        y hasta necesarios. Un equipo que nunca discute suele ser un equipo que no aporta lo mejor
+        de cada persona. La clave es <strong>gestionar los conflictos</strong> con comunicación y
+        respeto, no evitarlos.
+      </div>
+
+      <h4>La perspectiva interdisciplinar</h4>
+      <p>
+        En un proyecto tecnológico moderno, ningún perfil sabe todo. Un equipo eficaz combina
+        <strong>habilidades complementarias</strong>: diseño, programación, organización,
+        investigación, comunicación. Esto es lo que se llama <strong>perspectiva
+        interdisciplinar</strong>: integrar aportaciones de distintas áreas para resolver un
+        problema complejo.
+      </p>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Área</th>
+          <th>Aporta al proyecto</th>
+          <th>Perfil típico</th>
+        </tr>
+        <tr>
+          <td><strong>Diseño</strong></td>
+          <td>Aspecto visual, usabilidad, accesibilidad.</td>
+          <td>Persona creativa con sentido estético.</td>
+        </tr>
+        <tr>
+          <td><strong>Programación</strong></td>
+          <td>Funcionalidad técnica del producto.</td>
+          <td>Perfil lógico y metódico.</td>
+        </tr>
+        <tr>
+          <td><strong>Organización</strong></td>
+          <td>Planificación, plazos, seguimiento.</td>
+          <td>Persona ordenada y responsable.</td>
+        </tr>
+        <tr>
+          <td><strong>Investigación</strong></td>
+          <td>Búsqueda de información, verificación de fuentes.</td>
+          <td>Perfil curioso y crítico.</td>
+        </tr>
+        <tr>
+          <td><strong>Comunicación</strong></td>
+          <td>Difusión, presentaciones, memoria del proyecto.</td>
+          <td>Persona expresiva y con buena comunicación.</td>
+        </tr>
+      </table>
+
+      <h4>Un proyecto es un proceso, no un chispazo</h4>
+      <p>
+        En tecnología no vale "tener una idea y ya está". Un proyecto recorre varias
+        <strong>fases secuenciales e iterativas</strong>: desde la ideación inicial hasta la
+        difusión de la solución final. Entender ese proceso es lo que diferencia a un equipo
+        que improvisa de un equipo que produce.
+      </p>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> trabajar en equipo no es "repartirse y ya está". Requiere
+        <strong>roles claros</strong>, <strong>canales de comunicación</strong>,
+        <strong>reuniones periódicas</strong>, <strong>acuerdos por escrito</strong> y
+        <strong>mecanismos de validación</strong>. En esta aplicación vas a entrenar cada una de
+        esas piezas clave de la colaboración.
+      </div>
+    </div>
+
+    <div class="grid g4">
+      <div class="pilar reveal" style="border-top-color:var(--indigo)">
+        <span class="ico">👥</span>
+        <h4>Roles y equipo</h4>
+        <p>Cada persona aporta sus fortalezas: coordinación, diseño, programación, investigación o comunicación.</p>
+      </div>
+      <div class="pilar reveal" style="border-top-color:var(--cian)">
+        <span class="ico">🛠️</span>
+        <h4>Herramientas digitales</h4>
+        <p>Plataformas que permiten coordinar tareas, compartir archivos y comunicarse a distancia.</p>
+      </div>
+      <div class="pilar reveal" style="border-top-color:var(--lima)">
+        <span class="ico">🔄</span>
+        <h4>Iteración y validación</h4>
+        <p>Ninguna solución es perfecta al primer intento. Se prueba, se aprende y se mejora.</p>
+      </div>
+      <div class="pilar reveal" style="border-top-color:var(--rosa)">
+        <span class="ico">🔍</span>
+        <h4>Fuentes fiables</h4>
+        <p>Contrastar la información antes de usarla es la base de un trabajo riguroso y defendible.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== RETO 1: ASIGNADOR DE ROLES ========== -->
+  <section id="equipo">
+    <div class="sec-head reveal">
+      <span class="kicker lima">Etapa 1</span>
+      <h2>👥 Equipo y roles: cada cual aporta lo suyo</h2>
+      <p class="lead">
+        La <strong>perspectiva interdisciplinar</strong> es clave en cualquier proyecto tecnológico:
+        combinar distintas habilidades (diseño, técnica, organización, comunicación, investigación)
+        multiplica la calidad del resultado.
+      </p>
+    </div>
+
+    <div class="teoria lima reveal">
+      <h3><span class="th-ico">🧑‍🤝‍🧑</span> Roles, equipo y trabajo colaborativo</h3>
+      <p>
+        Un <strong>rol</strong> es el conjunto de responsabilidades, tareas y expectativas que
+        asume una persona dentro de un equipo. Cuando los roles están claros, cada persona sabe
+        qué se espera de ella y qué puede esperar de las demás. Cuando no lo están, aparecen los
+        problemas: tareas duplicadas, tareas olvidadas, conflictos y pérdida de tiempo.
+      </p>
+
+      <h4>Los 9 roles de equipo según Belbin</h4>
+      <p>
+        El investigador Raymond Meredith Belbin estudió durante años qué hacía que unos equipos
+        funcionaran mejor que otros. Descubrió que los equipos más eficaces combinan
+        <strong>9 roles complementarios</strong>, agrupados en tres categorías:
+      </p>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Categoría</th>
+          <th>Rol</th>
+          <th>Contribución</th>
+        </tr>
+        <tr>
+          <td rowspan="3"><strong>Roles de acción</strong></td>
+          <td>Impulsor</td>
+          <td>Empuja al equipo a avanzar, no deja que se estanque.</td>
+        </tr>
+        <tr>
+          <td>Implementador</td>
+          <td>Convierte las ideas en acciones concretas.</td>
+        </tr>
+        <tr>
+          <td>Finalizador</td>
+          <td>Revisa los detalles, pule y entrega a tiempo.</td>
+        </tr>
+        <tr>
+          <td rowspan="3"><strong>Roles sociales</strong></td>
+          <td>Coordinador</td>
+          <td>Organiza, delega y facilita la comunicación.</td>
+        </tr>
+        <tr>
+          <td>Investigador de recursos</td>
+          <td>Busca información, contactos y oportunidades externas.</td>
+        </tr>
+        <tr>
+          <td>Cohesionador</td>
+          <td>Mantiene la armonía y resuelve tensiones.</td>
+        </tr>
+        <tr>
+          <td rowspan="3"><strong>Roles mentales</strong></td>
+          <td>Cerebro</td>
+          <td>Aporta ideas creativas y soluciones originales.</td>
+        </tr>
+        <tr>
+          <td>Evaluador</td>
+          <td>Analiza críticamente las propuestas y detecta fallos.</td>
+        </tr>
+        <tr>
+          <td>Especialista</td>
+          <td>Aporta conocimiento técnico profundo en un área.</td>
+        </tr>
+      </table>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> no se trata de que cada persona encaje perfectamente en
+        un rol, sino de que el <strong>equipo cubra todos los roles importantes</strong>. Si falta
+        el evaluador, nadie detecta los errores. Si falta el finalizador, se entrega tarde y mal.
+        Si falta el cohesionador, los conflictos se enquistan.
+      </div>
+
+      <h4>Habilidades clave en un equipo tecnológico</h4>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>🎨 Habilidades creativas</h5>
+          <p>Generar ideas, imaginar soluciones, diseñar, aportar puntos de vista originales.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🧠 Habilidades técnicas</h5>
+          <p>Programar, manejar herramientas, aplicar conocimientos específicos (electrónica, mecánica, diseño 3D…).</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>📋 Habilidades organizativas</h5>
+          <p>Planificar, gestionar tiempos, seguir tareas, coordinar al equipo.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>💬 Habilidades comunicativas</h5>
+          <p>Expresar ideas con claridad, escuchar, dar feedback, presentar resultados.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🤝 Habilidades sociales</h5>
+          <p>Empatía, respeto, resolución de conflictos, apoyo mutuo.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🎯 Habilidades de autogestión</h5>
+          <p>Responsabilidad, autodisciplina, capacidad de aprender de los errores.</p>
+        </div>
+      </div>
+
+      <h4>Buenas prácticas para repartir roles</h4>
+      <ol>
+        <li><strong>Conocer las fortalezas</strong> de cada persona antes de asignar tareas.</li>
+        <li><strong>Repartir responsabilidades</strong> de forma equilibrada (que nadie cargue con todo).</li>
+        <li><strong>Nombrar responsable</strong> de cada tarea, aunque se trabaje en grupo.</li>
+        <li><strong>Rotar roles</strong> en proyectos largos para que todas las personas desarrollen habilidades nuevas.</li>
+        <li><strong>Acordar por escrito</strong> quién hace qué, con plazos concretos.</li>
+        <li><strong>Revisar periódicamente</strong> si el reparto sigue funcionando o hay que ajustarlo.</li>
+      </ol>
+
+      <h4>¿Qué hace que un equipo fracase?</h4>
+      <ul>
+        <li><strong>Roles difusos:</strong> nadie sabe quién hace qué.</li>
+        <li><strong>Falta de liderazgo:</strong> nadie toma decisiones ni coordina.</li>
+        <li><strong>Polizones:</strong> personas que se aprovechan del trabajo de otras.</li>
+        <li><strong>Conflictos sin gestionar:</strong> tensiones que nadie resuelve y que se enquistan.</li>
+        <li><strong>Comunicación pobre:</strong> información que no llega o llega tarde.</li>
+        <li><strong>Falta de compromiso:</strong> incumplimiento de plazos y responsabilidades.</li>
+      </ul>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> un equipo no es un grupo de personas que trabajan juntas
+        <em>en el mismo sitio</em>. Es un grupo que trabaja <em>por el mismo objetivo</em>, con
+        roles claros, comunicación abierta y responsabilidad compartida.
+      </div>
+    </div>
+
+    <div class="actividad reveal" style="border-top:6px solid var(--indigo)">
+      <span class="kicker">🎮 Reto 1 · Asignador de roles</span>
+      <h3>Reparte los roles según las fortalezas del equipo</h3>
+      <p class="intro">
+        Pulsa sobre una persona (columna izquierda) y luego sobre el rol (columna derecha) que mejor
+        encaje con sus habilidades. Recibirás feedback inmediato. Hay 5 asignaciones.
+      </p>
+
+      <div class="proyecto-card">
+        <h4>📋 Proyecto en equipo</h4>
+        <p>Diseñar una <strong>app móvil</strong> para compartir apuntes y materiales entre el alumnado del centro, usando software libre y con una presentación final al claustro.</p>
+      </div>
+
+      <div class="roles-wrap">
+        <div class="roles-col">
+          <h4>🧑‍🎓 Miembros del equipo</h4>
+          <div id="personasWrap"></div>
+        </div>
+        <div class="roles-col">
+          <h4>🎯 Roles del proyecto</h4>
+          <div id="rolesWrap"></div>
+        </div>
+      </div>
+
+      <div id="rolesMsg"></div>
+    </div>
+  </section>
+
+  <!-- ========== RETO 2: ORDENADOR DE FASES ========== -->
+  <section id="iterativo">
+    <div class="sec-head reveal">
+      <span class="kicker cian">Etapa 2</span>
+      <h2>🔄 Proceso iterativo: validar, aprender, mejorar</h2>
+      <p class="lead">
+        Un proyecto no se hace de un tirón. Se avanza por <strong>fases</strong> que se repiten en
+        ciclos: idear → investigar → diseñar → validar → reformular → difundir. Cada vuelta se
+        aprende algo nuevo y la solución mejora.
+      </p>
+    </div>
+
+    <div class="teoria cian reveal">
+      <h3><span class="th-ico">🔄</span> El proceso iterativo de validación</h3>
+      <p>
+        Un <strong>proceso iterativo</strong> es una forma de trabajar en la que no se avanza en
+        línea recta desde el principio hasta el final, sino que se repiten ciclos de
+        <strong>diseño, prueba y mejora</strong>. Cada vuelta del ciclo produce una versión mejor
+        que la anterior. Es el método natural de la ingeniería, el diseño y el emprendimiento.
+      </p>
+
+      <h4>¿Por qué trabajar de forma iterativa?</h4>
+      <ul>
+        <li><strong>Reduce el riesgo:</strong> en vez de apostar todo a una versión final, se prueba rápido y barato.</li>
+        <li><strong>Permite aprender:</strong> cada prueba aporta información real sobre qué funciona y qué no.</li>
+        <li><strong>Mejora la calidad:</strong> la solución se ajusta a lo que realmente necesitan las personas.</li>
+        <li><strong>Evita perder tiempo:</strong> mejor detectar un error en la fase 2 que descubrirlo al final.</li>
+        <li><strong>Facilita la adaptación:</strong> los cambios del entorno no obligan a empezar de cero.</li>
+      </ul>
+
+      <h4>Las 6 fases del proceso iterativo</h4>
+      <div class="fases">
+        <div class="fase">
+          <span class="fase-num">FASE 1</span>
+          <h6>💡 Ideación</h6>
+          <p>Generar ideas y definir el reto a resolver.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">FASE 2</span>
+          <h6>🔍 Investigación</h6>
+          <p>Buscar información en fuentes fiables y estudiar soluciones existentes.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">FASE 3</span>
+          <h6>✏️ Diseño</h6>
+          <p>Definir la solución: bocetos, planos, esquemas, prototipos.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">FASE 4</span>
+          <h6>🧪 Validación</h6>
+          <p>Probar con usuarios reales y recoger datos de uso.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">FASE 5</span>
+          <h6>🔄 Reformulación</h6>
+          <p>Analizar los resultados y mejorar la solución.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">FASE 6</span>
+          <h6>📣 Difusión</h6>
+          <p>Presentar el proyecto, publicar en abierto y compartir aprendizajes.</p>
+        </div>
+      </div>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> el proceso iterativo <em>no es lineal</em>. Después de
+        validar se puede volver a diseñar, después de reformular se puede volver a idear. Cada
+        ciclo mejora la solución. La difusión no es un final: es una nueva iteración donde el
+        feedback de la audiencia abre nuevas mejoras.
+      </div>
+
+      <h4>El ciclo PDCA (Plan-Do-Check-Act)</h4>
+      <p>
+        El proceso iterativo tiene una versión muy conocida en el mundo de la calidad y la mejora
+        continua: el <strong>ciclo PDCA</strong>, popularizado por W. Edwards Deming:
+      </p>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>P · Plan (Planificar)</h5>
+          <p>Definir el objetivo y el plan de acción. ¿Qué vamos a hacer y cómo?</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>D · Do (Hacer)</h5>
+          <p>Ejecutar el plan en pequeño, probar la solución en condiciones reales.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>C · Check (Verificar)</h5>
+          <p>Comprobar los resultados. ¿Funciona? ¿Qué aprendimos? ¿Qué falló?</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>A · Act (Actuar)</h5>
+          <p>Estandarizar lo que funciona o reformular y volver a empezar el ciclo.</p>
+        </div>
+      </div>
+
+      <h4>La validación con usuarios</h4>
+      <p>
+        La <strong>validación</strong> es la fase crítica del proceso iterativo: comprobar que
+        la solución funciona realmente en el contexto para el que fue diseñada. Se hace con
+        <strong>usuarios reales</strong>, no con suposiciones. Técnicas habituales:
+      </p>
+      <ul>
+        <li><strong>Test de usuario:</strong> observar a personas reales usando el producto.</li>
+        <li><strong>Entrevistas de feedback:</strong> preguntar qué les ha parecido, qué cambiarían.</li>
+        <li><strong>Métricas:</strong> cuantificar el uso (tiempo, errores, satisfacción, etc.).</li>
+        <li><strong>Encuestas:</strong> recoger datos de muchas personas de forma estructurada.</li>
+        <li><strong>Pruebas A/B:</strong> comparar dos versiones distintas para ver cuál funciona mejor.</li>
+      </ul>
+
+      <h4>Metodologías ágiles</h4>
+      <p>
+        Las <strong>metodologías ágiles</strong> (Scrum, Kanban, XP…) son marcos de trabajo que
+        aplican la iteración de forma sistemática. Se basan en:
+      </p>
+      <ul>
+        <li><strong>Sprints cortos:</strong> periodos de 1-4 semanas con objetivos concretos.</li>
+        <li><strong>Reuniones diarias breves:</strong> para sincronizar el equipo.</li>
+        <li><strong>Entregas frecuentes:</strong> al final de cada sprint, algo funcional.</li>
+        <li><strong>Retrospectivas:</strong> al final de cada sprint, revisar qué mejorar.</li>
+        <li><strong>Tablero visual:</strong> con tareas pendientes, en curso y hechas.</li>
+      </ul>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> el proceso iterativo es la forma más eficiente de
+        <strong>aprender haciendo</strong>. No hay que esperar a tener la solución perfecta para
+        probarla: hay que probar pronto y barato para descubrir qué hay que mejorar. Iterar es
+        aprender.
+      </div>
+    </div>
+
+    <div class="actividad reveal" style="border-top:6px solid var(--cian)">
+      <span class="kicker cian">🎮 Reto 2 · Ordena el proceso</span>
+      <h3>Coloca las fases del proceso iterativo en el orden correcto</h3>
+      <p class="intro">
+        Cada vez que pulses una fase, ocupará el siguiente hueco de la línea temporal. Si te
+        equivocas, la fase volverá a su sitio y te avisaremos. Hay 6 fases.
+      </p>
+
+      <div class="fases-progreso" id="fasesProgreso"></div>
+      <div class="fases-disponibles" id="fasesDisponibles"></div>
+      <div id="fasesMsg"></div>
+    </div>
+
+    <!-- RETO 3: SIMULADOR DE REUNIÓN -->
+    <div class="actividad reveal" style="border-top:6px solid var(--rosa)">
+      <span class="kicker rosa">🎮 Reto 3 · Simulador de reunión</span>
+      <h3>¿Cómo responderías en cada situación?</h3>
+      <p class="intro">
+        En cada escenario, tu equipo se enfrenta a una situación delicada. Elige la respuesta que
+        demuestre una actitud más <strong>colaborativa y profesional</strong>. Recibirás feedback
+        inmediato con la opción más adecuada.
+      </p>
+
+      <div id="reunionContainer"></div>
+    </div>
+  </section>
+
+  <!-- ========== RETO 4: FUENTES ========== -->
+  <section id="fuentes">
+    <div class="sec-head reveal">
+      <span class="kicker ambar">Etapa 3</span>
+      <h2>🔍 Fuentes fiables: la base del rigor</h2>
+      <p class="lead">
+        Toda decisión técnica debe apoyarse en información <strong>verificada y contrastada</strong>.
+        Aprender a distinguir una fuente fiable de otra que no lo es forma parte esencial del
+        trabajo tecnológico. También implica <strong>citar</strong> y <strong>respetar la propiedad
+        intelectual</strong>.
+      </p>
+    </div>
+
+    <div class="teoria ambar reveal">
+      <h3><span class="th-ico">📚</span> Selección y evaluación de fuentes de información</h3>
+      <p>
+        Una <strong>fuente fiable</strong> es aquella cuya información ha sido producida con rigor,
+        puede verificarse y su autoría es identificable. En un proyecto tecnológico es imprescindible
+        trabajar con fuentes fiables para tomar decisiones correctas y defenderlas con argumentos
+        sólidos.
+      </p>
+
+      <h4>Tipos de fuentes según su origen</h4>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>📗 Fuentes primarias</h5>
+          <p>Información original, sin intermediarios: documentos oficiales, datos de organismos públicos, artículos científicos originales, entrevistas directas.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>📘 Fuentes secundarias</h5>
+          <p>Analizan o interpretan fuentes primarias: libros de texto, artículos de divulgación, informes, enciclopedias, documentales.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>📙 Fuentes terciarias</h5>
+          <p>Recopilan y resumen fuentes primarias y secundarias: índices, bases de datos, resúmenes temáticos.</p>
+        </div>
+      </div>
+
+      <h4>Jerarquía de fuentes: de mayor a menor autoridad</h4>
+      <p>
+        No todas las fuentes tienen el mismo valor. Esta jerarquía te ayuda a saber a quién dar
+        más peso cuando hay conflicto:
+      </p>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Nivel</th>
+          <th>Tipo de fuente</th>
+          <th>Ejemplos</th>
+        </tr>
+        <tr>
+          <td><strong>1 · Máxima</strong></td>
+          <td>Organismos oficiales y documentos primarios</td>
+          <td>INE, IGN, OMS, ministerios, BOE, documentación técnica oficial.</td>
+        </tr>
+        <tr>
+          <td><strong>2 · Muy alta</strong></td>
+          <td>Revisiones científicas y consensos internacionales</td>
+          <td>Informes del IPCC, revisiones sistemáticas, libros de texto universitarios revisados.</td>
+        </tr>
+        <tr>
+          <td><strong>3 · Alta</strong></td>
+          <td>Artículos revisados por pares</td>
+          <td>Revistas académicas con proceso de revisión por expertos.</td>
+        </tr>
+        <tr>
+          <td><strong>4 · Media-alta</strong></td>
+          <td>Agencias de noticias internacionales</td>
+          <td>EFE, Reuters, AFP, Associated Press.</td>
+        </tr>
+        <tr>
+          <td><strong>5 · Media</strong></td>
+          <td>Medios de comunicación reconocidos</td>
+          <td>Periódicos con redacción profesional y política de corrección de errores.</td>
+        </tr>
+        <tr>
+          <td><strong>6 · Media-baja</strong></td>
+          <td>Enciclopedias colaborativas</td>
+          <td>Wikipedia (útil como punto de partida si está bien referenciada).</td>
+        </tr>
+        <tr>
+          <td><strong>7 · Baja</strong></td>
+          <td>Blogs personales, foros, redes sociales</td>
+          <td>Contenido sin verificación ni autoría clara.</td>
+        </tr>
+      </table>
+
+      <h4>El método CRAAP para evaluar fuentes</h4>
+      <p>
+        Para decidir si una fuente es fiable, aplica el método <strong>CRAAP</strong> (acrónimo
+        inglés con 5 criterios):
+      </p>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>C · Currency (Actualidad)</h5>
+          <p>¿Cuándo se publicó? ¿Sigue vigente? ¿Se ha actualizado recientemente?</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>R · Relevance (Relevancia)</h5>
+          <p>¿Responde a mi pregunta? ¿Es adecuada para mi nivel y mi objetivo?</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>A · Authority (Autoridad)</h5>
+          <p>¿Quién es el autor? ¿Es especialista? ¿Está afiliado a una institución reconocida?</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>A · Accuracy (Precisión)</h5>
+          <p>¿Cita fuentes verificables? ¿Los datos son coherentes con otras fuentes? ¿Tiene errores?</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>P · Purpose (Propósito)</h5>
+          <p>¿Informa, vende, persuade o entretiene? ¿Hay algún interés comercial o ideológico?</p>
+        </div>
+      </div>
+
+      <h4>Señales de alarma: fuentes poco fiables</h4>
+      <ul>
+        <li>Sin autoría clara ni fecha de publicación.</li>
+        <li>Titulares sensacionalistas o escritos en mayúsculas.</li>
+        <li>Errores frecuentes de ortografía o gramática.</li>
+        <li>Sin bibliografía, sin citas, sin enlaces verificables.</li>
+        <li>Presenta opiniones como si fueran hechos.</li>
+        <li>Pide compartir rápidamente ("¡URGENTE! Comparte antes de que lo borren").</li>
+        <li>Publicidad agresiva o venta de productos mezclada con información.</li>
+        <li>Ataca a "los científicos" o "los medios" sin aportar pruebas.</li>
+      </ul>
+
+      <h4>La importancia de citar las fuentes</h4>
+      <p>
+        Citar las fuentes no es un trámite: es una obligación ética y legal. Sirve para:
+      </p>
+      <ul>
+        <li><strong>Reconocer</strong> el trabajo de otras personas.</li>
+        <li><strong>Permitir la verificación</strong> de lo que afirmamos.</li>
+        <li><strong>Dar credibilidad</strong> a nuestro propio trabajo.</li>
+        <li><strong>Evitar el plagio</strong> y sus consecuencias.</li>
+        <li><strong>Facilitar</strong> que otras personas amplíen la información.</li>
+      </ul>
+      <div class="ejemplo">
+        <strong>Formatos habituales de cita:</strong><br>
+        <strong>APA:</strong> Apellido, A. (Año). <em>Título</em>. Editorial.<br>
+        <strong>IEEE:</strong> [1] A. Apellido, <em>Título</em>. Ciudad: Editorial, Año.<br>
+        <strong>URL:</strong> Autor/a. "Título". Web. Fecha de publicación. URL. [Fecha de consulta].
+      </div>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> cuando hay varias fuentes y no coinciden, no vale elegir
+        "la primera que aparezca en Google". Hay que <strong>aplicar criterios objetivos</strong>:
+        acudir a la fuente oficial competente, buscar el consenso científico, valorar la
+        autoridad y el propósito, y a veces aceptar que existe un debate legítimo.
+      </div>
+    </div>
+
+    <div class="actividad reveal" style="border-top:6px solid var(--ambar)">
+      <span class="kicker ambar">🎮 Reto 4 · Detector de fuentes</span>
+      <h3>¿Fiable o no fiable?</h3>
+      <p class="intro">
+        Analiza cada fuente y decide. Recibirás la explicación del porqué en cada caso.
+        Hay 10 fuentes.
+      </p>
+
+      <div class="fuentes-wrap" id="fuentesWrap"></div>
+      <div id="fuentesMsg" style="text-align:center; margin-top:1.2rem; font-weight:800; color:var(--ambar); min-height:1.4em"></div>
+    </div>
+  </section>
+
+  <!-- ========== RETO 5: HERRAMIENTAS ========== -->
+  <section id="herramientas">
+    <div class="sec-head reveal">
+      <span class="kicker">Etapa 4</span>
+      <h2>🛠️ Herramientas digitales: coordinarse a distancia</h2>
+      <p class="lead">
+        Las plataformas digitales permiten que un equipo coordine su trabajo sin necesidad de estar
+        siempre en el mismo lugar. Conocer para qué sirve cada herramienta es esencial para elegir
+        la más adecuada en cada momento.
+      </p>
+    </div>
+
+    <div class="teoria reveal">
+      <h3><span class="th-ico">🛠️</span> Herramientas digitales para el trabajo en equipo</h3>
+      <p>
+        Un equipo tecnológico moderno usa un <strong>conjunto de herramientas digitales</strong>
+        que le permiten coordinarse aunque sus miembros no estén en el mismo lugar o momento.
+        Conocer las categorías y saber cuándo usar cada una marca la diferencia entre un equipo
+        ágil y uno que se atasca.
+      </p>
+
+      <h4>Las 5 categorías de herramientas colaborativas</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Categoría</th>
+          <th>Para qué sirve</th>
+          <th>Ejemplos</th>
+        </tr>
+        <tr>
+          <td><strong>💬 Comunicación</strong></td>
+          <td>Mensajería, videollamadas, foros internos del equipo.</td>
+          <td>Slack, Teams, Discord, Zoom, Google Meet.</td>
+        </tr>
+        <tr>
+          <td><strong>📋 Gestión de tareas</strong></td>
+          <td>Organizar tareas, asignar responsables, ver el avance.</td>
+          <td>Trello, Asana, Notion, Todoist, Microsoft Planner.</td>
+        </tr>
+        <tr>
+          <td><strong>📁 Almacenamiento</strong></td>
+          <td>Guardar y compartir archivos en la nube.</td>
+          <td>Google Drive, Dropbox, OneDrive, iCloud.</td>
+        </tr>
+        <tr>
+          <td><strong>🐙 Control de versiones</strong></td>
+          <td>Coordinar cambios en código, mantener historial.</td>
+          <td>GitHub, GitLab, Bitbucket.</td>
+        </tr>
+        <tr>
+          <td><strong>🎨 Diseño colaborativo</strong></td>
+          <td>Crear y editar diseños en tiempo real.</td>
+          <td>Figma, Canva, Miro, Mural.</td>
+        </tr>
+      </table>
+
+      <h4>Herramientas estrella explicadas</h4>
+
+      <h5 style="font-size:.95rem; margin-top:1rem; color:#92400e">📋 Trello / Kanban: gestión visual de tareas</h5>
+      <p>
+        El método <strong>Kanban</strong> organiza las tareas en columnas según su estado. Es
+        visual, intuitivo y muy eficaz para ver de un vistazo qué falta, qué está en curso y qué
+        está hecho.
+      </p>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>📥 Pendiente</h5>
+          <p>Tareas por empezar.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🔧 En curso</h5>
+          <p>Tareas en las que se está trabajando.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🔍 En revisión</h5>
+          <p>Tareas terminadas pendientes de validar.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>✅ Hecho</h5>
+          <p>Tareas terminadas y validadas.</p>
+        </div>
+      </div>
+
+      <h5 style="font-size:.95rem; margin-top:1rem; color:#92400e">🐙 GitHub: control de versiones</h5>
+      <p>
+        <strong>Git</strong> es un sistema de control de versiones que registra todos los cambios
+        de un proyecto. <strong>GitHub</strong> es la plataforma más usada para alojarlo. Sus
+        conceptos clave:
+      </p>
+      <ul>
+        <li><strong>Repositorio:</strong> la "carpeta del proyecto" con historial completo.</li>
+        <li><strong>Commit:</strong> una captura del estado del proyecto en un momento dado.</li>
+        <li><strong>Branch (rama):</strong> una línea paralela de desarrollo para experimentar sin afectar al proyecto principal.</li>
+        <li><strong>Merge:</strong> fusionar una rama con el proyecto principal.</li>
+        <li><strong>Pull request:</strong> propuesta de cambios para que el equipo los revise.</li>
+        <li><strong>Issue:</strong> incidencia, tarea o propuesta de mejora.</li>
+      </ul>
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> el control de versiones resuelve el problema clásico
+        de <em>"documento_final_v3_definitivo_ahora_si.pdf"</em>. Todo el mundo trabaja sobre el
+        mismo repositorio y cada cambio queda registrado con su autor y fecha.
+      </div>
+
+      <h5 style="font-size:.95rem; margin-top:1rem; color:#92400e">🎨 Figma: diseño colaborativo en tiempo real</h5>
+      <p>
+        Figma permite que varias personas editen el mismo diseño a la vez, viendo los cambios al
+        instante. Es el estándar actual para diseñar interfaces y prototipos de apps.
+      </p>
+
+      <h5 style="font-size:.95rem; margin-top:1rem; color:#92400e">📁 Google Drive / OneDrive: la nube</h5>
+      <p>
+        Guardar los archivos en la nube tiene ventajas enormes frente a tenerlos solo en un
+        dispositivo:
+      </p>
+      <ul>
+        <li>Acceso desde cualquier dispositivo con conexión.</li>
+        <li>Varias personas pueden trabajar sobre el mismo documento a la vez.</li>
+        <li>Historial de cambios automático.</li>
+        <li>Si se rompe el dispositivo, los archivos siguen a salvo.</li>
+        <li>Se pueden compartir con permisos específicos (ver, comentar, editar).</li>
+      </ul>
+
+      <h4>¿Cómo elegir la herramienta adecuada?</h4>
+      <p>
+        No hay una herramienta universalmente mejor. La elección depende de:
+      </p>
+      <ol>
+        <li><strong>La tarea:</strong> ¿comunicar, organizar, almacenar, diseñar o programar?</li>
+        <li><strong>El equipo:</strong> ¿cuántas personas? ¿dónde están? ¿qué nivel técnico tienen?</li>
+        <li><strong>El tipo de proyecto:</strong> ¿es corto o largo? ¿iterativo o lineal? ¿con código o sin código?</li>
+        <li><strong>La integración:</strong> ¿se conecta bien con las otras herramientas que ya usáis?</li>
+        <li><strong>La curva de aprendizaje:</strong> ¿merece la pena el tiempo de aprenderla para este proyecto?</li>
+      </ol>
+
+      <h4>Buenas prácticas de coordinación digital</h4>
+      <ul>
+        <li><strong>Un canal por tema:</strong> no mezclar conversaciones en un único chat.</li>
+        <li><strong>Nombres de archivo con criterio:</strong> "informe_v2_2024-03-15.pdf" en lugar de "documento final bueno.pdf".</li>
+        <li><strong>Registrar los acuerdos por escrito:</strong> las decisiones importantes no pueden quedar en un chat.</li>
+        <li><strong>Reuniones breves y con orden del día:</strong> evitar reuniones eternas sin objetivo.</li>
+        <li><strong>Un único repositorio:</strong> evitar versiones paralelas y copias duplicadas.</li>
+        <li><strong>Documentar todo:</strong> quien venga después debe poder entender el proyecto sin preguntar.</li>
+      </ul>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> las herramientas digitales no sustituyen la organización:
+        la <strong>facilitan</strong>. Un equipo desorganizado seguirá desorganizado aunque use
+        las mejores herramientas. La herramienta adecuada multiplica la eficacia de un equipo que
+        ya trabaja bien.
+      </div>
+    </div>
+
+    <div class="actividad reveal" style="border-top:6px solid var(--indigo)">
+      <span class="kicker">🎮 Reto 5 · Empareja herramientas</span>
+      <h3>Cada herramienta con su función</h3>
+      <p class="intro">
+        Pulsa una herramienta (columna izquierda) y luego la función (columna derecha) que le
+        corresponde. Se marcarán en verde cuando aciertes. Hay 6 parejas.
+      </p>
+
+      <div class="herr-wrap">
+        <div class="herr-col">
+          <h4>🛠️ Herramientas</h4>
+          <div id="herrHerramientas"></div>
+        </div>
+        <div class="herr-col">
+          <h4>🎯 ¿Para qué sirve?</h4>
+          <div id="herrFunciones"></div>
+        </div>
+      </div>
+      <div id="herrMsg"></div>
+    </div>
+
+    <div class="actividad reveal" style="border-top:6px solid var(--indigo-oscuro)">
+      <span class="kicker">📚 Vocabulario clave</span>
+      <h3>Diccionario interactivo</h3>
+      <p class="intro">Pulsa sobre cualquier término para ver su explicación detallada.</p>
+      <div class="voc-grid" id="vocGrid"></div>
+      <div id="vocDef"></div>
+    </div>
+  </section>
+
+  <!-- ========== QUIZ ========== -->
+  <section id="quiz">
+    <div class="sec-head reveal">
+      <span class="kicker rosa">🎯 Reto 6 · Cuestionario final</span>
+      <h2>Comprueba lo que has aprendido</h2>
+      <p class="lead">10 preguntas sobre colaboración, herramientas digitales, proceso iterativo y fuentes fiables.</p>
+    </div>
+    <div id="quizContainer"></div>
+    <div id="quizResult" style="display:none;text-align:center;padding:1.8rem;border-radius:var(--radio);color:#fff;background:linear-gradient(135deg,#312e81,#1e1b4b);box-shadow:var(--sombra-lg)">
+      <div id="quizScore" style="font-size:3rem;font-weight:900;line-height:1;margin-bottom:.4rem">0/10</div>
+      <h3 id="quizTitle" style="color:#fff">¡Buen trabajo!</h3>
+      <p id="quizMsg" style="color:#c7d2fe;max-width:560px;margin:0 auto"></p>
+    </div>
+  </section>
+
+  <!-- ========== CERTIFICADO ========== -->
+  <section id="certificado">
+    <div id="certificado">
+      <h2>🏆 Tu certificado de aprovechamiento</h2>
+      <p class="sub">Al completar las actividades obtendrás un certificado personalizado con tus resultados, que podrás descargar en PDF.</p>
+
+      <div class="cert-name" id="certNombre">—</div>
+
+      <div class="cert-stats" id="certStats"></div>
+
+      <div class="cert-warn" id="certWarn" style="display:none">
+        ⚠️ Aún no has completado ninguna actividad. Termina al menos una para generar tu certificado.
+      </div>
+
+      <button class="btn btn-ambar" id="btnCertificado" style="font-size:1rem;padding:.95rem 2rem">
+        📄 Descargar certificado en PDF
+      </button>
+      <p class="cert-note">El PDF se genera como imagen rasterizada: el texto no es editable ni seleccionable, garantizando su integridad.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p style="margin-bottom:.4rem"><strong>Equipos que crean</strong> · Colaboración digital · Proceso iterativo · Fuentes fiables</p>
+  <p style="margin:0;font-size:.8rem">Aplicación educativa interactiva · Tu progreso se guarda en este navegador</p>
+</footer>
+
+<div id="toast"></div>
+
+<script>
+/* ================================================================
+   1. ESTADO PERSISTENTE
+================================================================ */
+const LS_KEY = 'equiposCrean_v2';
+const RETOS_TOTALES = 6;
+
+function estadoInicial(){
+  return {
+    nombre: '',
+    retos: [],
+    scores: {
+      roles: 0, fases: 0, reunion: 0, fuentes: 0, herramientas: 0, quiz: 0
+    },
+    iniciado: null,
+    detalle: {
+      roles: {},        // { rolId: personaId }
+      fases: [],        // [faseId, faseId, ...] en orden
+      reunion: {},      // { escenarioIdx: opcionIdx }
+      fuentes: {},      // { fuenteIdx: true|false }  (respuesta elegida)
+      herramientas: [], // [parejaId, ...]
+      quiz: {}          // { preguntaIdx: opcionIdx }
+    }
+  };
+}
+
+let estado = estadoInicial();
+
+function guardarEstado(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(estado)); }catch(e){} }
+function cargarEstado(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(raw){
+      const d = JSON.parse(raw);
+      if(d && typeof d === 'object'){
+        const base = estadoInicial();
+        estado = Object.assign(base, d);
+        estado.scores = Object.assign({roles:0,fases:0,reunion:0,fuentes:0,herramientas:0,quiz:0}, d.scores || {});
+        estado.retos = Array.isArray(d.retos) ? d.retos : [];
+        // Asegurar estructura completa de detalle (compatibilidad)
+        estado.detalle = Object.assign(
+          {roles:{}, fases:[], reunion:{}, fuentes:{}, herramientas:[], quiz:{}},
+          d.detalle || {}
+        );
+        if(!Array.isArray(estado.detalle.fases)) estado.detalle.fases = [];
+        if(!Array.isArray(estado.detalle.herramientas)) estado.detalle.herramientas = [];
+      }
+    }
+  }catch(e){}
+}
+
+/* ================================================================
+   2. PROGRESO
+================================================================ */
+function actualizarProgreso(){
+  const n = estado.retos.length;
+  document.getElementById('progresoPill').textContent = n + ' / ' + RETOS_TOTALES + ' retos';
+  document.getElementById('progresoBarra').style.width = (n / RETOS_TOTALES * 100) + '%';
+}
+function completarReto(id, msg){
+  if(!estado.retos.includes(id)) estado.retos.push(id);
+  guardarEstado();
+  actualizarProgreso();
+  actualizarCertificado();
+  if(msg) toast(msg);
+}
+let toastTimer;
+function toast(texto){
+  const t = document.getElementById('toast');
+  t.innerHTML = '🏅 ' + texto;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 3500);
+}
+
+/* ================================================================
+   3. LOGIN
+================================================================ */
+const overlay = document.getElementById('loginOverlay');
+const card = document.getElementById('loginCard');
+
+function mostrarLogin(){
+  if(estado.nombre){
+    card.innerHTML = `
+      <span class="login-emoji">🤝</span>
+      <h1>¡Hola de nuevo!</h1>
+      <p class="sub">Hemos guardado tu progreso en este navegador.</p>
+      <div class="welcome-back">
+        Continuar como <strong>${escaparHTML(estado.nombre)}</strong><br>
+        <span style="font-size:.82rem">Retos completados: ${estado.retos.length} / ${RETOS_TOTALES}</span>
+      </div>
+      <div class="login-btns">
+        <button class="btn btn-primary" id="btnContinuar">▶ Continuar</button>
+        <button class="btn btn-ghost" id="btnCambiar" style="background:#f1f5f9;color:#0f172a;border-color:#e2e8f0">👤 Cambiar nombre</button>
+      </div>
+    `;
+    document.getElementById('btnContinuar').addEventListener('click', iniciarApp);
+    document.getElementById('btnCambiar').addEventListener('click', ()=>{
+      estado = estadoInicial();
+      guardarEstado();
+      reiniciarActividades();
+      renderLoginForm();
+    });
+  } else {
+    renderLoginForm();
+  }
+}
+
+function renderLoginForm(){
+  card.innerHTML = `
+    <span class="login-emoji">🤝</span>
+    <h1>Bienvenido/a a Equipos que Crean</h1>
+    <p class="sub">Antes de empezar, dinos cómo te llamas. Tu progreso se guardará en este navegador para que puedas continuar cuando quieras.</p>
+    <input type="text" id="inputNombre" placeholder="Escribe tu nombre" maxlength="40" autocomplete="off">
+    <button class="btn btn-primary" id="btnEntrar">🚀 Comenzar la aventura</button>
+    <div class="login-error" id="loginError"></div>
+  `;
+  const inp = document.getElementById('inputNombre');
+  const btn = document.getElementById('btnEntrar');
+  const err = document.getElementById('loginError');
+  const submit = ()=>{
+    const v = inp.value.trim();
+    if(v.length < 2){ err.textContent = 'Por favor, introduce al menos 2 caracteres.'; inp.focus(); return; }
+    estado = estadoInicial();
+    estado.nombre = v;
+    estado.iniciado = new Date().toISOString();
+    guardarEstado();
+    reiniciarActividades();
+    iniciarApp();
+  };
+  btn.addEventListener('click', submit);
+  inp.addEventListener('keydown', e=>{ if(e.key === 'Enter') submit(); });
+  setTimeout(()=>inp.focus(), 200);
+}
+
+function iniciarApp(){
+  overlay.classList.add('hidden');
+  document.body.classList.remove('locked');
+  document.getElementById('navUserName').textContent = estado.nombre;
+  document.getElementById('heroNombre').textContent = estado.nombre;
+  actualizarProgreso();
+  restaurarTodasActividades();
+  actualizarCertificado();
+}
+
+function escaparHTML(s){
+  return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ================================================================
+   4. REVEAL
+================================================================ */
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach((e,i)=>{
+    if(e.isIntersecting){
+      setTimeout(()=>e.target.classList.add('in'), i*70);
+      io.unobserve(e.target);
+    }
+  });
+},{threshold:.12, rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+/* ================================================================
+   5. NAV ACTIVO
+================================================================ */
+const secciones = [...document.querySelectorAll('section[id]')];
+const navLinks = [...document.querySelectorAll('.nav-links a')];
+window.addEventListener('scroll', ()=>{
+  let actual = '';
+  secciones.forEach(s=>{ if(window.scrollY >= s.offsetTop - 120) actual = s.id; });
+  navLinks.forEach(a=>a.classList.toggle('active', a.getAttribute('href') === '#'+actual));
+});
+
+/* ================================================================
+   6. RETO 1 · ASIGNADOR DE ROLES
+================================================================ */
+const personasData = [
+  {id:'marta',  nombre:'Marta',  ico:'🎨', habilidad:'Le encanta diseñar interfaces atractivas y usables. Maneja Figma y tiene buen ojo para la tipografía.'},
+  {id:'javi',   nombre:'Javi',   ico:'💻', habilidad:'Programa en Python y JavaScript. Ha hecho algún proyecto con Arduino y bases de datos.'},
+  {id:'lucia',  nombre:'Lucía',  ico:'📋', habilidad:'Es muy organizada. Controla plazos, reparte tareas y hace seguimiento del trabajo del equipo.'},
+  {id:'samir',  nombre:'Samir',  ico:'🔍', habilidad:'Le encanta investigar. Sabe buscar información, contrastarla y citar correctamente las fuentes.'},
+  {id:'elena',  nombre:'Elena',  ico:'🎤', habilidad:'Comunica muy bien. Hace presentaciones claras y sabe adaptar el mensaje al público.'}
+];
+
+const rolesData = [
+  {id:'ui',          nombre:'Diseño de interfaz (UI/UX)',  ico:'🎨', desc:'Encargado/a de la apariencia, la usabilidad y la accesibilidad de la app.', correcto:'marta'},
+  {id:'programador', nombre:'Programación',                 ico:'💻', desc:'Desarrollo técnico de la app: código, base de datos, integración.', correcto:'javi'},
+  {id:'coordinador', nombre:'Coordinación del proyecto',    ico:'📋', desc:'Planificación, seguimiento de tareas, gestión de plazos y reuniones.', correcto:'lucia'},
+  {id:'investigador',nombre:'Investigación y fuentes',      ico:'🔍', desc:'Búsqueda y validación de información, buenas prácticas y referencias.', correcto:'samir'},
+  {id:'comunicador', nombre:'Comunicación y difusión',      ico:'🎤', desc:'Presentación pública del proyecto, redes, memoria y difusión final.', correcto:'elena'}
+];
+
+let personaSeleccionada = null;
+let rolesAsignados = {};
+
+function initRoles(){
+  const contP = document.getElementById('personasWrap');
+  const contR = document.getElementById('rolesWrap');
+  if(!contP || !contR) return;
+  contP.innerHTML = '';
+  contR.innerHTML = '';
+  personaSeleccionada = null;
+  rolesAsignados = {};
+
+  personasData.forEach(p=>{
+    const el = document.createElement('div');
+    el.className = 'persona-item';
+    el.dataset.id = p.id;
+    el.innerHTML = `
+      <div class="per-nombre">${p.ico} ${p.nombre}</div>
+      <div class="per-hab">${p.habilidad}</div>
+    `;
+    el.addEventListener('click', ()=>clickPersona(el));
+    contP.appendChild(el);
+  });
+
+  rolesData.forEach(r=>{
+    const el = document.createElement('div');
+    el.className = 'rol-item';
+    el.dataset.id = r.id;
+    el.innerHTML = `
+      <div class="rol-nombre">${r.ico} ${r.nombre}</div>
+      <div class="rol-desc">${r.desc}</div>
+      <span class="rol-asignado" style="display:none">—</span>
+    `;
+    el.addEventListener('click', ()=>clickRol(el));
+    contR.appendChild(el);
+  });
+}
+
+function clickPersona(el){
+  if(el.classList.contains('asignado')) return;
+  document.querySelectorAll('.persona-item').forEach(x=>x.classList.remove('sel'));
+  el.classList.add('sel');
+  personaSeleccionada = el;
+}
+
+function aplicarAsignacionRol(rolId, personaId){
+  const rolEl = document.querySelector('.rol-item[data-id="'+rolId+'"]');
+  const perEl = document.querySelector('.persona-item[data-id="'+personaId+'"]');
+  if(!rolEl || !perEl) return null;
+  if(rolEl.classList.contains('correcto') || rolEl.classList.contains('incorrecto')) return null;
+  const rol = rolesData.find(r=>r.id === rolId);
+  const persona = personasData.find(p=>p.id === personaId);
+  if(!rol || !persona) return null;
+  const acierto = rol.correcto === personaId;
+
+  rolEl.classList.add(acierto ? 'correcto' : 'incorrecto');
+  const asig = rolEl.querySelector('.rol-asignado');
+  asig.style.display = 'inline-block';
+  asig.textContent = `${persona.ico} ${persona.nombre}${acierto ? ' ✓' : ' (revisar)'}`;
+
+  perEl.classList.remove('sel');
+  perEl.classList.add('asignado');
+  rolesAsignados[rolId] = personaId;
+
+  return {acierto, rol, persona};
+}
+
+function clickRol(el){
+  if(el.classList.contains('correcto') || el.classList.contains('incorrecto')) return;
+  if(!personaSeleccionada){ toast('Selecciona primero una persona'); return; }
+  const rolId = el.dataset.id;
+  const personaId = personaSeleccionada.dataset.id;
+  const res = aplicarAsignacionRol(rolId, personaId);
+  if(!res) return;
+
+  personaSeleccionada = null;
+  estado.detalle.roles[rolId] = personaId;
+  guardarEstado();
+
+  const total = Object.keys(rolesAsignados).length;
+  const msg = document.getElementById('rolesMsg');
+  if(res.acierto){
+    msg.textContent = `✅ Asignación correcta (${total}/5).`;
+  } else {
+    const rolCorrecto = rolesData.find(r=>r.correcto === personaId);
+    msg.innerHTML = `⚠️ Esa persona encaja mejor en otro rol (${total}/5).<br><span style="font-size:.82rem;color:var(--gris)">El rol correcto para ${res.persona.nombre} sería: ${rolCorrecto.nombre}</span>`;
+  }
+
+  if(total > estado.scores.roles){
+    estado.scores.roles = total;
+    guardarEstado();
+    actualizarCertificado();
+  }
+  if(total === rolesData.length){
+    completarReto('roles', '¡Asignación de roles completada!');
+  }
+}
+
+function restaurarRoles(){
+  const det = estado.detalle.roles || {};
+  const keys = Object.keys(det);
+  if(!keys.length) return;
+  keys.forEach(rolId=>{
+    aplicarAsignacionRol(rolId, det[rolId]);
+  });
+  const total = Object.keys(rolesAsignados).length;
+  if(total === 0) return;
+  const aciertos = Object.keys(rolesAsignados).filter(k=>{
+    const rol = rolesData.find(r=>r.id === k);
+    return rol && rol.correcto === rolesAsignados[k];
+  }).length;
+  const msg = document.getElementById('rolesMsg');
+  if(total === rolesData.length){
+    msg.innerHTML = `🎉 ¡Completado! Acertaste ${aciertos}/5 asignaciones.`;
+  } else {
+    msg.textContent = `✅ Llevas ${total}/5 asignaciones. Continúa donde lo dejaste.`;
+  }
+}
+
+initRoles();
+
+/* ================================================================
+   7. RETO 2 · ORDENADOR DE FASES
+================================================================ */
+const fasesData = [
+  {id:'ideacion',      nombre:'1. Ideación',       ico:'💡', desc:'Generar ideas iniciales y definir el reto que se quiere resolver.'},
+  {id:'investigacion', nombre:'2. Investigación',  ico:'🔍', desc:'Buscar información en fuentes fiables y estudiar soluciones existentes.'},
+  {id:'diseno',        nombre:'3. Diseño',         ico:'✏️', desc:'Definir la solución con bocetos, planos, esquemas y prototipos.'},
+  {id:'validacion',    nombre:'4. Validación',     ico:'🧪', desc:'Probar la solución con usuarios reales y recoger datos de uso.'},
+  {id:'reformulacion', nombre:'5. Reformulación',  ico:'🔄', desc:'Analizar los resultados y mejorar la solución a partir del feedback.'},
+  {id:'difusion',      nombre:'6. Difusión',       ico:'📣', desc:'Presentar el proyecto, publicar en abierto y compartir aprendizajes.'}
+];
+
+let fasesColocadas = [];
+let faseActualIdx = 0;
+let fasesShuffled = [];
+
+function shuffle(arr){
+  const a = [...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function initFases(){
+  const prog = document.getElementById('fasesProgreso');
+  const disp = document.getElementById('fasesDisponibles');
+  if(!prog || !disp) return;
+  prog.innerHTML = '';
+  disp.innerHTML = '';
+  fasesColocadas = [];
+  faseActualIdx = 0;
+
+  fasesData.forEach((f,i)=>{
+    const slot = document.createElement('div');
+    slot.className = 'fase-slot';
+    if(i === 0) slot.classList.add('activo');
+    slot.innerHTML = `<div class="fs-num">${i+1}</div><div class="fs-txt">—</div>`;
+    prog.appendChild(slot);
+  });
+
+  fasesShuffled = shuffle(fasesData);
+  fasesShuffled.forEach(f=>{
+    const el = document.createElement('div');
+    el.className = 'fase-card';
+    el.dataset.id = f.id;
+    el.innerHTML = `
+      <span class="fc-ico">${f.ico}</span>
+      <div class="fc-info">
+        <div class="fc-nombre">${f.nombre.replace(/^\d+\.\s*/, '')}</div>
+        <div class="fc-desc">${f.desc}</div>
+      </div>
+    `;
+    el.addEventListener('click', ()=>clickFase(el));
+    disp.appendChild(el);
+  });
+
+  document.getElementById('fasesMsg').textContent = '';
+}
+
+function clickFase(el){
+  if(el.classList.contains('usada')) return;
+  const idx = faseActualIdx;
+  const esperada = fasesData[idx];
+  const clicked = el.dataset.id;
+  const msg = document.getElementById('fasesMsg');
+
+  if(clicked === esperada.id){
+    fasesColocadas.push(clicked);
+    el.classList.add('usada');
+    const slot = document.querySelectorAll('.fase-slot')[idx];
+    slot.classList.remove('activo');
+    slot.classList.add('lleno');
+    slot.querySelector('.fs-txt').textContent = esperada.nombre.replace(/^\d+\.\s*/, '');
+
+    faseActualIdx++;
+    if(faseActualIdx < fasesData.length){
+      document.querySelectorAll('.fase-slot')[faseActualIdx].classList.add('activo');
+      msg.textContent = `✅ ¡Bien! Llevas ${faseActualIdx}/6. Continúa.`;
+    }
+
+    estado.detalle.fases = [...fasesColocadas];
+    guardarEstado();
+
+    if(faseActualIdx > estado.scores.fases){
+      estado.scores.fases = faseActualIdx;
+      guardarEstado();
+      actualizarCertificado();
+    }
+
+    if(faseActualIdx === fasesData.length){
+      msg.innerHTML = '🎉 ¡Has ordenado todas las fases del proceso iterativo!';
+      completarReto('fases', '¡Proceso iterativo dominado!');
+    }
+  } else {
+    el.style.animation = 'none';
+    el.offsetHeight;
+    el.style.animation = 'shake .4s';
+    msg.innerHTML = `❌ Esa no es la fase ${idx + 1}.<br><span style="font-size:.82rem;color:var(--gris)">Pista: la fase ${idx + 1} tiene que ver con <em>${esperada.desc.toLowerCase().split(',')[0]}</em></span>`;
+    setTimeout(()=>{ el.style.animation = ''; }, 500);
+  }
+}
+
+function restaurarFases(){
+  const guardadas = estado.detalle.fases || [];
+  if(!guardadas.length) return;
+  const slots = document.querySelectorAll('.fase-slot');
+  guardadas.forEach((fid, idx)=>{
+    const f = fasesData.find(x=>x.id === fid);
+    if(!f) return;
+    const card = document.querySelector('.fase-card[data-id="'+fid+'"]');
+    if(card) card.classList.add('usada');
+    const slot = slots[idx];
+    if(slot){
+      slot.classList.remove('activo');
+      slot.classList.add('lleno');
+      slot.querySelector('.fs-txt').textContent = f.nombre.replace(/^\d+\.\s*/, '');
+    }
+  });
+  fasesColocadas = [...guardadas];
+  faseActualIdx = guardadas.length;
+  if(faseActualIdx < fasesData.length){
+    slots[faseActualIdx].classList.add('activo');
+  }
+  const msg = document.getElementById('fasesMsg');
+  if(faseActualIdx === fasesData.length){
+    msg.innerHTML = '🎉 ¡Has ordenado todas las fases del proceso iterativo!';
+  } else {
+    msg.textContent = `✅ Llevas ${faseActualIdx}/6. Continúa donde lo dejaste.`;
+  }
+}
+
+initFases();
+
+/* ================================================================
+   8. RETO 3 · SIMULADOR DE REUNIÓN
+================================================================ */
+const reunionEscenarios = [
+  {
+    sit:'Un compañero ha llegado tarde a la reunión y no trae la parte que le tocaba hacer.',
+    ops:[
+      {t:'Le reprocho delante de todos que siempre hace lo mismo y no es de fiar.', ok:false, why:'Reprochar en público daña la confianza del equipo. Es mejor hablar en privado, escuchar y buscar soluciones.'},
+      {t:'Le pregunto con calma si ha tenido algún problema y si necesita ayuda para reorganizar su parte.', ok:true, why:'¡Correcto! Mostrar empatía, escuchar y ofrecer ayuda refuerza el equipo. Los problemas personales pueden afectar al trabajo.'},
+      {t:'Ignoro el tema y sigo la reunión como si nada.', ok:false, why:'Ignorar un problema no lo resuelve y puede acumular tensiones. Hay que abordarlo con respeto.'}
+    ]
+  },
+  {
+    sit:'Un compañero propone una idea que a ti no te convence nada.',
+    ops:[
+      {t:'Le digo directamente que su idea es mala y que no funcionará.', ok:false, why:'Descalificar sin argumentar bloquea la creatividad y daña el clima del equipo. Hay que criticar ideas, no personas.'},
+      {t:'Escucho con atención, pregunto por sus razones y luego expongo mis dudas con argumentos.', ok:true, why:'¡Correcto! Escuchar primero, preguntar y argumentar respetuosamente es la actitud que mejora las ideas del equipo.'},
+      {t:'Callo y dejo que se apruebe aunque no me convenza.', ok:false, why:'El silencio por comodidad puede llevar a malas decisiones. Aportar tu punto de vista es parte de tu responsabilidad.'}
+    ]
+  },
+  {
+    sit:'Dos compañeros del equipo han tenido un choque fuerte y ya no se hablan.',
+    ops:[
+      {t:'Hablo por separado con cada uno, escucho sus versiones y busco un punto en común.', ok:true, why:'¡Correcto! Mediar con escucha activa y buscar puntos comunes ayuda a resolver el conflicto de forma constructiva.'},
+      {t:'Le digo al coordinador que decida quién tiene razón.', ok:false, why:'Delegar el conflicto en una autoridad sin intentar mediarlo debilita la autonomía del equipo.'},
+      {t:'Me pongo de parte de quien creo que tiene razón y aíslo al otro.', ok:false, why:'Tomar partido y aislar a alguien rompe el equipo. Hay que buscar una solución integradora.'}
+    ]
+  },
+  {
+    sit:'El profesor os pide cambiar el enfoque del proyecto a última hora.',
+    ops:[
+      {t:'Me enfado y me niego porque ya habíamos avanzado mucho.', ok:false, why:'La rigidez no ayuda. Un cambio puede ser una oportunidad si se gestiona con mentalidad flexible.'},
+      {t:'Analizo con el equipo qué implicaciones tiene el cambio y reorganizamos el plan.', ok:true, why:'¡Correcto! Analizar el cambio y reorganizarse es la respuesta profesional. La flexibilidad es clave en proyectos.'},
+      {t:'Sigo con el plan antiguo sin decir nada, esperando que no se note.', ok:false, why:'Ignorar una instrucción explícita y ocultar la decisión no es ético ni profesional.'}
+    ]
+  },
+  {
+    sit:'Un compañero ha hecho toda la presentación final sin consultar al resto del equipo.',
+    ops:[
+      {t:'Le agradezco el esfuerzo pero le explico que el trabajo es de todos y que debería haberse consensuado.', ok:true, why:'¡Correcto! Reconocer el esfuerzo sin dejar de recordar que un proyecto es colectivo mantiene el equilibrio.'},
+      {t:'Me molesto y le digo que se ha apropiado del trabajo de todos.', ok:false, why:'La acusación directa sin diálogo suele empeorar la situación. Es mejor expresar cómo te has sentido y buscar acuerdos.'},
+      {t:'No digo nada, pero dejo de participar en el equipo.', ok:false, why:'Retirarse sin comunicar genera resentimiento y rompe el equipo. El diálogo es la vía.'}
+    ]
+  }
+];
+
+let reunionRespondidas = 0, reunionAciertos = 0;
+let reunionBtns = [];
+let reunionFbs = [];
+
+function responderReunion(i, j, silent){
+  const esc = reunionEscenarios[i];
+  const op = esc.ops[j];
+  const btns = reunionBtns[i];
+  const fb = reunionFbs[i];
+  if(!btns || !fb) return;
+
+  btns.forEach(x=>x.disabled = true);
+  btns.forEach(x=>{
+    const idx = parseInt(x.dataset.j, 10);
+    if(esc.ops[idx].ok) x.classList.add('correct');
+  });
+  if(!op.ok) btns[j].classList.add('wrong');
+  fb.innerHTML = (op.ok ? '✅ <strong>Buena elección.</strong> ' : '❌ <strong>Revisa esta respuesta.</strong> ') + op.why;
+  fb.classList.add('show');
+
+  if(silent) return;
+
+  estado.detalle.reunion[i] = j;
+  guardarEstado();
+
+  reunionRespondidas++;
+  if(op.ok) reunionAciertos++;
+
+  if(reunionRespondidas === reunionEscenarios.length){
+    if(reunionAciertos > estado.scores.reunion){
+      estado.scores.reunion = reunionAciertos;
+      guardarEstado();
+      actualizarCertificado();
+    }
+    completarReto('reunion', '¡Simulador de reunión completado! ' + reunionAciertos + '/' + reunionEscenarios.length);
+  }
+}
+
+function initReunion(){
+  const cont = document.getElementById('reunionContainer');
+  if(!cont) return;
+  cont.innerHTML = '';
+  reunionBtns = [];
+  reunionFbs = [];
+  reunionRespondidas = 0;
+  reunionAciertos = 0;
+
+  reunionEscenarios.forEach((esc, i)=>{
+    const div = document.createElement('div');
+    div.className = 'reunion-card';
+    div.innerHTML = `
+      <div class="rn-msg">${esc.sit}</div>
+      <div class="reunion-opciones">
+        ${esc.ops.map((o,j)=>`
+          <button class="reunion-op" data-i="${i}" data-j="${j}">
+            <span class="ro-num">${String.fromCharCode(65+j)}</span>
+            <span>${o.t}</span>
+          </button>
+        `).join('')}
+      </div>
+      <div class="reunion-fb"></div>
+    `;
+    cont.appendChild(div);
+    const btns = [...div.querySelectorAll('.reunion-op')];
+    const fb = div.querySelector('.reunion-fb');
+    reunionBtns.push(btns);
+    reunionFbs.push(fb);
+    btns.forEach(b=>{
+      b.addEventListener('click', ()=>{
+        const j = parseInt(b.dataset.j, 10);
+        responderReunion(i, j, false);
+      });
+    });
+  });
+}
+
+function restaurarReunion(){
+  const det = estado.detalle.reunion || {};
+  const keys = Object.keys(det);
+  if(!keys.length) return;
+  keys.forEach(k=>{
+    const i = parseInt(k, 10);
+    const j = det[k];
+    responderReunion(i, j, true);
+    reunionRespondidas++;
+    if(reunionEscenarios[i].ops[j].ok) reunionAciertos++;
+  });
+}
+
+initReunion();
+
+/* ================================================================
+   9. RETO 4 · DETECTOR DE FUENTES
+================================================================ */
+const fuentesData = [
+  {url:'es.wikipedia.org/wiki/Energía_solar', titulo:'Artículo de Wikipedia con 45 referencias', desc:'Artículo enciclopédico extenso, con bibliografía, notas al pie y enlaces a fuentes primarias.', fiable:true,
+   why:'Wikipedia puede ser un buen punto de partida si el artículo está bien referenciado. Hay que comprobar siempre las fuentes que cita.'},
+  {url:'miblogpersonal.blogspot.com/2024/03/...', titulo:'Blog personal sin autor identificado', desc:'Entrada de blog sin nombre del autor, sin fecha verificable y sin fuentes citadas.', fiable:false,
+   why:'Sin autor identificable, sin fecha y sin fuentes, no se puede verificar la información. No es una fuente fiable para un trabajo académico.'},
+  {url:'doi.org/10.1038/s41586-023-...', titulo:'Artículo científico con DOI en Nature', desc:'Artículo revisado por pares, publicado en revista científica de alto impacto, con DOI y datos disponibles.', fiable:true,
+   why:'Un artículo revisado por pares y con DOI es el estándar de oro de la información científica. Altamente fiable.'},
+  {url:'megasuperoferta.xyz/ofertas', titulo:'Web comercial con muchas faltas de ortografía', desc:'Página que vende productos y asegura que "los estudios demuestran" sus beneficios, sin citar ningún estudio.', fiable:false,
+   why:'Web comercial con claros intereses de venta, sin autoría verificable, sin fuentes y con errores de forma. No es fiable.'},
+  {url:'efe.com/tecnologia/...', titulo:'Noticia de la agencia EFE', desc:'Noticia de agencia de noticias internacional con redactor identificado y fuentes citadas.', fiable:true,
+   why:'Las agencias de noticias reconocidas (EFE, Reuters, AFP) tienen procesos editoriales y citan sus fuentes. Son fiables.'},
+  {url:'facebook.com/groups/.../posts/123', titulo:'Publicación en un grupo de Facebook', desc:'Publicación anónima con una imagen y una afirmación impactante, sin fuente ni contexto.', fiable:false,
+   why:'Las redes sociales no verifican el contenido y permiten el anonimato. Un post sin fuente no es una fuente fiable.'},
+  {url:'docs.arduino.cc/language-reference/', titulo:'Documentación oficial de Arduino', desc:'Documentación técnica mantenida por el propio equipo de Arduino, con ejemplos verificados.', fiable:true,
+   why:'La documentación oficial de una tecnología es una fuente primaria y altamente fiable.'},
+  {url:'opiniones-producto.com/mejores-...', titulo:'Web de afiliados que recomienda productos', desc:'Web que gana comisiones por cada venta y solo habla bien de los productos que promociona.', fiable:false,
+   why:'Una web de afiliados tiene un interés económico directo en las recomendaciones, lo que sesga la información. No es fiable.'},
+  {url:'docs.python.org/3/tutorial/', titulo:'Documentación oficial de Python', desc:'Tutorial oficial de Python mantenido por la Python Software Foundation.', fiable:true,
+   why:'Documentación oficial de un lenguaje de programación: fuente primaria, actualizada y verificada.'},
+  {url:'noticias-cientificas24.com/...', titulo:'Web con titulares alarmistas y sin fuentes', desc:'Web que afirma "los científicos descubren" sin nombrar a ningún científico ni citar estudio alguno.', fiable:false,
+   why:'Afirmaciones sensacionalistas sin citar estudios ni científicos concretos son típicas de desinformación. No es fiable.'}
+];
+
+let fuentesRespondidas = 0, fuentesAciertos = 0;
+let fuentesBtns = [];
+let fuentesFbs = [];
+let fuentesCards = [];
+
+function responderFuente(i, elegido, silent){
+  const f = fuentesData[i];
+  const acierto = elegido === f.fiable;
+  const btns = fuentesBtns[i];
+  const fb = fuentesFbs[i];
+  if(!btns || !fb) return;
+
+  btns.forEach(x=>{
+    x.disabled = true;
+    if((x.dataset.v === '1') === f.fiable) x.classList.add('correct');
+  });
+  if(!acierto){
+    btns.forEach(x=>{
+      if((x.dataset.v === '1') === elegido) x.classList.add('wrong');
+    });
+  }
+  fb.innerHTML = (acierto ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>No exactamente.</strong> ') + f.why;
+  fb.classList.add('show');
+  fuentesCards[i].classList.add('done');
+
+  if(silent) return;
+
+  estado.detalle.fuentes[i] = elegido;
+  guardarEstado();
+
+  fuentesRespondidas++;
+  if(acierto) fuentesAciertos++;
+
+  if(fuentesRespondidas === fuentesData.length){
+    document.getElementById('fuentesMsg').innerHTML =
+      `Has acertado <strong>${fuentesAciertos} de ${fuentesData.length}</strong>. ` +
+      (fuentesAciertos >= 8 ? '¡Tienes un excelente criterio para detectar fuentes fiables!' : 'Repasa las que has fallado: es una habilidad clave para cualquier trabajo técnico.');
+    if(fuentesAciertos > estado.scores.fuentes){
+      estado.scores.fuentes = fuentesAciertos;
+      guardarEstado();
+      actualizarCertificado();
+    }
+    completarReto('fuentes', '¡Detector de fuentes completado!');
+  }
+}
+
+function initFuentes(){
+  const cont = document.getElementById('fuentesWrap');
+  if(!cont) return;
+  cont.innerHTML = '';
+  fuentesBtns = [];
+  fuentesFbs = [];
+  fuentesCards = [];
+  fuentesRespondidas = 0;
+  fuentesAciertos = 0;
+
+  fuentesData.forEach((f, i)=>{
+    const div = document.createElement('div');
+    div.className = 'fuente-card';
+    div.innerHTML = `
+      <div class="f-url">${f.url}</div>
+      <div class="f-titulo">${f.titulo}</div>
+      <p class="f-desc">${f.desc}</p>
+      <div class="fuente-btns">
+        <button data-i="${i}" data-v="1">✔ Fiable</button>
+        <button data-i="${i}" data-v="0">✘ No fiable</button>
+      </div>
+      <div class="fuente-fb"></div>
+    `;
+    cont.appendChild(div);
+    const btns = [...div.querySelectorAll('button')];
+    const fb = div.querySelector('.fuente-fb');
+    fuentesBtns.push(btns);
+    fuentesFbs.push(fb);
+    fuentesCards.push(div);
+    btns.forEach(b=>{
+      b.addEventListener('click', ()=>{
+        responderFuente(i, b.dataset.v === '1', false);
+      });
+    });
+  });
+}
+
+function restaurarFuentes(){
+  const det = estado.detalle.fuentes || {};
+  const keys = Object.keys(det);
+  if(!keys.length) return;
+  keys.forEach(k=>{
+    const i = parseInt(k, 10);
+    const elegido = det[k] === true || det[k] === 'true';
+    responderFuente(i, elegido, true);
+    fuentesRespondidas++;
+    if(elegido === fuentesData[i].fiable) fuentesAciertos++;
+  });
+  const msg = document.getElementById('fuentesMsg');
+  if(fuentesRespondidas === fuentesData.length){
+    msg.innerHTML = `Has acertado <strong>${fuentesAciertos} de ${fuentesData.length}</strong>. ` +
+      (fuentesAciertos >= 8 ? '¡Tienes un excelente criterio para detectar fuentes fiables!' : 'Repasa las que has fallado: es una habilidad clave para cualquier trabajo técnico.');
+  } else {
+    msg.textContent = `✅ Llevas ${fuentesRespondidas}/${fuentesData.length} fuentes analizadas. Continúa donde lo dejaste.`;
+  }
+}
+
+initFuentes();
+
+/* ================================================================
+   10. RETO 5 · EMPAREJADOR DE HERRAMIENTAS
+================================================================ */
+const herrParejas = [
+  {id:'trello',   herr:'🗂️ Trello / Kanban',      func:'Gestión visual de tareas por columnas'},
+  {id:'drive',    herr:'☁️ Google Drive',          func:'Almacenamiento y edición de documentos en la nube'},
+  {id:'slack',    herr:'💬 Slack / Teams',         func:'Comunicación del equipo por canales temáticos'},
+  {id:'github',   herr:'🐙 GitHub / GitLab',       func:'Control de versiones y trabajo colaborativo en código'},
+  {id:'figma',    herr:'🎨 Figma',                 func:'Diseño colaborativo de interfaces en tiempo real'},
+  {id:'meet',     herr:'📹 Zoom / Google Meet',    func:'Reuniones virtuales por videollamada'}
+];
+
+let herrSelHerr = null;
+let herrSelFunc = null;
+let herrEmparejadas = 0;
+let herrItemsMap = {}; // {id: {herr: el, func: el}}
+
+function initHerramientas(){
+  const ch = document.getElementById('herrHerramientas');
+  const cf = document.getElementById('herrFunciones');
+  if(!ch || !cf) return;
+  ch.innerHTML = '';
+  cf.innerHTML = '';
+  herrSelHerr = null;
+  herrSelFunc = null;
+  herrEmparejadas = 0;
+  herrItemsMap = {};
+
+  shuffle(herrParejas).forEach(h=>{
+    const el = document.createElement('div');
+    el.className = 'herr-item';
+    el.dataset.id = h.id;
+    el.dataset.tipo = 'herr';
+    el.textContent = h.herr;
+    el.addEventListener('click', ()=>clickHerr(el));
+    ch.appendChild(el);
+    if(!herrItemsMap[h.id]) herrItemsMap[h.id] = {};
+    herrItemsMap[h.id].herr = el;
+  });
+  shuffle(herrParejas).forEach(h=>{
+    const el = document.createElement('div');
+    el.className = 'herr-item';
+    el.dataset.id = h.id;
+    el.dataset.tipo = 'func';
+    el.textContent = h.func;
+    el.addEventListener('click', ()=>clickHerr(el));
+    cf.appendChild(el);
+    if(!herrItemsMap[h.id]) herrItemsMap[h.id] = {};
+    herrItemsMap[h.id].func = el;
+  });
+}
+
+function clickHerr(el){
+  if(el.classList.contains('matched')) return;
+
+  if(el.dataset.tipo === 'herr'){
+    if(herrSelHerr) herrSelHerr.classList.remove('sel');
+    herrSelHerr = el;
+    el.classList.add('sel');
+  } else {
+    if(herrSelFunc) herrSelFunc.classList.remove('sel');
+    herrSelFunc = el;
+    el.classList.add('sel');
+  }
+
+  if(herrSelHerr && herrSelFunc){
+    const a = herrSelHerr, b = herrSelFunc;
+    const msg = document.getElementById('herrMsg');
+    if(a.dataset.id === b.dataset.id){
+      a.classList.remove('sel');
+      b.classList.remove('sel');
+      a.classList.add('matched');
+      b.classList.add('matched');
+      herrEmparejadas++;
+      if(!estado.detalle.herramientas.includes(a.dataset.id)){
+        estado.detalle.herramientas.push(a.dataset.id);
+        guardarEstado();
+      }
+      msg.textContent = `✅ ¡Bien! Pareja ${herrEmparejadas} de 6 encontrada.`;
+      herrSelHerr = null;
+      herrSelFunc = null;
+      if(herrEmparejadas > estado.scores.herramientas){
+        estado.scores.herramientas = herrEmparejadas;
+        guardarEstado();
+        actualizarCertificado();
+      }
+      if(herrEmparejadas === 6){
+        msg.innerHTML = '🎉 ¡Has emparejado todas las herramientas con su función!';
+        completarReto('herramientas', '¡Emparejamiento completado!');
+      }
+    } else {
+      a.classList.add('error');
+      b.classList.add('error');
+      msg.innerHTML = '❌ Esa no es la función correcta. Inténtalo de nuevo.';
+      setTimeout(()=>{
+        a.classList.remove('error','sel');
+        b.classList.remove('error','sel');
+        herrSelHerr = null;
+        herrSelFunc = null;
+      }, 500);
+    }
+  }
+}
+
+function restaurarHerramientas(){
+  const matched = estado.detalle.herramientas || [];
+  if(!matched.length) return;
+  matched.forEach(id=>{
+    const item = herrItemsMap[id];
+    if(!item) return;
+    if(item.herr) item.herr.classList.add('matched');
+    if(item.func) item.func.classList.add('matched');
+  });
+  herrEmparejadas = matched.length;
+  const msg = document.getElementById('herrMsg');
+  if(herrEmparejadas === 6){
+    msg.innerHTML = '🎉 ¡Has emparejado todas las herramientas con su función!';
+  } else {
+    msg.textContent = `✅ Llevas ${herrEmparejadas}/6 parejas. Continúa donde lo dejaste.`;
+  }
+}
+
+initHerramientas();
+
+/* ================================================================
+   11. VOCABULARIO
+================================================================ */
+const vocabulario = [
+  {ico:'👥', t:'Trabajo colaborativo', d:'Estrategia de trabajo en la que varias personas coordinan sus esfuerzos, comparten recursos y se responsabilizan conjuntamente del resultado. Requiere roles claros, canales de comunicación y acuerdos explícitos.'},
+  {ico:'🎯', t:'Rol dentro del equipo', d:'Función concreta que asume cada persona en un equipo (coordinación, diseño, programación, investigación, comunicación) según sus fortalezas, garantizando que todas las áreas clave estén cubiertas.'},
+  {ico:'🌐', t:'Perspectiva interdisciplinar', d:'Enfoque que combina conocimientos y métodos de distintas áreas para resolver un problema complejo. En tecnología es esencial: ningún proyecto grande se resuelve desde una sola disciplina.'},
+  {ico:'🛠️', t:'Herramienta digital colaborativa', d:'Plataforma o aplicación que permite a un equipo coordinar su trabajo a distancia: gestión de tareas, almacenamiento compartido, comunicación, control de versiones, diseño en línea, videollamadas.'},
+  {ico:'🔄', t:'Proceso iterativo', d:'Forma de trabajar en la que se repiten ciclos de ideación, diseño, prueba y reformulación. Cada vuelta aporta aprendizajes que mejoran la solución. Es el método natural de la ingeniería y el diseño.'},
+  {ico:'🧪', t:'Validación', d:'Fase del proceso iterativo en la que se comprueba si la solución funciona realmente en el contexto para el que fue diseñada, recogiendo datos de uso y feedback de las personas usuarias.'},
+  {ico:'✅', t:'Fuente fiable', d:'Información cuya autoría es verificable, cuya fecha se conoce y cuyas afirmaciones se pueden contrastar con otras fuentes. Ejemplos: artículos revisados por pares, documentación oficial, agencias de noticias reconocidas.'},
+  {ico:'📚', t:'Cita y referencia', d:'Mención explícita de la fuente de la que se ha tomado una información, idea o dato. Citar correctamente respeta la propiedad intelectual y permite a otras personas verificar lo que afirmamos.'},
+  {ico:'⚖️', t:'Propiedad intelectual', d:'Conjunto de derechos que protegen las creaciones originales (textos, imágenes, código, diseños). Respetarla implica no copiar sin permiso ni sin citar, y usar licencias adecuadas.'},
+  {ico:'📣', t:'Difusión', d:'Fase final del proyecto en la que se comparte públicamente la solución, los aprendizajes y los resultados. Puede hacerse por presentación, memoria escrita, publicación en abierto, redes o exposiciones.'},
+  {ico:'🎓', t:'Aprendizaje entre iguales', d:'Situación en la que las personas del equipo aprenden unas de otras al compartir habilidades, corregirse mutuamente y construir juntas el conocimiento. Multiplica el aprendizaje individual.'},
+  {ico:'📝', t:'Acta de reunión', d:'Documento breve donde se recogen los acuerdos alcanzados en una reunión, los responsables de cada tarea y las fechas comprometidas. Evita malentendidos y facilita el seguimiento.'},
+  {ico:'🌱', t:'Mejora continua', d:'Filosofía de trabajo que busca revisar y mejorar constantemente los procesos y productos, incluso cuando ya funcionan. Es una consecuencia natural del proceso iterativo.'},
+  {ico:'🤔', t:'Pensamiento crítico', d:'Capacidad de analizar la información con criterio, cuestionar las afirmaciones sin fundamento y tomar decisiones basadas en evidencias y argumentos sólidos.'},
+  {ico:'📋', t:'Metodología ágil', d:'Marco de trabajo que aplica la iteración de forma sistemática: sprints cortos, entregas frecuentes, reuniones diarias breves y retrospectivas para mejorar. Ejemplos: Scrum, Kanban.'},
+  {ico:'🐙', t:'Control de versiones', d:'Sistema que registra todos los cambios de un archivo o proyecto (habitualmente código) permitiendo volver a versiones anteriores, coordinar a varias personas y resolver conflictos. Ejemplo: Git.'},
+  {ico:'🎨', t:'Ciclo PDCA', d:'Modelo de mejora continua con 4 fases: Plan (planificar), Do (hacer), Check (verificar) y Act (actuar). Es una versión clásica del proceso iterativo, aplicada a la calidad y la gestión.'},
+  {ico:'📊', t:'Modelo de Tuckman', d:'Modelo que describe las 5 fases por las que pasa cualquier equipo: forming (formación), storming (conflicto), norming (normas), performing (rendimiento) y adjourning (cierre).'}
+];
+
+(function initVoc(){
+  const grid = document.getElementById('vocGrid');
+  const defBox = document.getElementById('vocDef');
+  if(!grid) return;
+  vocabulario.forEach((v)=>{
+    const b = document.createElement('button');
+    b.className = 'voc-term';
+    b.innerHTML = `<span style="font-size:1.1rem">${v.ico}</span><span>${v.t}</span>`;
+    b.addEventListener('click', ()=>{
+      const yaActivo = b.classList.contains('active');
+      grid.querySelectorAll('.voc-term').forEach(x=>x.classList.remove('active'));
+      if(yaActivo){
+        defBox.classList.remove('show');
+        setTimeout(()=>{ defBox.innerHTML=''; }, 500);
+        return;
+      }
+      b.classList.add('active');
+      defBox.innerHTML = `<h4>${v.ico} ${v.t}</h4><p>${v.d}</p>`;
+      defBox.classList.add('show');
+    });
+    grid.appendChild(b);
+  });
+})();
+
+/* ================================================================
+   12. QUIZ FINAL
+================================================================ */
+const preguntasQuiz = [
+  {q:'¿Qué caracteriza a un buen equipo de proyecto?',
+   o:['Que todos hagan lo mismo','Que cada persona asuma un rol según sus fortalezas, con canales claros de comunicación','Que lo decida todo una sola persona','Que no haya reuniones'],
+   c:1, e:'Un equipo eficaz combina diversidad de roles (diseño, programación, coordinación, investigación, comunicación) con comunicación clara y responsabilidades definidas.'},
+  {q:'¿Cuál es una herramienta típica de gestión visual de tareas?',
+   o:['Figma','Trello o Kanban','Zoom','GitHub'],
+   c:1, e:'Trello o cualquier tablero Kanban sirve para visualizar tareas en columnas (pendiente, en proceso, hecho) y coordinar el trabajo del equipo.'},
+  {q:'¿Para qué sirve GitHub en un proyecto tecnológico?',
+   o:['Para hacer videollamadas','Para controlar versiones y colaborar en el código de forma ordenada','Para diseñar interfaces','Para compartir fotos'],
+   c:1, e:'GitHub permite trabajar con control de versiones (Git), hacer cambios sin perder el trabajo anterior y coordinar a varias personas sobre el mismo código.'},
+  {q:'¿Qué caracteriza a un proceso iterativo?',
+   o:['Hacer todo en una sola fase sin revisar','Repetir ciclos de diseño, prueba y mejora hasta que la solución funciona bien','Trabajar sin planificación','Evitar los errores a toda costa'],
+   c:1, e:'El proceso iterativo consiste en avanzar por ciclos: idear, diseñar, probar, aprender y reformular. Cada vuelta mejora la solución.'},
+  {q:'¿Qué es la fase de validación?',
+   o:['Cuando se cobra el proyecto','Cuando se comprueba con usuarios reales que la solución funciona','Cuando se diseña el logo','Cuando se compra material'],
+   c:1, e:'En la validación se prueba la solución con personas usuarias reales, se recogen datos de uso y se obtiene feedback para mejorar.'},
+  {q:'¿Cuál de estas es una fuente FIABLE para un trabajo académico?',
+   o:['Un post anónimo en un foro','Un artículo revisado por pares con DOI','Un blog personal sin autor','Un mensaje de WhatsApp'],
+   c:1, e:'Los artículos revisados por pares con DOI han pasado un proceso de verificación por expertos. Son el estándar de calidad científica.'},
+  {q:'¿Por qué es importante citar las fuentes?',
+   o:['Para que el trabajo parezca más largo','Para respetar la propiedad intelectual y permitir que otras personas verifiquen lo que afirmamos','Porque lo exige el profesor','Para que no se note que copiamos'],
+   c:1, e:'Citar respeta a quien creó la información original y permite que cualquiera pueda verificar y ampliar el trabajo. Es una práctica esencial en cualquier disciplina.'},
+  {q:'¿Qué actitud es más colaborativa cuando un compañero propone una idea que no te convence?',
+   o:['Decirle directamente que su idea es mala','Escuchar con atención, preguntar por sus razones y exponer tus dudas con argumentos','Ignorar la idea y no decir nada','Quejarte al profesor'],
+   c:1, e:'Escuchar, preguntar y argumentar respetuosamente mejora las ideas del equipo. Descalificar o callar perjudica al proyecto.'},
+  {q:'¿Qué es un acta de reunión?',
+   o:['Una lista de tareas ya hechas','Un documento con los acuerdos alcanzados, responsables y plazos','Un certificado oficial','Una presentación en PowerPoint'],
+   c:1, e:'El acta recoge brevemente lo acordado, quién se encarga de cada cosa y para cuándo. Evita malentendidos y facilita el seguimiento.'},
+  {q:'¿Cuál es el orden correcto de las fases de un proceso iterativo?',
+   o:['Difusión → Diseño → Ideación → Validación','Ideación → Investigación → Diseño → Validación → Reformulación → Difusión','Validación → Ideación → Difusión → Diseño','Investigación → Difusión → Ideación'],
+   c:1, e:'El orden natural es: idear, investigar, diseñar, validar, reformular y difundir. Y el ciclo puede repetirse varias veces antes de la difusión final.'}
+];
+
+let quizRespondidas = 0, quizAciertos = 0;
+let quizBtns = [];
+let quizExpls = [];
+
+function responderQuiz(i, j, silent){
+  const p = preguntasQuiz[i];
+  const btns = quizBtns[i];
+  const expl = quizExpls[i];
+  if(!btns || !expl) return;
+
+  btns.forEach(x=>x.disabled = true);
+  btns.forEach(x=>{ if(parseInt(x.dataset.j,10) === p.c) x.classList.add('correct'); });
+  if(j !== p.c) btns[j].classList.add('wrong');
+  expl.innerHTML = (j === p.c ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>Respuesta incorrecta.</strong> ') + p.e;
+  expl.classList.add('show');
+
+  if(silent) return;
+
+  estado.detalle.quiz[i] = j;
+  guardarEstado();
+
+  quizRespondidas++;
+  if(j === p.c) quizAciertos++;
+
+  if(quizRespondidas === preguntasQuiz.length) mostrarResultadoQuiz();
+}
+
+function initQuiz(){
+  const cont = document.getElementById('quizContainer');
+  if(!cont) return;
+  cont.innerHTML = '';
+  quizBtns = [];
+  quizExpls = [];
+  quizRespondidas = 0;
+  quizAciertos = 0;
+
+  preguntasQuiz.forEach((p, i)=>{
+    const div = document.createElement('div');
+    div.className = 'q reveal';
+    div.innerHTML = `
+      <span class="q-num">PREGUNTA ${i+1}</span>
+      <h4>${p.q}</h4>
+      <div class="opts">
+        ${p.o.map((o,j)=>`
+          <button class="opt" data-i="${i}" data-j="${j}">
+            <span class="letter">${String.fromCharCode(65+j)}</span>
+            <span>${o}</span>
+          </button>`).join('')}
+      </div>
+      <div class="expl"></div>
+    `;
+    cont.appendChild(div);
+    io.observe(div);
+    const btns = [...div.querySelectorAll('.opt')];
+    const expl = div.querySelector('.expl');
+    quizBtns.push(btns);
+    quizExpls.push(expl);
+    btns.forEach(b=>{
+      b.addEventListener('click', ()=>{
+        responderQuiz(i, parseInt(b.dataset.j,10), false);
+      });
+    });
+  });
+}
+
+function restaurarQuiz(){
+  const det = estado.detalle.quiz || {};
+  const keys = Object.keys(det);
+  if(!keys.length) return;
+  keys.forEach(k=>{
+    const i = parseInt(k, 10);
+    const j = det[k];
+    responderQuiz(i, j, true);
+    quizRespondidas++;
+    if(j === preguntasQuiz[i].c) quizAciertos++;
+  });
+  if(quizRespondidas === preguntasQuiz.length) mostrarResultadoQuiz(true);
+}
+
+initQuiz();
+
+function mostrarResultadoQuiz(soloVisual){
+  const res = document.getElementById('quizResult');
+  document.getElementById('quizScore').textContent = quizAciertos + '/' + preguntasQuiz.length;
+  const pct = Math.round(quizAciertos / preguntasQuiz.length * 100);
+  let titulo, msg;
+  if(pct === 100){ titulo = '🏆 ¡Perfecto!'; msg = 'Dominas las estrategias colaborativas, las herramientas digitales, el proceso iterativo y el criterio de fuentes.'; }
+  else if(pct >= 75){ titulo = '🌟 ¡Muy bien!'; msg = 'Tienes una comprensión sólida de la colaboración digital. Repasa las preguntas falladas para afinar los detalles.'; }
+  else if(pct >= 50){ titulo = '👍 Buen intento'; msg = 'Vas por el camino correcto. Vuelve a las secciones de equipo, iteración, fuentes y herramientas.'; }
+  else { titulo = '📚 A seguir aprendiendo'; msg = 'Revisa con calma cada sección y vuelve a intentarlo.'; }
+  document.getElementById('quizTitle').textContent = titulo;
+  document.getElementById('quizMsg').textContent = msg;
+  res.style.display = 'block';
+  if(!soloVisual){
+    res.scrollIntoView({behavior:'smooth', block:'center'});
+  }
+  if(quizAciertos > estado.scores.quiz){
+    estado.scores.quiz = quizAciertos;
+    guardarEstado();
+    actualizarCertificado();
+  }
+  if(!soloVisual){
+    completarReto('quiz', '¡Cuestionario final completado! ' + quizAciertos + '/' + preguntasQuiz.length);
+  }
+}
+
+/* ================================================================
+   13. RESTAURACIÓN GLOBAL DE ACTIVIDADES
+================================================================ */
+function restaurarTodasActividades(){
+  restaurarRoles();
+  restaurarFases();
+  restaurarReunion();
+  restaurarFuentes();
+  restaurarHerramientas();
+  restaurarQuiz();
+}
+
+/* Reconstruye las actividades desde cero (útil al cambiar de usuario) */
+function reiniciarActividades(){
+  initRoles();
+  initFases();
+  initReunion();
+  initFuentes();
+  initHerramientas();
+  initQuiz();
+}
+
+/* ================================================================
+   14. CERTIFICADO Y PDF RASTERIZADO
+================================================================ */
+function actualizarCertificado(){
+  const stats = document.getElementById('certStats');
+  const nombreEl = document.getElementById('certNombre');
+  const warn = document.getElementById('certWarn');
+  const btn = document.getElementById('btnCertificado');
+
+  nombreEl.textContent = estado.nombre || '—';
+
+  const s = estado.scores;
+  const nRetos = estado.retos.length;
+
+  const items = [
+    {num: (s.roles>0 ? s.roles + '/5' : '—'), lbl:'Roles'},
+    {num: (s.fases>0 ? s.fases + '/6' : '—'), lbl:'Fases'},
+    {num: (s.reunion>0 ? s.reunion + '/5' : '—'), lbl:'Reunión'},
+    {num: (s.fuentes>0 ? s.fuentes + '/10' : '—'), lbl:'Fuentes'},
+    {num: (s.herramientas>0 ? s.herramientas + '/6' : '—'), lbl:'Herramientas'},
+    {num: (s.quiz>0 ? s.quiz + '/10' : '—'), lbl:'Cuestionario'},
+    {num: nRetos + '/' + RETOS_TOTALES, lbl:'Retos totales'}
+  ];
+
+  stats.innerHTML = items.map(it=>`
+    <div class="cert-stat">
+      <div class="num">${it.num}</div>
+      <div class="lbl">${it.lbl}</div>
+    </div>
+  `).join('');
+
+  if(nRetos === 0){
+    warn.style.display = 'block';
+    btn.disabled = true;
+    btn.style.opacity = .55;
+    btn.style.cursor = 'not-allowed';
+  } else {
+    warn.style.display = 'none';
+    btn.disabled = false;
+    btn.style.opacity = 1;
+    btn.style.cursor = 'pointer';
+  }
+}
+
+document.getElementById('btnCertificado').addEventListener('click', ()=>{
+  if(!estado.nombre){ toast('Introduce tu nombre primero'); return; }
+  if(estado.retos.length === 0){ toast('Completa al menos un reto para obtener el certificado'); return; }
+  generarPDFRasterizado();
+});
+
+function generarPDFRasterizado(){
+  if(!(window.jspdf && window.jspdf.jsPDF)){
+    toast('No se ha podido cargar la librería PDF. Inténtalo de nuevo.');
+    return;
+  }
+  try{
+    const DPI = 300;
+    const W_MM = 297, H_MM = 210;
+    const W = Math.round(W_MM / 25.4 * DPI);
+    const H = Math.round(H_MM / 25.4 * DPI);
+    const mm = v => v / 25.4 * DPI;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = '#eef2ff';
+    ctx.fillRect(0,0,W,H);
+
+    ctx.strokeStyle = '#312e81';
+    ctx.lineWidth = mm(2);
+    ctx.strokeRect(mm(10), mm(10), W-mm(20), H-mm(20));
+    ctx.lineWidth = mm(0.5);
+    ctx.strokeRect(mm(14), mm(14), W-mm(28), H-mm(28));
+
+    ctx.fillStyle = '#312e81';
+    ctx.fillRect(mm(14), mm(14), mm(20), mm(3));
+    ctx.fillRect(mm(14), mm(14), mm(3), mm(20));
+    ctx.fillRect(W-mm(34), mm(14), mm(20), mm(3));
+    ctx.fillRect(W-mm(17), mm(14), mm(3), mm(20));
+    ctx.fillRect(mm(14), H-mm(17), mm(20), mm(3));
+    ctx.fillRect(mm(14), H-mm(34), mm(3), mm(20));
+    ctx.fillRect(W-mm(34), H-mm(17), mm(20), mm(3));
+    ctx.fillRect(W-mm(17), H-mm(34), mm(3), mm(20));
+
+    ctx.fillStyle = '#312e81';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = `bold ${mm(9)}px Arial, sans-serif`;
+    ctx.fillText('CERTIFICADO DE APROVECHAMIENTO', W/2, mm(38));
+
+    ctx.fillStyle = '#64748b';
+    ctx.font = `${mm(4)}px Arial, sans-serif`;
+    ctx.fillText('Equipos que Crean · Colaboración digital, proceso iterativo y fuentes fiables', W/2, mm(48));
+
+    ctx.strokeStyle = '#65a30d';
+    ctx.lineWidth = mm(0.8);
+    ctx.beginPath();
+    ctx.moveTo(W/2 - mm(60), mm(53));
+    ctx.lineTo(W/2 + mm(60), mm(53));
+    ctx.stroke();
+
+    ctx.fillStyle = '#475569';
+    ctx.font = `${mm(4.5)}px Arial, sans-serif`;
+    ctx.fillText('Se certifica que', W/2, mm(68));
+
+    ctx.fillStyle = '#0f172a';
+    ctx.font = `bold ${mm(14)}px Arial, sans-serif`;
+    ctx.fillText(estado.nombre, W/2, mm(85));
+
+    ctx.fillStyle = '#334155';
+    ctx.font = `${mm(4)}px Arial, sans-serif`;
+    ctx.fillText('ha completado las actividades interactivas de la aplicación educativa sobre trabajo', W/2, mm(97));
+    ctx.fillText('colaborativo, herramientas digitales, proceso iterativo y fuentes fiables, obteniendo:', W/2, mm(104));
+
+    const s = estado.scores;
+    const resultados = [
+      ['Asignación de roles', s.roles>0 ? s.roles + ' / 5 correctos' : 'No realizado'],
+      ['Orden del proceso iterativo', s.fases>0 ? s.fases + ' / 6 fases' : 'No realizado'],
+      ['Simulador de reunión', s.reunion>0 ? s.reunion + ' / 5 aciertos' : 'No realizado'],
+      ['Detector de fuentes fiables', s.fuentes>0 ? s.fuentes + ' / 10 aciertos' : 'No realizado'],
+      ['Emparejar herramientas digitales', s.herramientas>0 ? s.herramientas + ' / 6 parejas' : 'No realizado'],
+      ['Cuestionario final', s.quiz>0 ? s.quiz + ' / 10' : 'No realizado'],
+      ['Retos completados', estado.retos.length + ' / ' + RETOS_TOTALES]
+    ];
+
+    const tableX = mm(60);
+    const tableY = mm(116);
+    const rowH = mm(9);
+    const colW1 = mm(110), colW2 = mm(70);
+    const totalW = colW1 + colW2;
+
+    ctx.fillStyle = '#312e81';
+    ctx.fillRect(tableX, tableY, totalW, mm(9));
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `bold ${mm(3.6)}px Arial, sans-serif`;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('ACTIVIDAD', tableX + mm(4), tableY + mm(4.5));
+    ctx.fillText('RESULTADO', tableX + colW1 + mm(4), tableY + mm(4.5));
+
+    resultados.forEach((row, i)=>{
+      const y = tableY + mm(9) + i * rowH;
+      if(i % 2 === 0){
+        ctx.fillStyle = '#e0e7ff';
+        ctx.fillRect(tableX, y, totalW, rowH);
+      }
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = mm(0.2);
+      ctx.strokeRect(tableX, y, totalW, rowH);
+      ctx.fillStyle = '#1e293b';
+      ctx.font = `${mm(3.6)}px Arial, sans-serif`;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(row[0], tableX + mm(4), y + rowH/2);
+      ctx.font = `bold ${mm(3.6)}px Arial, sans-serif`;
+      ctx.fillText(row[1], tableX + colW1 + mm(4), y + rowH/2);
+    });
+
+    const fecha = new Date().toLocaleDateString('es-ES', {day:'numeric', month:'long', year:'numeric'});
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#64748b';
+    ctx.font = `${mm(3.5)}px Arial, sans-serif`;
+    ctx.fillText('Fecha de emisión: ' + fecha, W/2, H - mm(24));
+    ctx.font = `${mm(3)}px Arial, sans-serif`;
+    ctx.fillText('Este certificado acredita la realización de las actividades interactivas de la aplicación educativa.', W/2, H - mm(17));
+
+    const imgData = canvas.toDataURL('image/png');
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
+    doc.addImage(imgData, 'PNG', 0, 0, W_MM, H_MM, undefined, 'FAST');
+    doc.save('Certificado_EquiposQueCrean_' + estado.nombre.replace(/[^a-zA-Z0-9]/g,'_') + '.pdf');
+    toast('¡Certificado descargado!');
+  } catch(err){
+    console.error(err);
+    toast('No se pudo generar el PDF.');
+  }
+}
+
+/* ================================================================
+   15. INICIALIZACIÓN
+================================================================ */
+cargarEstado();
+mostrarLogin();
+actualizarProgreso();
+</script>
+</body>
+</html>
