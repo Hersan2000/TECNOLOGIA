@@ -1412,8 +1412,17 @@ let estado = {
     canvas: 0,
     quiz: 0
   },
-  iniciado: null
+  iniciado: null,
+  /* Estado detallado de cada actividad (para restaurar la vista) */
+  detective: [],        // ["colegio-0", "barrio-3", ...]
+  ideasGuardadas: [],   // ["App ... para ...", ...]
+  matriz: {},           // { m1: {tipo:'rapida', correcto:false}, ... }
+  dafo: {},             // { d1: {tipo:'F', correcto:true}, ... }
+  canvas: {},           // { problema: "0", ... } (índice de la opción elegida)
+  quiz: {}              // { 0: 1, 1: 3, ... } (índice de la opción elegida)
 };
+
+let restaurando = true; // suprime toasts durante la restauración inicial
 
 function guardarEstado(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(estado)); }catch(e){} }
 function cargarEstado(){
@@ -1425,10 +1434,19 @@ function cargarEstado(){
         estado = Object.assign(estado, d);
         estado.scores = Object.assign({detective:0,ideas:0,matriz:0,dafo:0,canvas:0,quiz:0}, d.scores || {});
         estado.retos = Array.isArray(d.retos) ? d.retos : [];
+        estado.detective = Array.isArray(d.detective) ? d.detective : [];
+        estado.ideasGuardadas = Array.isArray(d.ideasGuardadas) ? d.ideasGuardadas : [];
+        estado.matriz = (d.matriz && typeof d.matriz === 'object') ? d.matriz : {};
+        estado.dafo = (d.dafo && typeof d.dafo === 'object') ? d.dafo : {};
+        estado.canvas = (d.canvas && typeof d.canvas === 'object') ? d.canvas : {};
+        estado.quiz = (d.quiz && typeof d.quiz === 'object') ? d.quiz : {};
       }
     }
   }catch(e){}
 }
+
+/* Cargar estado ANTES de inicializar las actividades */
+cargarEstado();
 
 /* ================================================================
    2. PROGRESO
@@ -1447,6 +1465,7 @@ function completarReto(id, msg){
 }
 let toastTimer;
 function toast(texto){
+  if(restaurando) return; // no mostrar toasts durante la restauración inicial
   const t = document.getElementById('toast');
   t.innerHTML = '🏅 ' + texto;
   t.classList.add('show');
@@ -1477,12 +1496,8 @@ function mostrarLogin(){
     `;
     document.getElementById('btnContinuar').addEventListener('click', iniciarApp);
     document.getElementById('btnCambiar').addEventListener('click', ()=>{
-      estado.nombre = '';
-      estado.retos = [];
-      estado.scores = {detective:0,ideas:0,matriz:0,dafo:0,canvas:0,quiz:0};
-      estado.iniciado = null;
-      guardarEstado();
-      renderLoginForm();
+      try{ localStorage.removeItem(LS_KEY); }catch(e){}
+      location.reload();
     });
   } else {
     renderLoginForm();
@@ -1589,6 +1604,46 @@ const escenasData = [
 
 let detectiveDetectadas = 0;
 
+/* Marca un punto como detectado. Devuelve false si ya estaba o no existe. */
+function marcarDetectada(escId, i, silent){
+  const circle = document.querySelector(`.hotspot[data-esc="${escId}"][data-i="${i}"]`);
+  if(!circle || circle.classList.contains('detectado')) return false;
+  const esc = escenasData.find(e=>e.id===escId);
+  if(!esc || !esc.spots[i]) return false;
+  circle.classList.add('detectado');
+
+  const info = document.getElementById(`info_${escId}`);
+  if(info){
+    info.innerHTML = `<strong>🔍 Necesidad detectada:</strong><br>${esc.spots[i].nec}`;
+    info.classList.add('show');
+  }
+  const div = circle.closest('.escena-card');
+  const detectadas = div.querySelectorAll('.hotspot.detectado').length;
+  const contEl = document.getElementById(`cont_${escId}`);
+  if(contEl) contEl.textContent = detectadas + ' / 4';
+
+  detectiveDetectadas++;
+  document.getElementById('detectiveTotal').textContent = detectiveDetectadas;
+
+  if(detectadas === 4){
+    const comp = document.getElementById(`comp_${escId}`);
+    if(comp) comp.classList.add('show');
+  }
+
+  const key = escId + '-' + i;
+  if(!estado.detective.includes(key)) estado.detective.push(key);
+  if(detectiveDetectadas > estado.scores.detective) estado.scores.detective = detectiveDetectadas;
+
+  if(!silent){
+    guardarEstado();
+    actualizarCertificado();
+    if(detectiveDetectadas === 12){
+      completarReto('detective', '¡Detective del entorno completado!');
+    }
+  }
+  return true;
+}
+
 function initDetective(){
   const cont = document.getElementById('escenaWrap');
   if(!cont) return;
@@ -1640,34 +1695,24 @@ function initDetective(){
 
     div.querySelectorAll('.hotspot').forEach(c=>{
       c.addEventListener('click', ()=>{
-        if(c.classList.contains('detectado')) return;
-        c.classList.add('detectado');
         const i = parseInt(c.dataset.i, 10);
-        const nec = esc.spots[i].nec;
-        const info = document.getElementById(`info_${esc.id}`);
-        info.innerHTML = `<strong>🔍 Necesidad detectada:</strong><br>${nec}`;
-        info.classList.add('show');
-
-        const detectadas = div.querySelectorAll('.hotspot.detectado').length;
-        document.getElementById(`cont_${esc.id}`).textContent = detectadas + ' / 4';
-        detectiveDetectadas++;
-        document.getElementById('detectiveTotal').textContent = detectiveDetectadas;
-
-        if(detectadas === 4){
-          document.getElementById(`comp_${esc.id}`).classList.add('show');
-        }
-
-        if(detectiveDetectadas > estado.scores.detective){
-          estado.scores.detective = detectiveDetectadas;
-          guardarEstado();
-          actualizarCertificado();
-        }
-        if(detectiveDetectadas === 12){
-          completarReto('detective', '¡Detective del entorno completado!');
-        }
+        marcarDetectada(esc.id, i, false);
       });
     });
   });
+
+  /* RESTAURAR puntos ya detectados en sesiones anteriores */
+  estado.detective.forEach(key=>{
+    const parts = key.split('-');
+    const escId = parts[0];
+    const i = parseInt(parts[1], 10);
+    marcarDetectada(escId, i, true);
+  });
+
+  /* Asegurar que si ya se completó antes, el reto siga marcado */
+  if(detectiveDetectadas === 12){
+    completarReto('detective', null);
+  }
 }
 
 initDetective();
@@ -1709,7 +1754,8 @@ const colectivos = [
 ];
 
 let ideaActual = null;
-let ideasGuardadas = [];
+/* Referencia directa al array del estado persistente */
+let ideasGuardadas = estado.ideasGuardadas;
 let girando = false;
 
 function aleatorio(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
@@ -1759,7 +1805,7 @@ function guardarIdea(){
     return;
   }
   const idea = `${ideaActual.t.ico} ${ideaActual.t.txt} para ${ideaActual.c.txt}, resolviendo: ${ideaActual.n.txt}`;
-  ideasGuardadas.push(idea);
+  ideasGuardadas.push(idea); // misma referencia que estado.ideasGuardadas
   ideaActual = null;
   document.getElementById('btnGuardarIdea').disabled = true;
   renderIdeasGuardadas();
@@ -1787,6 +1833,10 @@ function renderIdeasGuardadas(){
 document.getElementById('btnGenerar').addEventListener('click', generarIdea);
 document.getElementById('btnGuardarIdea').addEventListener('click', guardarIdea);
 
+/* RESTAURAR ideas guardadas */
+renderIdeasGuardadas();
+if(ideasGuardadas.length >= 3) completarReto('ideas', null);
+
 /* ================================================================
    8. RETO 3 · MATRIZ DE PRIORIZACIÓN
 ================================================================ */
@@ -1806,6 +1856,9 @@ function initMatriz(){
   cont.innerHTML = '';
   cont.style.flexDirection = 'row';
   cont.style.flexWrap = 'wrap';
+  colocadasMatriz = 0;
+  ideaSeleccionadaMatriz = null;
+
   ideasMatriz.forEach(i=>{
     const chip = document.createElement('div');
     chip.className = 'idea-chip';
@@ -1842,6 +1895,9 @@ function initMatriz(){
       const chip = document.querySelector(`.idea-chip[data-id="${ideaSeleccionadaMatriz.id}"]`);
       if(chip) chip.classList.add('colocada');
 
+      /* GUARDAR en estado */
+      estado.matriz[ideaSeleccionadaMatriz.id] = { tipo: tipo, correcto: correcto };
+
       colocadasMatriz++;
       const msg = document.getElementById('matrizMsg');
       if(correcto){
@@ -1861,6 +1917,35 @@ function initMatriz(){
       }
     });
   });
+
+  /* RESTAURAR colocaciones previas */
+  Object.keys(estado.matriz).forEach(ideaId=>{
+    const info = estado.matriz[ideaId];
+    const idea = ideasMatriz.find(x=>x.id===ideaId);
+    if(!idea) return;
+    const cz = document.querySelector(`.matriz-cuadrante[data-tipo="${info.tipo}"]`);
+    if(!cz) return;
+    const ideaBox = document.createElement('div');
+    ideaBox.className = 'cuadrante-idea';
+    if(!info.correcto){
+      ideaBox.style.background = '#fee2e2';
+      ideaBox.style.borderColor = '#dc2626';
+      ideaBox.style.color = '#7f1d1d';
+    }
+    ideaBox.textContent = idea.txt + (info.correcto ? ' ✓' : ' (revisar)');
+    cz.querySelector('.cuadrante-ideas').appendChild(ideaBox);
+    const chip = document.querySelector(`.idea-chip[data-id="${ideaId}"]`);
+    if(chip) chip.classList.add('colocada');
+    colocadasMatriz++;
+  });
+
+  const msg = document.getElementById('matrizMsg');
+  if(colocadasMatriz === 4){
+    msg.textContent = `✅ Matriz completada anteriormente (${colocadasMatriz}/4).`;
+    completarReto('matriz', null);
+  } else if(colocadasMatriz > 0){
+    msg.textContent = `📋 Ideas colocadas previamente: ${colocadasMatriz}/4.`;
+  }
 }
 
 initMatriz();
@@ -1886,6 +1971,9 @@ function initDafo(){
   const pend = document.getElementById('dafoPendientes');
   if(!pend) return;
   pend.innerHTML = '';
+  dafoSeleccion = null;
+  dafoColocados = 0;
+
   const mezcla = [...dafoElementos].sort(()=>Math.random()-0.5);
   mezcla.forEach(d=>{
     const chip = document.createElement('div');
@@ -1920,6 +2008,9 @@ function initDafo(){
       const chip = document.querySelector(`.dafo-chip[data-id="${dafoSeleccion.id}"]`);
       if(chip) chip.classList.add('colocado');
 
+      /* GUARDAR en estado */
+      estado.dafo[dafoSeleccion.id] = { tipo: tipo, correcto: correcto };
+
       dafoColocados++;
       const msg = document.getElementById('dafoMsg');
       if(correcto){
@@ -1939,6 +2030,35 @@ function initDafo(){
       }
     });
   });
+
+  /* RESTAURAR colocaciones previas */
+  Object.keys(estado.dafo).forEach(id=>{
+    const info = estado.dafo[id];
+    const el = dafoElementos.find(x=>x.id===id);
+    if(!el) return;
+    const cont = document.getElementById('dafo' + info.tipo);
+    if(!cont) return;
+    const item = document.createElement('div');
+    item.className = 'dafo-item';
+    if(!info.correcto){
+      item.style.background = '#fee2e2';
+      item.style.borderColor = '#dc2626';
+      item.style.color = '#7f1d1d';
+    }
+    item.textContent = el.txt + (info.correcto ? ' ✓' : ' (revisar)');
+    cont.appendChild(item);
+    const chip = document.querySelector(`.dafo-chip[data-id="${id}"]`);
+    if(chip) chip.classList.add('colocado');
+    dafoColocados++;
+  });
+
+  const msg = document.getElementById('dafoMsg');
+  if(dafoColocados === 8){
+    msg.textContent = `✅ DAFO completado anteriormente (${dafoColocados}/8).`;
+    completarReto('dafo', null);
+  } else if(dafoColocados > 0){
+    msg.textContent = `📋 Tarjetas clasificadas previamente: ${dafoColocados}/8.`;
+  }
 }
 
 initDafo();
@@ -2048,12 +2168,14 @@ const canvasBloques = [
   }
 ];
 
-let canvasSelecciones = {};
+/* Referencia directa al objeto del estado persistente */
+let canvasSelecciones = estado.canvas;
 
 function initCanvas(){
   const cont = document.getElementById('canvasGrid');
   if(!cont) return;
   cont.innerHTML = '';
+
   canvasBloques.forEach(b=>{
     const div = document.createElement('div');
     div.className = 'canvas-bloque' + (b.span === 2 ? ' span2' : b.span === 5 ? ' span5' : '');
@@ -2081,12 +2203,30 @@ function initCanvas(){
       } else {
         val.textContent = b.opciones[idx];
         val.classList.add('show');
-        canvasSelecciones[b.id] = b.opciones[idx];
+        canvasSelecciones[b.id] = idx;
       }
       div.classList.toggle('completo', idx !== '');
       actualizarCanvas();
     });
   });
+
+  /* RESTAURAR selecciones previas */
+  canvasBloques.forEach(b=>{
+    const idx = canvasSelecciones[b.id];
+    if(idx === undefined || idx === null || idx === '') return;
+    const div = document.getElementById('cb_' + b.id);
+    if(!div) return;
+    const sel = div.querySelector('select');
+    const val = div.querySelector('.cb-val');
+    if(!b.opciones[idx]) return;
+    sel.value = idx;
+    val.textContent = b.opciones[idx];
+    val.classList.add('show');
+    div.classList.add('completo');
+  });
+
+  /* Actualizar mensaje según las selecciones restauradas */
+  actualizarCanvas();
 }
 
 function actualizarCanvas(){
@@ -2106,7 +2246,7 @@ function actualizarCanvas(){
     msg.textContent = `📋 Bloques completados: ${completos} / ${total}`;
   } else {
     msg.innerHTML = `🏆 ¡Canvas completo! Tu proyecto emprendedor está perfectamente definido.<br><span style="font-size:.85rem;color:var(--gris)">Ahora podrías presentarlo a un concurso de emprendimiento o llevarlo a la práctica.</span>`;
-    completarReto('canvas', '¡Canvas emprendedor completado!');
+    completarReto('canvas', null);
   }
 }
 
@@ -2198,9 +2338,40 @@ const preguntasQuiz = [
 
 let quizRespondidas = 0, quizAciertos = 0;
 
+/* Responder una pregunta del quiz. `silent=true` para restaurar sin toasts. */
+function responderQuiz(qIdx, optIdx, silent){
+  const qs = document.querySelectorAll('#quizContainer .q');
+  const div = qs[qIdx];
+  if(!div) return false;
+  const p = preguntasQuiz[qIdx];
+  if(!p) return false;
+  const btns = div.querySelectorAll('.opt');
+  const expl = div.querySelector('.expl');
+  if(btns.length === 0 || btns[0].disabled) return false;
+  if(optIdx < 0 || optIdx >= btns.length) return false;
+
+  btns.forEach(x=>x.disabled = true);
+  btns.forEach(x=>{ if(parseInt(x.dataset.j,10) === p.c) x.classList.add('correct'); });
+  if(optIdx !== p.c) btns[optIdx].classList.add('wrong');
+  else quizAciertos++;
+
+  expl.innerHTML = (optIdx === p.c ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>Respuesta incorrecta.</strong> ') + p.e;
+  expl.classList.add('show');
+  quizRespondidas++;
+
+  estado.quiz[qIdx] = optIdx;
+
+  if(!silent){
+    guardarEstado();
+    if(quizRespondidas === preguntasQuiz.length) mostrarResultadoQuiz(false);
+  }
+  return true;
+}
+
 (function initQuiz(){
   const cont = document.getElementById('quizContainer');
   if(!cont) return;
+  cont.innerHTML = '';
   preguntasQuiz.forEach((p, i)=>{
     const div = document.createElement('div');
     div.className = 'q reveal';
@@ -2219,24 +2390,26 @@ let quizRespondidas = 0, quizAciertos = 0;
     cont.appendChild(div);
     io.observe(div);
     const btns = div.querySelectorAll('.opt');
-    const expl = div.querySelector('.expl');
     btns.forEach(b=>{
       b.addEventListener('click', ()=>{
-        const j = parseInt(b.dataset.j,10);
-        btns.forEach(x=>x.disabled = true);
-        btns.forEach(x=>{ if(parseInt(x.dataset.j,10) === p.c) x.classList.add('correct'); });
-        if(j !== p.c) b.classList.add('wrong');
-        else quizAciertos++;
-        expl.innerHTML = (j === p.c ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>Respuesta incorrecta.</strong> ') + p.e;
-        expl.classList.add('show');
-        quizRespondidas++;
-        if(quizRespondidas === preguntasQuiz.length) mostrarResultadoQuiz();
+        responderQuiz(i, parseInt(b.dataset.j,10), false);
       });
     });
   });
+
+  /* RESTAURAR respuestas guardadas */
+  Object.keys(estado.quiz).forEach(k=>{
+    const i = parseInt(k, 10);
+    responderQuiz(i, estado.quiz[k], true);
+  });
+
+  /* Si ya estaban todas respondidas, mostrar el resultado sin scroll */
+  if(quizRespondidas === preguntasQuiz.length){
+    mostrarResultadoQuiz(true);
+  }
 })();
 
-function mostrarResultadoQuiz(){
+function mostrarResultadoQuiz(silent){
   const res = document.getElementById('quizResult');
   document.getElementById('quizScore').textContent = quizAciertos + '/' + preguntasQuiz.length;
   const pct = Math.round(quizAciertos / preguntasQuiz.length * 100);
@@ -2248,13 +2421,13 @@ function mostrarResultadoQuiz(){
   document.getElementById('quizTitle').textContent = titulo;
   document.getElementById('quizMsg').textContent = msg;
   res.style.display = 'block';
-  res.scrollIntoView({behavior:'smooth', block:'center'});
+  if(!silent) res.scrollIntoView({behavior:'smooth', block:'center'});
   if(quizAciertos > estado.scores.quiz){
     estado.scores.quiz = quizAciertos;
     guardarEstado();
     actualizarCertificado();
   }
-  completarReto('quiz', '¡Cuestionario final completado! ' + quizAciertos + '/' + preguntasQuiz.length);
+  completarReto('quiz', silent ? null : ('¡Cuestionario final completado! ' + quizAciertos + '/' + preguntasQuiz.length));
 }
 
 /* ================================================================
@@ -2440,9 +2613,12 @@ function generarPDFRasterizado(){
 /* ================================================================
    14. INICIALIZACIÓN
 ================================================================ */
-cargarEstado();
+/* El estado ya se cargó al principio (cargarEstado()). Ahora desactivamos
+   el flag de restauración y mostramos la interfaz. */
+restaurando = false;
 mostrarLogin();
 actualizarProgreso();
+actualizarCertificado();
 </script>
 </body>
 </html>
