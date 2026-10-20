@@ -1,0 +1,3091 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Taller de Fabricación · Técnicas, materiales y diseño asistido</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --oxido:#c2410c; --oxido-claro:#ffedd5; --oxido-oscuro:#7c2d12;
+  --acero:#334155; --acero-claro:#e2e8f0; --acero-oscuro:#0f172a;
+  --lima:#65a30d; --lima-claro:#ecfccb; --lima-oscuro:#3f6212;
+  --ambar:#d97706; --ambar-claro:#fef3c7; --ambar-oscuro:#78350f;
+  --azul:#0369a1; --azul-claro:#e0f2fe; --azul-oscuro:#082f49;
+  --rojo:#dc2626; --rojo-claro:#fee2e2;
+  --gris:#64748b; --gris-claro:#f1f5f9; --gris-oscuro:#1e293b;
+  --blanco:#fff; --negro:#0f172a;
+  --sombra:0 10px 30px rgba(15,23,42,.08);
+  --sombra-lg:0 20px 50px rgba(15,23,42,.14);
+  --radio:20px;
+  --fuente:'Segoe UI',system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+  --mono:'Consolas','Monaco','Courier New',monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0; font-family:var(--fuente); background:var(--gris-claro); color:var(--negro); line-height:1.7; -webkit-font-smoothing:antialiased;}
+body.locked{overflow:hidden}
+h1,h2,h3,h4{line-height:1.2; margin:0 0 .5rem}
+p{margin:0 0 1rem}
+
+/* LOGIN */
+#loginOverlay{
+  position:fixed; inset:0; z-index:2000;
+  background:radial-gradient(1000px 600px at 20% 10%,#7c2d12 0%,transparent 60%),
+             radial-gradient(900px 500px at 85% 90%,#082f49 0%,transparent 55%),
+             linear-gradient(160deg,#431407,#0f172a);
+  display:grid; place-items:center; padding:1.2rem;
+  transition:opacity .6s, visibility .6s;
+}
+#loginOverlay.hidden{opacity:0; visibility:hidden; pointer-events:none}
+.login-card{
+  background:#fff; border-radius:26px; padding:2.2rem 2rem;
+  max-width:500px; width:100%; box-shadow:0 30px 70px rgba(0,0,0,.4);
+  text-align:center; position:relative; overflow:hidden;
+  animation:aparecer .6s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes aparecer{from{opacity:0;transform:translateY(24px) scale(.96)}to{opacity:1;transform:none}}
+.login-card::before{content:""; position:absolute; top:0; left:0; right:0; height:6px;
+  background:linear-gradient(90deg,var(--oxido),var(--lima),var(--azul));}
+.login-emoji{font-size:3.4rem; line-height:1; margin-bottom:.5rem; display:block}
+.login-card h1{font-size:1.55rem; color:var(--oxido-oscuro); letter-spacing:-.4px}
+.login-card p.sub{font-size:.94rem; color:var(--gris); margin-bottom:1.5rem}
+.login-card input{width:100%; font-family:inherit; font-size:1.02rem; padding:.95rem 1.1rem;
+  border-radius:14px; border:2px solid #e2e8f0; background:#f8fafc; color:var(--negro);
+  transition:.2s; text-align:center; font-weight:600; margin-bottom:1rem;}
+.login-card input:focus{outline:none; border-color:var(--oxido); background:#fff; box-shadow:0 0 0 5px rgba(194,65,12,.14);}
+.login-card .btn{width:100%; justify-content:center}
+.login-error{font-size:.82rem; color:var(--rojo); margin-top:.7rem; min-height:1.2em; font-weight:700}
+.welcome-back{background:var(--oxido-claro); border:1.5px solid #fed7aa; border-radius:14px;
+  padding:1rem; margin-bottom:1.2rem; font-size:.92rem; color:var(--oxido-oscuro);}
+.welcome-back strong{font-size:1.05rem}
+.login-btns{display:flex; gap:.6rem; flex-wrap:wrap; justify-content:center}
+.login-btns .btn{flex:1; min-width:130px; justify-content:center}
+
+/* PROGRESO */
+#progresoGlobal{position:fixed; top:0; left:0; right:0; height:5px; background:rgba(255,255,255,.2); z-index:1000;}
+#progresoBarra{height:100%; width:0%; transition:width .6s cubic-bezier(.2,.8,.2,1);
+  background:linear-gradient(90deg,var(--oxido),var(--lima),var(--azul));
+  box-shadow:0 0 12px rgba(194,65,12,.6);}
+
+/* NAV */
+nav{position:sticky; top:0; z-index:900; background:rgba(255,255,255,.9); backdrop-filter:blur(14px);
+  border-bottom:1px solid #e2e8f0; padding:.55rem .8rem;}
+.nav-inner{max-width:1200px; margin:0 auto; display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;}
+.nav-brand{font-weight:800; font-size:.92rem; letter-spacing:.5px; color:var(--oxido-oscuro);
+  display:flex; align-items:center; gap:.45rem; margin-right:auto;}
+.nav-brand .dot{width:11px;height:11px;border-radius:50%;background:linear-gradient(135deg,var(--oxido),var(--lima));}
+.nav-user{font-size:.8rem; font-weight:800; color:var(--oxido-oscuro);
+  background:var(--oxido-claro); padding:.3rem .8rem; border-radius:999px;
+  display:flex; align-items:center; gap:.35rem;}
+.nav-links{display:flex; gap:.3rem; flex-wrap:wrap}
+.nav-links a{font-size:.8rem; font-weight:600; text-decoration:none; color:var(--gris-oscuro);
+  padding:.35rem .7rem; border-radius:999px; transition:.25s; white-space:nowrap;}
+.nav-links a:hover{background:var(--oxido-claro); color:var(--oxido-oscuro)}
+.nav-links a.active{background:var(--oxido-oscuro); color:#fff}
+#progresoPill{font-size:.72rem; font-weight:800; color:var(--oxido-oscuro); background:var(--oxido-claro);
+  padding:.3rem .7rem; border-radius:999px; white-space:nowrap;}
+
+/* HERO */
+header.hero{position:relative; overflow:hidden; color:#fff;
+  background:radial-gradient(1200px 600px at 15% -10%,#7c2d12 0%,transparent 60%),
+             radial-gradient(900px 500px at 90% 10%,#082f49 0%,transparent 55%),
+             linear-gradient(160deg,#431407,#0f172a);
+  padding:4.5rem 1.2rem 4rem;}
+.blob{position:absolute; border-radius:50%; filter:blur(70px); opacity:.4; animation:flotar 14s ease-in-out infinite}
+.blob.b1{width:340px;height:340px;background:#c2410c;top:-90px;left:-60px}
+.blob.b2{width:280px;height:280px;background:#65a30d;bottom:-110px;right:-40px;animation-delay:-5s}
+.blob.b3{width:220px;height:220px;background:#0369a1;top:40%;right:25%;animation-delay:-9s}
+@keyframes flotar{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(28px,-32px) scale(1.12)}}
+.hero-inner{position:relative; max-width:1000px; margin:0 auto; text-align:center}
+.badge-top{display:inline-flex; align-items:center; gap:.5rem; font-size:.76rem; font-weight:800;
+  letter-spacing:1.4px; text-transform:uppercase; color:#fdba74;
+  background:rgba(194,65,12,.18); border:1px solid rgba(253,186,116,.4);
+  padding:.42rem 1rem; border-radius:999px; margin-bottom:1.2rem;}
+header.hero h1{font-size:clamp(1.85rem,5.2vw,3.3rem); font-weight:900; letter-spacing:-1px; margin-bottom:.7rem;}
+header.hero h1 span{background:linear-gradient(90deg,#fdba74,#bef264,#7dd3fc);
+  -webkit-background-clip:text; background-clip:text; color:transparent;}
+.hero-sub{max-width:800px; margin:0 auto 1.6rem; color:#cbd5e1; font-size:clamp(.95rem,2.2vw,1.1rem)}
+.hero-sub strong{color:#fdba74}
+.hero-chips{display:flex; gap:.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:2rem}
+.chip{font-size:.74rem; font-weight:800; letter-spacing:.6px; padding:.34rem .8rem; border-radius:999px;
+  background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.22); color:#e2e8f0;}
+.hero-cta{display:flex; gap:.7rem; justify-content:center; flex-wrap:wrap}
+.btn{display:inline-flex; align-items:center; gap:.45rem; cursor:pointer; border:none;
+  font-family:inherit; font-size:.92rem; font-weight:800; padding:.8rem 1.5rem; border-radius:999px;
+  text-decoration:none; transition:transform .2s, box-shadow .2s, background .2s;}
+.btn-primary{background:linear-gradient(135deg,var(--oxido),var(--oxido-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(194,65,12,.4)}
+.btn-primary:hover{transform:translateY(-3px); box-shadow:0 16px 34px rgba(194,65,12,.5)}
+.btn-ghost{background:rgba(255,255,255,.1); color:#fff; border:1.5px solid rgba(255,255,255,.3)}
+.btn-ghost:hover{background:rgba(255,255,255,.2); transform:translateY(-3px)}
+.btn-lima{background:linear-gradient(135deg,var(--lima),var(--lima-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(101,163,13,.4)}
+.btn-lima:hover{transform:translateY(-3px)}
+.btn-azul{background:linear-gradient(135deg,var(--azul),var(--azul-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(3,105,161,.4)}
+.btn-azul:hover{transform:translateY(-3px)}
+.btn-ambar{background:linear-gradient(135deg,var(--ambar),var(--ambar-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(217,119,6,.4)}
+.btn-ambar:hover{transform:translateY(-3px)}
+
+/* LAYOUT */
+main{max-width:1200px; margin:0 auto; padding:0 1.1rem 5rem}
+section{padding:3.2rem 0 1rem; scroll-margin-top:70px}
+.sec-head{margin-bottom:1.8rem}
+.kicker{display:inline-block; font-size:.72rem; font-weight:900; letter-spacing:1.6px; text-transform:uppercase;
+  color:var(--oxido-oscuro); background:var(--oxido-claro); padding:.3rem .75rem; border-radius:999px; margin-bottom:.7rem;}
+.kicker.lima{color:var(--lima-oscuro); background:var(--lima-claro)}
+.kicker.azul{color:var(--azul-oscuro); background:var(--azul-claro)}
+.kicker.ambar{color:var(--ambar-oscuro); background:var(--ambar-claro)}
+.kicker.rojo{color:#991b1b; background:var(--rojo-claro)}
+.sec-head h2{font-size:clamp(1.5rem,3.6vw,2.15rem); font-weight:900; letter-spacing:-.6px}
+.sec-head p.lead{color:var(--gris); max-width:900px; font-size:1rem}
+.card{background:var(--blanco); border-radius:var(--radio); padding:1.6rem; box-shadow:var(--sombra); border:1px solid #e2e8f0;}
+.grid{display:grid; gap:1.1rem}
+.g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.reveal{opacity:0; transform:translateY(26px); transition:opacity .7s cubic-bezier(.2,.8,.2,1), transform .7s cubic-bezier(.2,.8,.2,1)}
+.reveal.in{opacity:1; transform:none}
+
+/* PILARES */
+.pilar{background:#fff; border-radius:16px; padding:1.3rem; border:1px solid #e2e8f0;
+  border-top:5px solid var(--oxido); box-shadow:var(--sombra); transition:.3s;}
+.pilar:hover{transform:translateY(-6px); box-shadow:var(--sombra-lg)}
+.pilar .ico{font-size:2rem; display:block; margin-bottom:.5rem}
+.pilar h4{font-size:1.05rem; color:var(--oxido-oscuro)}
+.pilar p{font-size:.9rem; color:var(--gris); margin:0}
+
+/* ========== TEORÍA EXPANDIDA ========== */
+.teoria{
+  background:#fff; border-radius:var(--radio); padding:1.6rem; box-shadow:var(--sombra);
+  border:1px solid #e2e8f0; margin-bottom:1.4rem;
+}
+.teoria h3{
+  color:var(--oxido-oscuro); font-size:1.15rem; margin-bottom:.8rem;
+  display:flex; align-items:center; gap:.5rem;
+}
+.teoria h3 .th-ico{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:34px; height:34px; border-radius:10px;
+  background:var(--oxido-claro); color:var(--oxido-oscuro);
+  font-size:1rem;
+}
+.teoria h4{
+  color:var(--oxido-oscuro); font-size:1rem; margin-top:1.2rem; margin-bottom:.5rem;
+  padding-left:.6rem; border-left:4px solid var(--oxido);
+}
+.teoria p{font-size:.94rem; color:var(--gris-oscuro); margin-bottom:.8rem}
+.teoria ul, .teoria ol{font-size:.92rem; color:var(--gris-oscuro); margin:0 0 1rem; padding-left:1.3rem}
+.teoria li{margin-bottom:.35rem}
+.teoria li strong{color:var(--oxido-oscuro)}
+.teoria .destacado{
+  background:linear-gradient(150deg,var(--oxido-claro),#fff);
+  border-left:4px solid var(--oxido); border-radius:0 12px 12px 0;
+  padding:.9rem 1.1rem; margin:1rem 0; font-size:.92rem;
+  color:var(--oxido-oscuro);
+}
+.teoria .destacado strong{color:var(--oxido-oscuro); font-weight:900}
+.teoria.lima .th-ico{background:var(--lima-claro); color:var(--lima-oscuro)}
+.teoria.lima h3{color:var(--lima-oscuro)}
+.teoria.lima h4{color:var(--lima-oscuro); border-color:var(--lima)}
+.teoria.lima li strong{color:var(--lima-oscuro)}
+.teoria.lima .destacado{background:linear-gradient(150deg,var(--lima-claro),#fff); border-color:var(--lima); color:var(--lima-oscuro)}
+.teoria.azul .th-ico{background:var(--azul-claro); color:var(--azul-oscuro)}
+.teoria.azul h3{color:var(--azul-oscuro)}
+.teoria.azul h4{color:var(--azul-oscuro); border-color:var(--azul)}
+.teoria.azul li strong{color:var(--azul-oscuro)}
+.teoria.azul .destacado{background:linear-gradient(150deg,var(--azul-claro),#fff); border-color:var(--azul); color:var(--azul-oscuro)}
+.teoria.ambar .th-ico{background:var(--ambar-claro); color:var(--ambar-oscuro)}
+.teoria.ambar h3{color:var(--ambar-oscuro)}
+.teoria.ambar h4{color:var(--ambar-oscuro); border-color:var(--ambar)}
+.teoria.ambar li strong{color:var(--ambar-oscuro)}
+.teoria.ambar .destacado{background:linear-gradient(150deg,var(--ambar-claro),#fff); border-color:var(--ambar); color:var(--ambar-oscuro)}
+.teoria.rojo .th-ico{background:var(--rojo-claro); color:#991b1b}
+.teoria.rojo h3{color:#991b1b}
+.teoria.rojo h4{color:#991b1b; border-color:var(--rojo)}
+.teoria.rojo li strong{color:#991b1b}
+.teoria.rojo .destacado{background:linear-gradient(150deg,var(--rojo-claro),#fff); border-color:var(--rojo); color:#991b1b}
+.teoria .ejemplo{
+  background:#f8fafc; border-radius:10px; padding:.7rem .9rem;
+  font-size:.85rem; color:var(--gris-oscuro); margin:.5rem 0;
+  border-left:3px solid var(--gris);
+}
+.teoria .ejemplo strong{color:var(--gris-oscuro)}
+.teoria .tabla-tipos{
+  width:100%; border-collapse:collapse; margin:.8rem 0 1rem;
+  font-size:.86rem;
+}
+.teoria .tabla-tipos th, .teoria .tabla-tipos td{
+  padding:.6rem .7rem; text-align:left;
+  border-bottom:1px solid #e2e8f0;
+}
+.teoria .tabla-tipos th{
+  background:var(--oxido-claro); color:var(--oxido-oscuro);
+  font-weight:900; font-size:.78rem; text-transform:uppercase; letter-spacing:.4px;
+}
+.teoria.lima .tabla-tipos th{background:var(--lima-claro); color:var(--lima-oscuro)}
+.teoria.azul .tabla-tipos th{background:var(--azul-claro); color:var(--azul-oscuro)}
+.teoria.ambar .tabla-tipos th{background:var(--ambar-claro); color:var(--ambar-oscuro)}
+.teoria.rojo .tabla-tipos th{background:var(--rojo-claro); color:#991b1b}
+.teoria .tabla-tipos tr:nth-child(even) td{background:#f8fafc}
+.teoria .grid-teoria{
+  display:grid; gap:.8rem; grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  margin:1rem 0;
+}
+.teoria .bloque-teoria{
+  background:#f8fafc; border-radius:12px; padding:.9rem 1rem;
+  border-top:3px solid var(--oxido);
+}
+.teoria.lima .bloque-teoria{border-color:var(--lima)}
+.teoria.azul .bloque-teoria{border-color:var(--azul)}
+.teoria.ambar .bloque-teoria{border-color:var(--ambar)}
+.teoria.rojo .bloque-teoria{border-color:var(--rojo)}
+.teoria .bloque-teoria h5{
+  font-size:.88rem; font-weight:900; color:var(--oxido-oscuro);
+  margin:0 0 .4rem;
+}
+.teoria.lima .bloque-teoria h5{color:var(--lima-oscuro)}
+.teoria.azul .bloque-teoria h5{color:var(--azul-oscuro)}
+.teoria.ambar .bloque-teoria h5{color:var(--ambar-oscuro)}
+.teoria.rojo .bloque-teoria h5{color:#991b1b}
+.teoria .bloque-teoria p{font-size:.85rem; margin:0; color:var(--gris)}
+.teoria .fases{
+  display:grid; gap:.6rem; grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  margin:1rem 0;
+}
+.teoria .fase{
+  background:#fff; border:2px solid var(--oxido-claro); border-radius:12px;
+  padding:.75rem; text-align:center; position:relative;
+}
+.teoria .fase .fase-num{
+  display:inline-block; font-size:.72rem; font-weight:900; background:var(--oxido);
+  color:#fff; padding:.15rem .55rem; border-radius:999px; margin-bottom:.35rem;
+}
+.teoria .fase h6{font-size:.85rem; font-weight:900; color:var(--oxido-oscuro); margin:.2rem 0}
+.teoria .fase p{font-size:.75rem; color:var(--gris); margin:0; line-height:1.35}
+
+/* ACTIVIDADES */
+.actividad{background:#fff; border-radius:var(--radio); padding:1.6rem; box-shadow:var(--sombra);
+  border:1px solid #e2e8f0; margin-top:1.6rem;}
+.actividad h3{color:var(--oxido-oscuro); font-size:1.15rem; margin-bottom:.3rem}
+.actividad .intro{font-size:.93rem; color:var(--gris); margin-bottom:1rem}
+
+/* ========== RETO 1: TÉCNICAS DE FABRICACIÓN ========== */
+.tec-proyecto{
+  background:linear-gradient(150deg,#ffedd5,#fff); border-left:6px solid var(--oxido);
+  border-radius:0 14px 14px 0; padding:1rem 1.2rem; margin-bottom:1.2rem;
+}
+.tec-proyecto h4{color:var(--oxido-oscuro); font-size:1rem; margin-bottom:.3rem}
+.tec-proyecto p{font-size:.9rem; margin:0; color:var(--gris-oscuro)}
+.tec-fab-grid{display:grid; gap:1rem; grid-template-columns:repeat(auto-fit,minmax(300px,1fr));}
+.tec-fab-card{
+  background:#fff; border:2px solid #e2e8f0; border-radius:16px; padding:1rem 1.1rem;
+  display:flex; flex-direction:column; gap:.7rem; transition:.3s;
+}
+.tec-fab-card.done{border-color:var(--oxido); background:#fff7ed}
+.tec-fab-card .tfc-head{display:flex; gap:.6rem; align-items:flex-start}
+.tec-fab-card .tfc-ico{font-size:1.8rem; flex-shrink:0}
+.tec-fab-card .tfc-titulo{font-size:.95rem; font-weight:900; color:var(--oxido-oscuro); margin:0}
+.tec-fab-card .tfc-desc{font-size:.83rem; color:var(--gris-oscuro); margin:.2rem 0 0; line-height:1.5}
+.tec-fab-opciones{display:grid; grid-template-columns:1fr 1fr; gap:.4rem;}
+.tec-fab-btn{
+  font-family:inherit; font-size:.78rem; font-weight:800; cursor:pointer;
+  padding:.55rem .5rem; border-radius:10px; border:2px solid #e2e8f0; background:#f8fafc;
+  color:var(--gris-oscuro); transition:.2s; display:flex; gap:.35rem; align-items:center; justify-content:center;
+}
+.tec-fab-btn:hover:not(:disabled){border-color:var(--oxido); background:var(--oxido-claro); color:var(--oxido-oscuro)}
+.tec-fab-btn:disabled{cursor:default; opacity:.55}
+.tec-fab-btn.correct{background:#dcfce7; border-color:#16a34a; color:#15803d; opacity:1}
+.tec-fab-btn.wrong{background:#fee2e2; border-color:#dc2626; color:#b91c1c; opacity:1}
+.tec-fab-fb{
+  font-size:.8rem; border-radius:10px; padding:0; max-height:0; overflow:hidden;
+  transition:.35s; color:var(--gris-oscuro);
+}
+.tec-fab-fb.show{max-height:240px; padding:.6rem .75rem; background:#fff; border-left:3px solid var(--oxido)}
+#tecFabMsg{text-align:center; margin-top:1.2rem; font-weight:800; color:var(--oxido-oscuro); min-height:1.4em}
+
+/* ========== RETO 2: DEL PLANO AL TALLER ========== */
+.plano-ficha{
+  background:linear-gradient(150deg,#e0f2fe,#fff); border:2px solid var(--azul);
+  border-radius:16px; padding:1.3rem; margin-bottom:1.3rem;
+}
+.plano-ficha h4{
+  color:var(--azul-oscuro); font-size:1.05rem; margin-bottom:.6rem;
+  display:flex; align-items:center; gap:.5rem;
+}
+.plano-ficha .pf-ref{
+  display:inline-block; font-family:var(--mono); font-size:.72rem; font-weight:800;
+  background:var(--azul); color:#fff; padding:.2rem .55rem; border-radius:6px;
+  letter-spacing:.5px; margin-left:.3rem;
+}
+.plano-esquema{
+  background:#fff; border-radius:12px; padding:1rem; margin-bottom:1.1rem;
+  border:1px solid #bae6fd; display:flex; justify-content:center;
+}
+.plano-esquema svg{max-width:320px; height:auto;}
+.cotas-grid{
+  display:grid; gap:.55rem; grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+}
+.cota-item{
+  background:#fff; border-radius:10px; padding:.65rem .85rem;
+  border-left:4px solid var(--azul); font-size:.85rem; color:var(--gris-oscuro);
+  display:flex; justify-content:space-between; align-items:center; gap:.5rem;
+}
+.cota-item .ci-lbl{font-weight:700}
+.cota-item .ci-val{
+  font-family:var(--mono); font-weight:900; color:var(--azul-oscuro);
+  background:var(--azul-claro); padding:.15rem .5rem; border-radius:6px; font-size:.82rem;
+}
+.pregunta-plano{
+  background:#fff; border-radius:14px; padding:1rem 1.1rem; border:1px solid #e2e8f0;
+  margin-bottom:.7rem;
+}
+.pregunta-plano h5{
+  font-size:.92rem; color:var(--azul-oscuro); margin-bottom:.7rem; font-weight:900;
+}
+.pregunta-plano .pp-opciones{
+  display:grid; gap:.4rem; grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+}
+.pp-op{
+  font-family:inherit; font-size:.83rem; font-weight:700; cursor:pointer;
+  padding:.55rem .8rem; border-radius:10px; border:2px solid #e2e8f0; background:#f8fafc;
+  color:var(--gris-oscuro); transition:.2s;
+}
+.pp-op:hover:not(:disabled){border-color:var(--azul); background:var(--azul-claro); color:var(--azul-oscuro)}
+.pp-op:disabled{cursor:default}
+.pp-op.correct{background:#dcfce7; border-color:#16a34a; color:#15803d}
+.pp-op.wrong{background:#fee2e2; border-color:#dc2626; color:#b91c1c}
+.pp-fb{
+  margin-top:.6rem; font-size:.82rem; background:#f8fafc; border-left:3px solid var(--azul);
+  padding:.55rem .8rem; border-radius:0 10px 10px 0; display:none; color:var(--gris-oscuro);
+}
+.pp-fb.show{display:block}
+#planoMsg{text-align:center; margin-top:1rem; font-weight:800; color:var(--azul-oscuro); min-height:1.4em}
+
+/* ========== RETO 3: SELECTOR DE MATERIALES ========== */
+.mat-selector-wrap{
+  display:grid; gap:1rem; grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+}
+.mat-card{
+  background:#fff; border:2px solid #e2e8f0; border-radius:16px; padding:1rem 1.1rem;
+  transition:.3s; display:flex; flex-direction:column; gap:.7rem;
+}
+.mat-card.done{border-color:var(--lima); background:#f7fee7}
+.mat-head{display:flex; gap:.6rem; align-items:flex-start}
+.mat-ico{font-size:1.8rem; flex-shrink:0}
+.mat-titulo{font-size:.95rem; font-weight:900; color:var(--lima-oscuro); margin:0 0 .15rem}
+.mat-necesidad{font-size:.83rem; color:var(--gris-oscuro); margin:0; line-height:1.5}
+.mat-requisitos{
+  display:flex; flex-wrap:wrap; gap:.35rem; margin-top:.3rem;
+}
+.mat-req{
+  font-size:.7rem; font-weight:800; padding:.2rem .55rem; border-radius:999px;
+  background:var(--lima-claro); color:var(--lima-oscuro);
+}
+.mat-opciones{display:grid; grid-template-columns:1fr 1fr; gap:.4rem;}
+.mat-btn{
+  font-family:inherit; font-size:.78rem; font-weight:800; cursor:pointer;
+  padding:.55rem .5rem; border-radius:10px; border:2px solid #e2e8f0; background:#f8fafc;
+  color:var(--gris-oscuro); transition:.2s;
+}
+.mat-btn:hover:not(:disabled){border-color:var(--lima); background:var(--lima-claro); color:var(--lima-oscuro)}
+.mat-btn:disabled{cursor:default; opacity:.55}
+.mat-btn.correct{background:#dcfce7; border-color:#16a34a; color:#15803d; opacity:1}
+.mat-btn.wrong{background:#fee2e2; border-color:#dc2626; color:#b91c1c; opacity:1}
+.mat-fb{
+  font-size:.8rem; border-radius:10px; padding:0; max-height:0; overflow:hidden;
+  transition:.35s; color:var(--gris-oscuro);
+}
+.mat-fb.show{max-height:240px; padding:.6rem .75rem; background:#fff; border-left:3px solid var(--lima)}
+#matMsg{text-align:center; margin-top:1.2rem; font-weight:800; color:var(--lima-oscuro); min-height:1.4em}
+
+/* ========== RETO 4: RUTA DE FABRICACIÓN ========== */
+.ruta-fab-progreso{
+  display:flex; gap:.4rem; justify-content:center; flex-wrap:wrap; margin-bottom:1.2rem;
+}
+.ruta-fab-slot{
+  flex:1; min-width:72px; max-width:110px; text-align:center;
+  background:#f8fafc; border:2px dashed #cbd5e1; border-radius:12px; padding:.6rem .4rem;
+  font-size:.7rem; font-weight:800; color:var(--gris); letter-spacing:.5px; text-transform:uppercase;
+  transition:.3s; min-height:72px; display:flex; flex-direction:column; justify-content:center; gap:.2rem;
+}
+.ruta-fab-slot.activo{border-color:var(--oxido); background:var(--oxido-claro); color:var(--oxido-oscuro); border-style:solid}
+.ruta-fab-slot.lleno{border-style:solid; border-color:var(--lima); background:var(--lima-claro); color:var(--lima-oscuro)}
+.ruta-fab-slot .rfs-num{font-size:1rem; font-weight:900}
+.ruta-fab-slot .rfs-txt{font-size:.7rem; font-weight:800}
+.ruta-fab-disponibles{
+  display:grid; gap:.6rem; grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+  margin-bottom:1rem;
+}
+.ruta-fab-card{
+  background:#fff; border:2px solid #e2e8f0; border-radius:14px; padding:.85rem 1rem;
+  cursor:pointer; transition:.2s; font-size:.86rem; color:var(--gris-oscuro);
+  display:flex; gap:.6rem; align-items:flex-start;
+}
+.ruta-fab-card:hover:not(.usada){border-color:var(--oxido); background:var(--oxido-claro); color:var(--oxido-oscuro); transform:translateY(-2px)}
+.ruta-fab-card.usada{opacity:.35; cursor:default; border-style:dashed}
+.ruta-fab-card .rfc-ico{font-size:1.4rem; flex-shrink:0}
+.ruta-fab-card .rfc-info{flex:1}
+.ruta-fab-card .rfc-nombre{font-weight:900; font-size:.9rem; margin-bottom:.15rem; color:var(--oxido-oscuro)}
+.ruta-fab-card .rfc-desc{font-size:.78rem; color:var(--gris); line-height:1.35}
+#rutaFabMsg{text-align:center; margin-top:1rem; font-weight:800; color:var(--oxido-oscuro); min-height:1.4em}
+
+/* ========== RETO 5: SEGURIDAD EN EL TALLER ========== */
+.seg-taller-wrap{display:grid; gap:1rem; grid-template-columns:repeat(auto-fit,minmax(300px,1fr));}
+.seg-taller-card{
+  background:#fff; border:2px solid #e2e8f0; border-radius:16px; padding:1rem 1.1rem;
+  transition:.3s; display:flex; flex-direction:column; gap:.7rem;
+}
+.seg-taller-card.done{border-color:var(--rojo); background:#fef2f2}
+.st-head{display:flex; gap:.6rem; align-items:flex-start}
+.st-ico{font-size:1.8rem; flex-shrink:0}
+.st-titulo{font-size:.95rem; font-weight:900; color:#991b1b; margin:0 0 .15rem}
+.st-desc{font-size:.83rem; color:var(--gris-oscuro); margin:0; line-height:1.5}
+.st-opciones{display:grid; grid-template-columns:1fr 1fr; gap:.4rem;}
+.st-btn{
+  font-family:inherit; font-size:.78rem; font-weight:800; cursor:pointer;
+  padding:.55rem .5rem; border-radius:10px; border:2px solid #e2e8f0; background:#f8fafc;
+  color:var(--gris-oscuro); transition:.2s;
+}
+.st-btn:hover:not(:disabled){border-color:var(--rojo); background:var(--rojo-claro); color:#991b1b}
+.st-btn:disabled{cursor:default; opacity:.55}
+.st-btn.correct{background:#dcfce7; border-color:#16a34a; color:#15803d; opacity:1}
+.st-btn.wrong{background:#fee2e2; border-color:#dc2626; color:#b91c1c; opacity:1}
+.st-fb{
+  font-size:.8rem; border-radius:10px; padding:0; max-height:0; overflow:hidden;
+  transition:.35s; color:var(--gris-oscuro);
+}
+.st-fb.show{max-height:240px; padding:.6rem .75rem; background:#fff; border-left:3px solid var(--rojo)}
+#segTallerMsg{text-align:center; margin-top:1.2rem; font-weight:800; color:#991b1b; min-height:1.4em}
+
+/* QUIZ */
+.q{background:#fff; border-radius:16px; padding:1.3rem 1.4rem; box-shadow:var(--sombra);
+  border:1px solid #e2e8f0; margin-bottom:1rem;}
+.q-num{display:inline-block; font-size:.72rem; font-weight:900; letter-spacing:1px; color:#fff;
+  background:var(--oxido-oscuro); padding:.2rem .6rem; border-radius:8px; margin-bottom:.6rem;}
+.q h4{font-size:1rem; margin-bottom:.9rem}
+.opts{display:grid; gap:.5rem}
+.opt{text-align:left; font-family:inherit; font-size:.9rem; font-weight:600; cursor:pointer;
+  padding:.7rem .9rem; border-radius:12px; border:2px solid #e2e8f0; background:#f8fafc; color:var(--gris-oscuro);
+  transition:.2s; display:flex; gap:.6rem; align-items:flex-start;}
+.opt:hover:not(:disabled){border-color:var(--oxido); background:var(--oxido-claro); color:var(--oxido-oscuro); transform:translateX(4px)}
+.opt:disabled{cursor:default}
+.opt .letter{flex:0 0 24px; height:24px; border-radius:7px; background:#e2e8f0; color:var(--gris-oscuro);
+  display:grid; place-items:center; font-size:.75rem; font-weight:900;}
+.opt.correct{background:#dcfce7; border-color:#16a34a; color:#14532d}
+.opt.correct .letter{background:#16a34a; color:#fff}
+.opt.wrong{background:#fee2e2; border-color:#dc2626; color:#7f1d1d}
+.opt.wrong .letter{background:#dc2626; color:#fff}
+.expl{margin-top:.85rem; font-size:.86rem; background:#fff7ed; border-left:4px solid var(--oxido);
+  padding:.7rem .9rem; border-radius:0 10px 10px 0; color:var(--gris-oscuro); display:none;}
+.expl.show{display:block}
+
+/* VOCABULARIO */
+.voc-grid{display:grid; gap:.6rem; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); margin-bottom:1rem}
+.voc-term{text-align:left; font-family:inherit; font-size:.88rem; font-weight:800; cursor:pointer;
+  padding:.85rem 1rem; border-radius:14px; border:2px solid #e2e8f0; background:#fff;
+  color:var(--gris-oscuro); transition:.25s; display:flex; align-items:center; gap:.5rem;}
+.voc-term:hover{border-color:var(--oxido); background:var(--oxido-claro); color:var(--oxido-oscuro); transform:translateY(-3px)}
+.voc-term.active{background:var(--oxido-oscuro); color:#fff; border-color:var(--oxido-oscuro)}
+#vocDef{max-height:0; overflow:hidden; transition:max-height .5s cubic-bezier(.2,.8,.2,1), padding .3s;
+  background:linear-gradient(150deg,#7c2d12,#431407); color:#fff; border-radius:16px; padding:0 1.4rem;}
+#vocDef.show{max-height:440px; padding:1.3rem 1.4rem}
+#vocDef h4{color:#fdba74; font-size:1.05rem; margin-bottom:.5rem}
+#vocDef p{color:#fed7aa; font-size:.92rem; margin:0}
+
+/* CERTIFICADO */
+#certificado{background:linear-gradient(150deg,#7c2d12,#431407); color:#fff; border-radius:26px;
+  padding:2.4rem 1.8rem; box-shadow:var(--sombra-lg); text-align:center; position:relative; overflow:hidden;}
+#certificado::before{content:""; position:absolute; inset:14px; border:2px solid rgba(253,186,116,.35);
+  border-radius:18px; pointer-events:none;}
+#certificado h2{color:#fdba74; font-size:1.5rem; margin-bottom:.3rem}
+#certificado p.sub{color:#fed7aa; font-size:.95rem; max-width:560px; margin:0 auto 1.4rem}
+.cert-name{font-size:clamp(1.6rem,5vw,2.4rem); font-weight:900; letter-spacing:-.5px; margin:.6rem 0 1rem;
+  background:linear-gradient(90deg,#fdba74,#bef264,#7dd3fc); -webkit-background-clip:text; background-clip:text; color:transparent;}
+.cert-stats{display:grid; gap:.7rem; grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  max-width:820px; margin:0 auto 1.6rem;}
+.cert-stat{background:rgba(255,255,255,.09); border:1px solid rgba(253,186,116,.3);
+  border-radius:14px; padding:.8rem .6rem; text-align:center;}
+.cert-stat .num{font-size:1.35rem; font-weight:900; color:#fbbf24; line-height:1}
+.cert-stat .lbl{font-size:.7rem; color:#fed7aa; text-transform:uppercase; letter-spacing:.9px; font-weight:800; margin-top:.3rem}
+.cert-warn{background:rgba(251,191,36,.14); border:1px solid rgba(251,191,36,.4);
+  color:#fde68a; font-size:.86rem; padding:.7rem 1rem; border-radius:12px;
+  max-width:600px; margin:0 auto 1.2rem;}
+.cert-note{font-size:.78rem; color:#94a3b8; margin-top:1rem; max-width:560px; margin-left:auto; margin-right:auto;}
+
+/* Toast */
+#toast{position:fixed; bottom:1.4rem; left:50%; transform:translate(-50%,140%); z-index:1200;
+  background:var(--negro); color:#fff; font-weight:700; font-size:.88rem; padding:.85rem 1.4rem;
+  border-radius:999px; box-shadow:var(--sombra-lg); transition:transform .45s cubic-bezier(.2,.8,.2,1);
+  display:flex; align-items:center; gap:.55rem; max-width:92vw; text-align:center;}
+#toast.show{transform:translate(-50%,0)}
+
+footer{background:var(--negro); color:#94a3b8; text-align:center; padding:2.6rem 1.2rem; font-size:.85rem;}
+footer strong{color:#fdba74}
+
+@media(max-width:640px){
+  .card{padding:1.2rem}
+  .nav-brand span.txt{display:none}
+  .ruta-fab-slot{min-width:58px; font-size:.6rem}
+}
+</style>
+</head>
+<body class="locked">
+
+<div id="loginOverlay">
+  <div class="login-card" id="loginCard"></div>
+</div>
+
+<div id="progresoGlobal"><div id="progresoBarra"></div></div>
+
+<nav>
+  <div class="nav-inner">
+    <div class="nav-brand"><span class="dot"></span><span class="txt">Taller de Fabricación</span></div>
+    <div class="nav-user">👤 <span id="navUserName">—</span></div>
+    <div class="nav-links">
+      <a href="#intro">Inicio</a>
+      <a href="#tecnicas">Técnicas</a>
+      <a href="#vistas">Plano</a>
+      <a href="#materiales">Materiales</a>
+      <a href="#ruta">Ruta</a>
+      <a href="#seguridad">Seguridad</a>
+      <a href="#quiz">Quiz</a>
+      <a href="#certificado">Certificado</a>
+    </div>
+    <div id="progresoPill">0 / 6 retos</div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+  <div class="hero-inner">
+    <div class="badge-top">🔧 Taller virtual</div>
+    <h1>Fabricar con <span>criterio</span>: técnicas, materiales y diseño</h1>
+    <p class="hero-sub">
+      Hola, <strong id="heroNombre">amigo/a</strong>. Aprende a <strong>fabricar soluciones
+      tecnológicas</strong> eligiendo la técnica adecuada (manual, mecánica o digital), leyendo
+      planos de <strong>diseño asistido</strong>, seleccionando <strong>materiales</strong> según
+      sus propiedades y trabajando con <strong>seguridad</strong> en el taller.
+    </p>
+    <div class="hero-chips">
+      <span class="chip">🔨 Manual</span>
+      <span class="chip">⚙️ Mecánica</span>
+      <span class="chip">💻 Digital (3D / láser)</span>
+      <span class="chip">📐 Diseño asistido</span>
+      <span class="chip">🦺 Seguridad</span>
+    </div>
+    <div class="hero-cta">
+      <a href="#intro" class="btn btn-primary">🚀 Empezar</a>
+      <a href="#certificado" class="btn btn-ghost">🏆 Mi certificado</a>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============ INTRO ============ -->
+  <section id="intro">
+    <div class="sec-head reveal">
+      <span class="kicker">Punto de partida</span>
+      <h2>De la idea al objeto: cómo se fabrica un producto</h2>
+      <p class="lead">
+        Fabricar no es solo "cortar y pegar". Es un proceso con <strong>etapas bien definidas</strong>
+        (diseño, planificación, preparación, mecanizado, ensamblaje, acabado y verificación) y con
+        <strong>decisiones técnicas</strong> en cada una: qué técnica de fabricación usar, qué
+        material elegir, cómo leer un plano de diseño asistido y cómo trabajar con seguridad.
+      </p>
+    </div>
+
+    <!-- TEORÍA AMPLIADA: INTRO -->
+    <div class="teoria reveal">
+      <h3><span class="th-ico">📘</span> ¿Qué es la fabricación tecnológica?</h3>
+      <p>
+        La <strong>fabricación</strong> es el conjunto de operaciones que transforman materias
+        primas o piezas semiacabadas en un producto terminado que cumple una función concreta. En
+        tecnología, fabricar implica tomar decisiones técnicas en cada fase, desde la elección de
+        la técnica hasta la verificación final del producto.
+      </p>
+
+      <h4>Fabricar no es improvisar: es un proceso</h4>
+      <p>
+        La diferencia entre un producto profesional y uno casero mal acabado está en el
+        <strong>método</strong>. Fabricar bien exige planificación, conocimiento de materiales,
+        dominio de técnicas y control de calidad. Los cuatro principios de la fabricación son:
+      </p>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>🎯 Precisión</h5>
+          <p>La pieza debe cumplir las medidas del plano con la tolerancia especificada.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>⚙️ Eficiencia</h5>
+          <p>Conseguir el resultado con el mínimo material, tiempo y energía posibles.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🌱 Sostenibilidad</h5>
+          <p>Reducir residuos, usar materiales reciclados y minimizar el impacto ambiental.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🦺 Seguridad</h5>
+          <p>Proteger a quien fabrica: EPIs, normas, herramientas adecuadas y formación.</p>
+        </div>
+      </div>
+
+      <h4>Las 7 fases de la fabricación de un producto</h4>
+      <div class="fases">
+        <div class="fase">
+          <span class="fase-num">FASE 1</span>
+          <h6>✏️ Diseño</h6>
+          <p>Definir la pieza: forma, medidas, material, función.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">FASE 2</span>
+          <h6>📋 Planificación</h6>
+          <p>Elegir técnicas, herramientas y materiales.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">FASE 3</span>
+          <h6>📐 Preparación</h6>
+          <p>Medir, marcar, preparar EPIs y verificar herramientas.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">FASE 4</span>
+          <h6>⚙️ Mecanizado</h6>
+          <p>Cortar, taladrar, tornear, fresar, imprimir, cortar con láser…</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">FASE 5</span>
+          <h6>🔩 Ensamblaje</h6>
+          <p>Unir piezas por tornillos, cola, soldadura o encajes.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">FASE 6</span>
+          <h6>🎨 Acabado</h6>
+          <p>Lijar, pintar, barnizar, pulir.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">FASE 7</span>
+          <h6>🔍 Verificación</h6>
+          <p>Comprobar que cumple las especificaciones del plano.</p>
+        </div>
+      </div>
+
+      <h4>Los 3 grandes bloques de técnicas de fabricación</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Bloque</th>
+          <th>Características</th>
+          <th>Cuándo usarlo</th>
+        </tr>
+        <tr>
+          <td><strong>🔨 Manual</strong></td>
+          <td>Herramientas de mano: sierra, lima, taladro portátil, destornillador.</td>
+          <td>Piezas únicas, prototipos, reparaciones, ajustes finos.</td>
+        </tr>
+        <tr>
+          <td><strong>⚙️ Mecánica</strong></td>
+          <td>Máquinas-herramienta: torno, fresadora, taladro de columna, plegadora.</td>
+          <td>Series repetitivas, piezas de precisión, materiales duros.</td>
+        </tr>
+        <tr>
+          <td><strong>💻 Digital</strong></td>
+          <td>Control por ordenador: impresión 3D, corte láser, fresado CNC.</td>
+          <td>Formas complejas, personalización, series cortas, prototipos rápidos.</td>
+        </tr>
+      </table>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> no existe una técnica "mejor" que las demás. Cada una tiene
+        su campo de aplicación. Saber <strong>elegir la adecuada</strong> para cada pieza es una de
+        las competencias clave de la fabricación.
+      </div>
+
+      <h4>Fabricar con responsabilidad: tres criterios transversales</h4>
+      <ul>
+        <li><strong>Sostenibilidad:</strong> usar materiales reciclados o renovables, reducir residuos, reutilizar sobrantes, elegir procesos de bajo consumo energético.</li>
+        <li><strong>Eficiencia:</strong> hacer una sola vez lo que se puede hacer bien, evitar retrabajos, medir antes de cortar, tener las herramientas preparadas antes de empezar.</li>
+        <li><strong>Seguridad:</strong> proteger la salud del operario y el entorno: EPIs, normas de taller, herramientas en buen estado, gestión de residuos.</li>
+      </ul>
+
+      <p>
+        Estos tres criterios no son opcionales: forman parte del <strong>impacto global</strong> del
+        producto. Un producto fabricado con criterios de sostenibilidad, eficiencia y seguridad vale
+        más que otro fabricado sin tenerlos en cuenta, aunque ambos funcionen igual.
+      </p>
+    </div>
+
+    <div class="grid g4">
+      <div class="pilar reveal" style="border-top-color:var(--oxido)">
+        <span class="ico">🔨</span>
+        <h4>Técnicas manuales</h4>
+        <p>Serrado, limado, taladrado, lijado, uniones. Flexibles pero requieren más tiempo y habilidad.</p>
+      </div>
+      <div class="pilar reveal" style="border-top-color:var(--acero)">
+        <span class="ico">⚙️</span>
+        <h4>Técnicas mecánicas</h4>
+        <p>Torno, fresadora, taladro de columna, plegadora. Precisas y rápidas para producción repetitiva.</p>
+      </div>
+      <div class="pilar reveal" style="border-top-color:var(--azul)">
+        <span class="ico">💻</span>
+        <h4>Técnicas digitales</h4>
+        <p>Impresión 3D, corte láser, CNC. Permiten formas complejas y personalización sin moldes.</p>
+      </div>
+      <div class="pilar reveal" style="border-top-color:var(--lima)">
+        <span class="ico">📐</span>
+        <h4>Diseño asistido</h4>
+        <p>Planos, vistas (alzado, planta, perfil), acotación. El lenguaje con el que se comunican las ideas.</p>
+      </div>
+    </div>
+
+    <div class="card reveal" style="margin-top:1.5rem; border-left:6px solid var(--oxido)">
+      <h3 style="color:var(--oxido-oscuro)">🎯 Fabricar con responsabilidad</h3>
+      <p style="font-size:.95rem; color:var(--gris-oscuro)">
+        Toda decisión de fabricación tiene consecuencias: en el <strong>coste</strong>, en la
+        <strong>calidad</strong>, en el <strong>tiempo</strong>, en la <strong>seguridad</strong> de
+        quien fabrica y en el <strong>impacto ambiental</strong> del producto final. Aprender a
+        elegir bien (técnica, material, herramienta, protección) es lo que distingue a un buen
+        proceso de fabricación.
+      </p>
+    </div>
+  </section>
+
+  <!-- ========== RETO 1: TÉCNICAS DE FABRICACIÓN ========== -->
+  <section id="tecnicas">
+    <div class="sec-head reveal">
+      <span class="kicker">Bloque 1</span>
+      <h2>🔨 Elige la técnica de fabricación adecuada</h2>
+      <p class="lead">
+        No todas las piezas se fabrican igual. Según la <strong>forma</strong>, el
+        <strong>material</strong>, la <strong>cantidad</strong> y la <strong>precisión</strong>
+        requeridas, conviene usar una técnica manual, mecánica o digital. Elegir bien ahorra tiempo
+        y mejora el resultado.
+      </p>
+    </div>
+
+    <!-- TEORÍA EXPANDIDA: TÉCNICAS -->
+    <div class="teoria reveal">
+      <h3><span class="th-ico">🔨</span> Las técnicas de fabricación en detalle</h3>
+      <p>
+        Cada técnica tiene sus <strong>ventajas, limitaciones y aplicaciones típicas</strong>. Conocerlas
+        a fondo es imprescindible para elegir la adecuada en cada proyecto.
+      </p>
+
+      <h4>1. Técnicas manuales</h4>
+      <p>
+        Utilizan <strong>herramientas de mano</strong> y se apoyan en la destreza del operario. Son
+        las más antiguas y siguen siendo imprescindibles para prototipos y ajustes.
+      </p>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Operación</th>
+          <th>Herramienta</th>
+          <th>Uso típico</th>
+        </tr>
+        <tr>
+          <td><strong>Medir y marcar</strong></td>
+          <td>Regla, escuadra, compás, punta de marcar.</td>
+          <td>Preparar la pieza antes de cortar.</td>
+        </tr>
+        <tr>
+          <td><strong>Serrado</strong></td>
+          <td>Sierra de mano, sierra de marquetería, arco de sierra.</td>
+          <td>Cortar madera, plásticos, metales finos.</td>
+        </tr>
+        <tr>
+          <td><strong>Limado</strong></td>
+          <td>Limas de distintas formas y granos.</td>
+          <td>Igualar bordes, eliminar rebabas, ajustar formas.</td>
+        </tr>
+        <tr>
+          <td><strong>Taladrado</strong></td>
+          <td>Taladro portátil, berbiquí.</td>
+          <td>Hacer agujeros sencillos o en sitios difíciles.</td>
+        </tr>
+        <tr>
+          <td><strong>Lijado</strong></td>
+          <td>Lija, taco de lijar.</td>
+          <td>Alisar la superficie antes del acabado.</td>
+        </tr>
+        <tr>
+          <td><strong>Roscado manual</strong></td>
+          <td>Macho y terraja.</td>
+          <td>Hacer roscas en tuercas y tornillos.</td>
+        </tr>
+      </table>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>✅ Ventajas</h5>
+          <p>Flexibles, económicas, permiten ajustes finos sobre la marcha y no requieren preparación de máquina.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>⚠️ Limitaciones</h5>
+          <p>Más lentas, dependen de la habilidad del operario, menor precisión y acabado menos uniforme.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🎯 Cuándo usarlas</h5>
+          <p>Piezas únicas, prototipos, reparaciones, ajustes en obra, trabajos en lugares sin acceso a máquinas.</p>
+        </div>
+      </div>
+
+      <h4>2. Técnicas mecánicas</h4>
+      <p>
+        Utilizan <strong>máquinas-herramienta</strong> que aportan potencia y precisión. Requieren
+        formación específica y normas de seguridad estrictas.
+      </p>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Máquina</th>
+          <th>Operación</th>
+          <th>Aplicación</th>
+        </tr>
+        <tr>
+          <td><strong>Torno</strong></td>
+          <td>Mecanizado de piezas cilíndricas por rotación.</td>
+          <td>Ejes, casquillos, tornillos, conos.</td>
+        </tr>
+        <tr>
+          <td><strong>Fresadora</strong></td>
+          <td>Mecanizado con fresa giratoria.</td>
+          <td>Planeado, ranuras, engranajes, formas complejas.</td>
+        </tr>
+        <tr>
+          <td><strong>Taladro de columna</strong></td>
+          <td>Taladrado con precisión vertical.</td>
+          <td>Agujeros múltiples, roscados, avellanados.</td>
+        </tr>
+        <tr>
+          <td><strong>Plegadora</strong></td>
+          <td>Doblar chapa metálica.</td>
+          <td>Cajas, perfiles, soportes.</td>
+        </tr>
+        <tr>
+          <td><strong>Tronzadora</strong></td>
+          <td>Corte de perfiles y barras.</td>
+          <td>Metales, plásticos, madera.</td>
+        </tr>
+        <tr>
+          <td><strong>Inyectora</strong></td>
+          <td>Moldeo por inyección de plástico fundido.</td>
+          <td>Series grandes de piezas idénticas.</td>
+        </tr>
+      </table>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>✅ Ventajas</h5>
+          <p>Precisión alta, acabados uniformes, rapidez en series, capacidad para materiales duros.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>⚠️ Limitaciones</h5>
+          <p>Requieren formación, coste elevado, instalaciones específicas y protocolos de seguridad estrictos.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🎯 Cuándo usarlas</h5>
+          <p>Series repetitivas, piezas de precisión, trabajo con metales, cuando se requiere tolerancia ajustada.</p>
+        </div>
+      </div>
+
+      <h4>3. Técnicas digitales</h4>
+      <p>
+        Utilizan <strong>control numérico por ordenador (CNC)</strong>: la máquina ejecuta las
+        órdenes de un programa informático. Permiten fabricar formas complejas sin moldes.
+      </p>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Técnica</th>
+          <th>Cómo funciona</th>
+          <th>Aplicación</th>
+        </tr>
+        <tr>
+          <td><strong>Impresión 3D (FDM)</strong></td>
+          <td>Deposita filamento fundido capa a capa.</td>
+          <td>Prototipos, piezas personalizadas, ayudas técnicas.</td>
+        </tr>
+        <tr>
+          <td><strong>Impresión 3D (resina)</strong></td>
+          <td>Fotopolimeriza resina líquida con luz UV.</td>
+          <td>Piezas de gran detalle, joyería, modelos médicos.</td>
+        </tr>
+        <tr>
+          <td><strong>Corte láser</strong></td>
+          <td>Un haz láser corta o graba el material.</td>
+          <td>Acrílico, madera, cartón, tela, cuero.</td>
+        </tr>
+        <tr>
+          <td><strong>Fresado CNC</strong></td>
+          <td>Una fresa controlada por ordenador mecaniza.</td>
+          <td>Piezas grandes, materiales diversos, acabados precisos.</td>
+        </tr>
+        <tr>
+          <td><strong>Corte por chorro de agua</strong></td>
+          <td>Agua a alta presión con abrasivo corta el material.</td>
+          <td>Metales gruesos, vidrio, piedra, materiales sensibles al calor.</td>
+        </tr>
+        <tr>
+          <td><strong>Corte por hilo caliente</strong></td>
+          <td>Un hilo caliente funde el material al pasar.</td>
+          <td>Espumas, poliestireno, prototipos rápidos.</td>
+        </tr>
+      </table>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>✅ Ventajas</h5>
+          <p>Formas complejas sin moldes, personalización total, prototipos rápidos, series cortas viables.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>⚠️ Limitaciones</h5>
+          <p>Requieren diseño digital previo, ciertos materiales, y el acabado superficial puede ser peor que el mecanizado.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🎯 Cuándo usarlas</h5>
+          <p>Prototipos, series cortas, piezas personalizadas, geometrías imposibles de mecanizar de otro modo.</p>
+        </div>
+      </div>
+
+      <h4>Cómo elegir la técnica: 5 preguntas clave</h4>
+      <ol>
+        <li><strong>¿Cuántas piezas necesito?</strong> Una pieza única → manual o digital. Serie larga → mecánica.</li>
+        <li><strong>¿Qué material voy a usar?</strong> Madera y plásticos blandos → manual. Metales duros → mecánica.</li>
+        <li><strong>¿Qué precisión necesito?</strong> Tolerancias grandes → manual. Tolerancias finas (±0,1 mm) → mecánica o CNC.</li>
+        <li><strong>¿Qué forma tiene la pieza?</strong> Formas complejas imposibles de mecanizar → digital.</li>
+        <li><strong>¿Qué recursos tengo?</strong> Presupuesto, tiempo, herramientas, formación.</li>
+      </ol>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> la mejor técnica no es la más moderna ni la más rápida:
+        es la que <strong>mejor se adapta</strong> a la pieza, al material, a la cantidad y a los
+        recursos disponibles. Muchas veces se combinan varias técnicas en un mismo proyecto.
+      </div>
+    </div>
+
+    <div class="actividad reveal" style="border-top:6px solid var(--oxido)">
+      <span class="kicker">🎮 Reto 1 · Elige la técnica</span>
+      <h3>Cada pieza, con su mejor técnica de fabricación</h3>
+      <p class="intro">
+        Lee las características de cada pieza y elige la técnica de fabricación más adecuada.
+        Recibirás feedback con la explicación. Hay 8 casos.
+      </p>
+
+      <div class="tec-proyecto">
+        <h4>📋 Contexto del taller</h4>
+        <p>Disponemos de un taller escolar con herramientas manuales (sierras, limas, taladro), una pequeña fresadora y torno, una impresora 3D FDM y una cortadora láser. Los materiales disponibles son madera, plástico PLA, acrílico, aluminio y acero.</p>
+      </div>
+
+      <div class="tec-fab-grid" id="tecFabGrid"></div>
+      <div id="tecFabMsg"></div>
+    </div>
+  </section>
+
+  <!-- ========== RETO 2: DEL PLANO AL TALLER ========== -->
+  <section id="vistas">
+    <div class="sec-head reveal">
+      <span class="kicker azul">Bloque 2</span>
+      <h2>📐 Del plano al taller: interpreta las cotas</h2>
+      <p class="lead">
+        Un plano técnico comunica las medidas exactas de la pieza mediante <strong>cotas</strong>.
+        Antes de fabricar cualquier producto hay que saber leer esas cotas, entender la
+        <strong>escala</strong> y planificar cuánto material y qué herramientas se van a necesitar.
+      </p>
+    </div>
+
+    <!-- TEORÍA EXPANDIDA: DIBUJO TÉCNICO -->
+    <div class="teoria azul reveal">
+      <h3><span class="th-ico">📐</span> Dibujo técnico y diseño asistido</h3>
+      <p>
+        El <strong>dibujo técnico</strong> es el lenguaje universal de la industria. Permite
+        describir una pieza con precisión para que cualquier persona pueda fabricarla sin
+        ambigüedades. Es la base del <strong>diseño asistido por ordenador (CAD)</strong>.
+      </p>
+
+      <h4>¿Qué es un plano técnico?</h4>
+      <p>
+        Un <strong>plano técnico</strong> es una representación gráfica normalizada de una pieza,
+        con todas las indicaciones necesarias para fabricarla: vistas, cotas, tolerancias, material,
+        acabados y datos del proyecto.
+      </p>
+
+      <h4>Las 3 vistas principales: sistema europeo</h4>
+      <p>
+        En el sistema europeo (ISO), las vistas se colocan de forma que cada una representa lo que
+        se vería al mirar la pieza desde una dirección:
+      </p>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Vista</th>
+          <th>Desde dónde se mira</th>
+          <th>Qué muestra</th>
+        </tr>
+        <tr>
+          <td><strong>Alzado</strong></td>
+          <td>Desde el frente.</td>
+          <td>La cara frontal de la pieza (con sus alturas y anchuras).</td>
+        </tr>
+        <tr>
+          <td><strong>Planta</strong></td>
+          <td>Desde arriba.</td>
+          <td>La parte superior (con sus anchuras y profundidades).</td>
+        </tr>
+        <tr>
+          <td><strong>Perfil</strong></td>
+          <td>Desde un lado (normalmente el izquierdo).</td>
+          <td>La cara lateral (con sus alturas y profundidades).</td>
+        </tr>
+      </table>
+      <p style="font-size:.88rem">
+        Además de las tres vistas principales, pueden añadirse <strong>vistas auxiliares</strong>
+        (para caras inclinadas), <strong>cortes y secciones</strong> (para mostrar el interior),
+        <strong>detalles ampliados</strong> y <strong>perspectivas</strong> (normalmente
+        isométricas).
+      </p>
+
+      <h4>La acotación: el lenguaje de las medidas</h4>
+      <p>
+        La <strong>acotación</strong> es el conjunto de cotas (medidas) que se indican en el plano.
+        Reglas básicas:
+      </p>
+      <ul>
+        <li>Todas las cotas se expresan en <strong>milímetros (mm)</strong>, salvo indicación contraria.</li>
+        <li>No se puede poner la misma cota dos veces ni repetirla en dos vistas.</li>
+        <li>Las cotas se colocan en la vista donde la arista se ve mejor.</li>
+        <li>No debe faltar ninguna medida necesaria para fabricar la pieza.</li>
+        <li>No deben sobrar cotas (evitar acotaciones redundantes).</li>
+      </ul>
+
+      <h4>Simbología habitual en planos</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Símbolo</th>
+          <th>Significado</th>
+        </tr>
+        <tr>
+          <td><strong>⌀</strong></td>
+          <td>Diámetro (para agujeros o cilindros).</td>
+        </tr>
+        <tr>
+          <td><strong>R</strong></td>
+          <td>Radio de un arco o redondeo.</td>
+        </tr>
+        <tr>
+          <td><strong>□</strong></td>
+          <td>Sección cuadrada.</td>
+        </tr>
+        <tr>
+          <td><strong>M</strong></td>
+          <td>Roscado métrico. Ejemplo: M8 = rosca de 8 mm.</td>
+        </tr>
+        <tr>
+          <td><strong>±</strong></td>
+          <td>Tolerancia simétrica. Ejemplo: 40 ± 0,2 mm.</td>
+        </tr>
+        <tr>
+          <td><strong>∅</strong></td>
+          <td>Diámetro (variante del símbolo ⌀).</td>
+        </tr>
+        <tr>
+          <td><strong>⌴</strong></td>
+          <td>Profundidad de un agujero.</td>
+        </tr>
+        <tr>
+          <td><strong>Ra</strong></td>
+          <td>Rugosidad superficial media.</td>
+        </tr>
+      </table>
+
+      <h4>La escala</h4>
+      <p>
+        La <strong>escala</strong> es la relación entre las medidas del dibujo y las medidas reales
+        de la pieza:
+      </p>
+      <ul>
+        <li><strong>Escala 1:1:</strong> el dibujo es igual que la realidad.</li>
+        <li><strong>Escala 1:2:</strong> el dibujo es la mitad de la realidad.</li>
+        <li><strong>Escala 2:1:</strong> el dibujo es el doble de la realidad.</li>
+        <li><strong>Escala 1:10:</strong> el dibujo es 10 veces más pequeño.</li>
+      </ul>
+      <div class="ejemplo">
+        <strong>Ejemplo:</strong> en un plano a escala 1:2, una cota de 120 mm reales se dibuja
+        midiendo 60 mm en el papel.
+      </div>
+
+      <h4>Las tolerancias: el margen de error aceptable</h4>
+      <p>
+        En fabricación real, ninguna pieza sale con la medida exacta. Las <strong>tolerancias</strong>
+        indican el margen de error permitido para que la pieza siga siendo válida.
+      </p>
+      <ul>
+        <li><strong>Tolerancias dimensionales:</strong> ±0,1 mm, ±0,2 mm según la cota.</li>
+        <li><strong>Tolerancias geométricas:</strong> paralelismo, perpendicularidad, planitud.</li>
+        <li><strong>Tolerancias superficiales:</strong> rugosidad (Ra), acabado.</li>
+      </ul>
+
+      <h4>El cajetín: la ficha de identidad del plano</h4>
+      <p>
+        El <strong>cajetín</strong> es el recuadro que va en la esquina inferior derecha del plano
+        y contiene la información esencial:
+      </p>
+      <ul>
+        <li>Nombre de la pieza y referencia.</li>
+        <li>Material.</li>
+        <li>Escala.</li>
+        <li>Autor y fecha.</li>
+        <li>Número de plano y versión.</li>
+        <li>Tolerancias generales.</li>
+        <li>Proyección (sistema europeo o americano).</li>
+      </ul>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> antes de empezar a fabricar, hay que <strong>leer el
+        plano completo</strong>: vistas, cotas, escala, material, tolerancias y cajetín. Un plano
+        bien leído evita errores que después cuestan tiempo y material. En fabricación, leer mal
+        una cota puede arruinar toda la pieza.
+      </div>
+
+      <h4>Del plano al taller: cómo preparar la fabricación</h4>
+      <ol>
+        <li><strong>Leer todas las vistas</strong> y hacerse una idea mental de la pieza.</li>
+        <li><strong>Identificar todas las cotas</strong> y anotar las medidas reales.</li>
+        <li><strong>Calcular los materiales</strong> necesarios: cantidad, dimensiones, tipo.</li>
+        <li><strong>Elegir las herramientas</strong> adecuadas a cada operación.</li>
+        <li><strong>Preparar EPIs</strong> según los riesgos de las operaciones.</li>
+        <li><strong>Marcar y medir</strong> la pieza antes de cortar.</li>
+        <li><strong>Verificar</strong> las medidas después de cada operación.</li>
+      </ol>
+    </div>
+
+    <div class="actividad reveal" style="border-top:6px solid var(--azul)">
+      <span class="kicker azul">🎮 Reto 2 · Del plano al taller</span>
+      <h3>Analiza el plano de una escuadra de aluminio</h3>
+      <p class="intro">
+        Este es el plano técnico de una pieza en L que hay que fabricar en el taller. Lee con
+        atención la ficha y responde a las 6 preguntas de interpretación.
+      </p>
+
+      <div class="plano-ficha">
+        <h4>📋 Plano técnico: escuadra de soporte <span class="pf-ref">REF-ESC-80x120</span></h4>
+        <div class="plano-esquema">
+          <svg viewBox="0 0 320 220" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="40,20 90,20 90,150 260,150 260,200 40,200"
+                     fill="#e0f2fe" stroke="#0369a1" stroke-width="2.5" stroke-linejoin="round"/>
+            <circle cx="65" cy="50" r="8" fill="#fff" stroke="#0369a1" stroke-width="2"/>
+            <line x1="65" y1="42" x2="65" y2="58" stroke="#0369a1" stroke-width="1.2"/>
+            <line x1="57" y1="50" x2="73" y2="50" stroke="#0369a1" stroke-width="1.2"/>
+            <circle cx="220" cy="175" r="8" fill="#fff" stroke="#0369a1" stroke-width="2"/>
+            <line x1="220" y1="167" x2="220" y2="183" stroke="#0369a1" stroke-width="1.2"/>
+            <line x1="212" y1="175" x2="228" y2="175" stroke="#0369a1" stroke-width="1.2"/>
+            <line x1="20" y1="20" x2="20" y2="200" stroke="#c2410c" stroke-width="1" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+            <text x="12" y="115" text-anchor="middle" font-size="11" font-weight="bold" fill="#c2410c" transform="rotate(-90 12 115)">120 mm</text>
+            <line x1="90" y1="212" x2="260" y2="212" stroke="#c2410c" stroke-width="1" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+            <text x="175" y="225" text-anchor="middle" font-size="11" font-weight="bold" fill="#c2410c">80 mm</text>
+            <line x1="90" y1="8" x2="130" y2="8" stroke="#c2410c" stroke-width="1" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+            <text x="110" y="4" text-anchor="middle" font-size="11" font-weight="bold" fill="#c2410c">40 mm</text>
+            <text x="145" y="55" font-size="10" font-weight="bold" fill="#0369a1">espesor: 5 mm</text>
+            <defs>
+              <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#c2410c"/>
+              </marker>
+            </defs>
+          </svg>
+        </div>
+
+        <div class="cotas-grid">
+          <div class="cota-item"><span class="ci-lbl">Forma</span><span class="ci-val">L (escuadra)</span></div>
+          <div class="cota-item"><span class="ci-lbl">Material</span><span class="ci-val">Aluminio 6061</span></div>
+          <div class="cota-item"><span class="ci-lbl">Tramo vertical</span><span class="ci-val">120 mm</span></div>
+          <div class="cota-item"><span class="ci-lbl">Tramo horizontal</span><span class="ci-val">80 mm</span></div>
+          <div class="cota-item"><span class="ci-lbl">Ancho de cada tramo</span><span class="ci-val">40 mm</span></div>
+          <div class="cota-item"><span class="ci-lbl">Espesor</span><span class="ci-val">5 mm</span></div>
+          <div class="cota-item"><span class="ci-lbl">Taladro A (vertical)</span><span class="ci-val">Ø 8 mm</span></div>
+          <div class="cota-item"><span class="ci-lbl">Taladro B (horizontal)</span><span class="ci-val">Ø 8 mm</span></div>
+          <div class="cota-item"><span class="ci-lbl">Escala del plano</span><span class="ci-val">1:2</span></div>
+          <div class="cota-item"><span class="ci-lbl">Tolerancia general</span><span class="ci-val">± 0,2 mm</span></div>
+        </div>
+      </div>
+
+      <div id="preguntasPlano"></div>
+      <div id="planoMsg"></div>
+    </div>
+  </section>
+
+  <!-- ========== RETO 3: SELECTOR DE MATERIALES ========== -->
+  <section id="materiales">
+    <div class="sec-head reveal">
+      <span class="kicker lima">Bloque 3</span>
+      <h2>🧱 Selecciona el material adecuado</h2>
+      <p class="lead">
+        Cada aplicación exige un material con <strong>propiedades específicas</strong>: dureza,
+        resistencia, peso, flexibilidad, resistencia al agua, precio o sostenibilidad. Elegir el
+        material correcto es una de las decisiones clave de la fabricación.
+      </p>
+    </div>
+
+    <!-- TEORÍA EXPANDIDA: MATERIALES -->
+    <div class="teoria lima reveal">
+      <h3><span class="th-ico">🧱</span> Materiales de fabricación: propiedades y clasificación</h3>
+      <p>
+        Los <strong>materiales</strong> son la materia prima de la fabricación. Conocer sus
+        <strong>propiedades</strong> permite elegir el más adecuado para cada aplicación y
+        aprovechar al máximo sus ventajas.
+      </p>
+
+      <h4>Las 8 propiedades clave de los materiales</h4>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>💪 Dureza</h5>
+          <p>Resistencia a ser rayado o deformado. El acero es más duro que el aluminio; el diamante es el más duro.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🏋️ Resistencia</h5>
+          <p>Capacidad de soportar fuerzas sin romperse ni deformarse. Varía según el tipo de esfuerzo (tracción, compresión, flexión).</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🪶 Densidad</h5>
+          <p>Relación entre masa y volumen. Los materiales ligeros son clave en aeronáutica y deportes.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🧵 Elasticidad</h5>
+          <p>Capacidad de recuperar la forma original tras una deformación. La goma es muy elástica.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>⚡ Conductividad</h5>
+          <p>Facilidad para conducir electricidad o calor. Los metales son buenos conductores; los plásticos, aislantes.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>💧 Resistencia al agua</h5>
+          <p>Comportamiento frente a la humedad. Algunos materiales se hinchan, otros se oxidan y otros son inertes.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🔥 Resistencia térmica</h5>
+          <p>Capacidad de soportar altas temperaturas sin degradarse. Los metales son muy resistentes; los plásticos no.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🌱 Sostenibilidad</h5>
+          <p>Impacto ambiental del material a lo largo de su ciclo de vida: renovable, reciclable, biodegradable…</p>
+        </div>
+      </div>
+
+      <h4>Clasificación de materiales de fabricación</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Familia</th>
+          <th>Ejemplos</th>
+          <th>Propiedades típicas</th>
+        </tr>
+        <tr>
+          <td><strong>🌳 Maderas</strong></td>
+          <td>Pino, roble, haya, contrachapado, MDF.</td>
+          <td>Ligeras, fáciles de trabajar, aislantes, renovables.</td>
+        </tr>
+        <tr>
+          <td><strong>⚙️ Metales</strong></td>
+          <td>Acero, aluminio, cobre, latón, hierro.</td>
+          <td>Duros, resistentes, conductores, reciclables.</td>
+        </tr>
+        <tr>
+          <td><strong>🧪 Plásticos</strong></td>
+          <td>PLA, ABS, PET, PVC, polipropileno.</td>
+          <td>Ligeros, moldeables, aislantes, algunos reciclables.</td>
+        </tr>
+        <tr>
+          <td><strong>🧱 Cerámicos</strong></td>
+          <td>Vidrio, porcelana, azulejos.</td>
+          <td>Duros, frágiles, resistentes al calor, inertes.</td>
+        </tr>
+        <tr>
+          <td><strong>🧵 Textiles</strong></td>
+          <td>Algodón, lana, poliéster, nailon.</td>
+          <td>Flexibles, ligeros, transpirables o impermeables.</td>
+        </tr>
+        <tr>
+          <td><strong>🔗 Compuestos</strong></td>
+          <td>Fibra de carbono, fibra de vidrio, contrachapado.</td>
+          <td>Muy resistentes y ligeros, pero difíciles de reciclar.</td>
+        </tr>
+      </table>
+
+      <h4>Propiedades específicas de los materiales más usados en taller</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Material</th>
+          <th>Ventajas</th>
+          <th>Aplicaciones típicas</th>
+        </tr>
+        <tr>
+          <td><strong>Madera de pino</strong></td>
+          <td>Barata, fácil de cortar y clavar, ligera.</td>
+          <td>Mobiliario básico, maquetas, marcos.</td>
+        </tr>
+        <tr>
+          <td><strong>Cartón pluma</strong></td>
+          <td>Ligero, rígido, fácil de cortar con cúter.</td>
+          <td>Maquetas arquitectónicas, prototipos.</td>
+        </tr>
+        <tr>
+          <td><strong>Acrílico (PMMA)</strong></td>
+          <td>Aislante, ligero, se puede cortar con láser, transparente.</td>
+          <td>Protectores, bases electrónicas, letreros.</td>
+        </tr>
+        <tr>
+          <td><strong>PLA (plástico 3D)</strong></td>
+          <td>Biodegradable, fácil de imprimir, buen acabado.</td>
+          <td>Prototipos, piezas personalizadas, ayudas técnicas.</td>
+        </tr>
+        <tr>
+          <td><strong>Aluminio 6061</strong></td>
+          <td>Ligero, resistente a la corrosión, fácil de mecanizar.</td>
+          <td>Estructuras, soportes, piezas mecánicas.</td>
+        </tr>
+        <tr>
+          <td><strong>Acero al carbono</strong></td>
+          <td>Muy duro y resistente, barato.</td>
+          <td>Tornillos, estructuras, herramientas.</td>
+        </tr>
+        <tr>
+          <td><strong>Acero inoxidable</strong></td>
+          <td>Resistente a la corrosión, inerte, duradero.</td>
+          <td>Cubiertos, botellas, equipos médicos.</td>
+        </tr>
+        <tr>
+          <td><strong>Fibra de carbono</strong></td>
+          <td>Ligerísima, rígida, absorbe impactos.</td>
+          <td>Competición, aeronáutica, prótesis.</td>
+        </tr>
+        <tr>
+          <td><strong>Bagazo de caña</strong></td>
+          <td>Compostable, apto alimentos, bajo impacto.</td>
+          <td>Envases desechables, vajilla biodegradable.</td>
+        </tr>
+        <tr>
+          <td><strong>Poliestireno expandido</strong></td>
+          <td>Ligero, aislante, barato.</td>
+          <td>Embalajes. Problema: no biodegradable.</td>
+        </tr>
+      </table>
+
+      <h4>Materiales y sostenibilidad</h4>
+      <p>
+        No todos los materiales tienen el mismo impacto ambiental. Al elegir, hay que valorar:
+      </p>
+      <ul>
+        <li><strong>Origen:</strong> ¿renovable, reciclado o de fuentes fósiles?</li>
+        <li><strong>Energía de producción:</strong> el aluminio primario consume mucha; el reciclado, mucho menos.</li>
+        <li><strong>Durabilidad:</strong> un material duradero reduce la necesidad de sustituir.</li>
+        <li><strong>Reciclabilidad:</strong> los metales se reciclan muy bien; los plásticos mixtos, mal.</li>
+        <li><strong>Biodegradabilidad:</strong> útil si el producto se va a desechar.</li>
+        <li><strong>Transporte:</strong> preferir materiales locales reduce emisiones.</li>
+        <li><strong>Fin de vida:</strong> ¿se puede reutilizar, reciclar o compostar?</li>
+      </ul>
+
+      <h4>Cómo elegir un material: 5 preguntas clave</h4>
+      <ol>
+        <li><strong>¿Qué propiedades necesita la pieza?</strong> Dureza, resistencia, ligereza…</li>
+        <li><strong>¿En qué condiciones va a usarse?</strong> Humedad, temperatura, impactos…</li>
+        <li><strong>¿Cómo voy a fabricarla?</strong> Cada material se trabaja mejor con ciertas técnicas.</li>
+        <li><strong>¿Cuánto cuesta?</strong> El material más caro no siempre es el mejor.</li>
+        <li><strong>¿Cuál es su impacto ambiental?</strong> ¿Hay alternativas más sostenibles?</li>
+      </ol>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> no existe un "material perfecto". El mejor material es el
+        que mejor cumple los <strong>requisitos funcionales, económicos y ambientales</strong> de
+        cada aplicación. Saber elegir es una competencia fundamental en fabricación.
+      </div>
+    </div>
+
+    <div class="actividad reveal" style="border-top:6px solid var(--lima)">
+      <span class="kicker lima">🎮 Reto 3 · Elige el material</span>
+      <h3>Cada producto, con el material que mejor le va</h3>
+      <p class="intro">
+        Lee los requisitos de cada producto y elige el material que mejor los cumple. Hay 8
+        productos en total.
+      </p>
+
+      <div class="mat-selector-wrap" id="matSelectorWrap"></div>
+      <div id="matMsg"></div>
+    </div>
+  </section>
+
+  <!-- ========== RETO 4: RUTA DE FABRICACIÓN ========== -->
+  <section id="ruta">
+    <div class="sec-head reveal">
+      <span class="kicker ambar">Bloque 4</span>
+      <h2>📋 Ordena la ruta de fabricación</h2>
+      <p class="lead">
+        Todo proceso de fabricación sigue una <strong>secuencia lógica</strong>: diseñar, planificar,
+        preparar materiales, mecanizar, ensamblar, acabar y verificar. Alterar el orden produce
+        errores, desperdicio y pérdida de tiempo.
+      </p>
+    </div>
+
+    <!-- TEORÍA EXPANDIDA: RUTA DE FABRICACIÓN -->
+    <div class="teoria ambar reveal">
+      <h3><span class="th-ico">📋</span> La ruta de fabricación paso a paso</h3>
+      <p>
+        La <strong>ruta de fabricación</strong> (o gama de fabricación) es la secuencia ordenada
+        de operaciones que se siguen para transformar una materia prima en un producto terminado.
+        Es la hoja de ruta del taller y debe estar definida antes de empezar.
+      </p>
+
+      <h4>Por qué importa el orden</h4>
+      <p>
+        Alterar el orden de las operaciones produce consecuencias graves:
+      </p>
+      <ul>
+        <li><strong>Retrabajos:</strong> hay que deshacer lo hecho y volver a empezar.</li>
+        <li><strong>Desperdicio de material:</strong> se corta mal y no se puede recuperar.</li>
+        <li><strong>Pérdida de tiempo:</strong> el trabajo se duplica o se hace mal.</li>
+        <li><strong>Piezas defectuosas:</strong> el resultado final no cumple las especificaciones.</li>
+        <li><strong>Riesgos de seguridad:</strong> operar una máquina antes de tiempo puede ser peligroso.</li>
+      </ul>
+
+      <h4>Las 7 fases de la ruta de fabricación</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Fase</th>
+          <th>Qué se hace</th>
+          <th>Herramientas y recursos</th>
+        </tr>
+        <tr>
+          <td><strong>1. Diseño</strong></td>
+          <td>Definir la pieza: forma, medidas, material, función.</td>
+          <td>CAD, lápiz, papel, croquis.</td>
+        </tr>
+        <tr>
+          <td><strong>2. Planificación</strong></td>
+          <td>Decidir técnicas, herramientas, materiales y orden.</td>
+          <td>Plano, catálogo de materiales, checklist.</td>
+        </tr>
+        <tr>
+          <td><strong>3. Preparación</strong></td>
+          <td>Medir, marcar y preparar los materiales y el puesto.</td>
+          <td>Regla, escuadra, punta de marcar, EPIs.</td>
+        </tr>
+        <tr>
+          <td><strong>4. Mecanizado</strong></td>
+          <td>Cortar, taladrar, limar, tornear, fresar, imprimir…</td>
+          <td>Sierras, taladro, torno, fresadora, impresora 3D, láser.</td>
+        </tr>
+        <tr>
+          <td><strong>5. Ensamblaje</strong></td>
+          <td>Unir las piezas mediante tornillos, cola, soldadura…</td>
+          <td>Destornilladores, llaves, cola, soldador.</td>
+        </tr>
+        <tr>
+          <td><strong>6. Acabado</strong></td>
+          <td>Lijar, pintar, barnizar, pulir.</td>
+          <td>Lijas, brochas, pinturas, barnices.</td>
+        </tr>
+        <tr>
+          <td><strong>7. Verificación</strong></td>
+          <td>Comprobar que cumple las especificaciones.</td>
+          <td>Calibre, regla, escuadra, plano.</td>
+        </tr>
+      </table>
+
+      <h4>La planificación: el paso que más tiempo ahorra</h4>
+      <p>
+        Antes de tocar ninguna herramienta, hay que responder a estas preguntas:
+      </p>
+      <ol>
+        <li><strong>¿Qué voy a fabricar?</strong> Forma, medidas, material.</li>
+        <li><strong>¿Qué operaciones necesito?</strong> Cortar, taladrar, unir, acabar…</li>
+        <li><strong>¿En qué orden?</strong> Cada operación depende de las anteriores.</li>
+        <li><strong>¿Con qué herramientas?</strong> Qué necesito y en qué estado están.</li>
+        <li><strong>¿Qué material necesito?</strong> Cuánto, de qué tipo, con qué margen.</li>
+        <li><strong>¿Qué riesgos hay?</strong> Qué EPIs y qué precauciones.</li>
+        <li><strong>¿Cuánto tiempo necesito?</strong> Planificar la sesión de taller.</li>
+      </ol>
+
+      <h4>La preparación: medir dos veces, cortar una</h4>
+      <p>
+        La fase de preparación es donde se cometen más errores. Reglas básicas:
+      </p>
+      <ul>
+        <li><strong>Medir siempre dos veces</strong> antes de marcar.</li>
+        <li><strong>Marcar con punta fina</strong> o punta de marcar, dejando las líneas visibles.</li>
+        <li><strong>Dejar margen de seguridad</strong> en los cortes: mejor cortar un poco más y ajustar.</li>
+        <li><strong>Verificar las herramientas</strong> antes de empezar: hojas afiladas, brocas limpias, máquinas en buen estado.</li>
+        <li><strong>Preparar los EPIs</strong> según las operaciones.</li>
+        <li><strong>Organizar el puesto</strong>: cada herramienta en su sitio, sin obstáculos.</li>
+      </ul>
+
+      <h4>La verificación: comprobar antes de entregar</h4>
+      <p>
+        La verificación final es tan importante como las demás fases. Hay que comprobar:
+      </p>
+      <ul>
+        <li><strong>Medidas:</strong> ¿coinciden con el plano?</li>
+        <li><strong>Formas:</strong> ¿los ángulos y radios son correctos?</li>
+        <li><strong>Función:</strong> ¿la pieza sirve para lo que se pretendía?</li>
+        <li><strong>Acabado:</strong> ¿está bien lijada, pintada, sin rebabas?</li>
+        <li><strong>Uniones:</strong> ¿están firmes y bien hechas?</li>
+      </ul>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> la ruta de fabricación no es un capricho: es la forma
+        más eficiente de trabajar. Seguir un orden lógico <strong>ahorra tiempo, material y
+        riesgos</strong>, y garantiza que el resultado sea el esperado. La improvisación en el
+        taller siempre se paga.
+      </div>
+    </div>
+
+    <div class="actividad reveal" style="border-top:6px solid var(--ambar)">
+      <span class="kicker ambar">🎮 Reto 4 · Ordena las fases</span>
+      <h3>Coloca las 7 fases en el orden correcto</h3>
+      <p class="intro">
+        Pulsa cada fase en el orden en que debe ejecutarse para fabricar un producto. Se irán
+        colocando en la línea temporal. Si te equivocas, la app te dará una pista.
+      </p>
+
+      <div class="ruta-fab-progreso" id="rutaFabProgreso"></div>
+      <div class="ruta-fab-disponibles" id="rutaFabDisponibles"></div>
+      <div id="rutaFabMsg"></div>
+    </div>
+  </section>
+
+  <!-- ========== RETO 5: SEGURIDAD EN EL TALLER ========== -->
+  <section id="seguridad">
+    <div class="sec-head reveal">
+      <span class="kicker rojo">Bloque 5</span>
+      <h2>🦺 Seguridad en el taller</h2>
+      <p class="lead">
+        La <strong>seguridad</strong> es la primera regla de cualquier taller. Antes de empezar
+        hay que identificar los <strong>riesgos</strong> de cada tarea, elegir los <strong>EPI</strong>
+        (equipos de protección individual) adecuados y conocer las normas básicas de trabajo.
+      </p>
+    </div>
+
+    <!-- TEORÍA EXPANDIDA: SEGURIDAD -->
+    <div class="teoria rojo reveal">
+      <h3><span class="th-ico">🦺</span> Seguridad y salud en el taller</h3>
+      <p>
+        La <strong>seguridad en el taller</strong> no es un conjunto de normas que hay que cumplir
+        por obligación: es la forma de proteger la salud de las personas que trabajan. Los
+        accidentes en el taller son evitables cuando se conocen los riesgos y se aplican las
+        medidas adecuadas.
+      </p>
+
+      <h4>Los principales riesgos en el taller</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Tipo de riesgo</th>
+          <th>Ejemplos</th>
+          <th>Medidas de prevención</th>
+        </tr>
+        <tr>
+          <td><strong>Mecánicos</strong></td>
+          <td>Cortes, atrapamientos, proyecciones, golpes.</td>
+          <td>EPIs, protecciones de máquinas, formación, orden.</td>
+        </tr>
+        <tr>
+          <td><strong>Eléctricos</strong></td>
+          <td>Descargas, cortocircuitos, incendios.</td>
+          <td>Cables en buen estado, diferencial, no mojado, mano seca.</td>
+        </tr>
+        <tr>
+          <td><strong>Térmicos</strong></td>
+          <td>Quemaduras por soldador, horno, pistola de calor.</td>
+          <td>Guantes, dejar enfriar, controlar temperaturas.</td>
+        </tr>
+        <tr>
+          <td><strong>Químicos</strong></td>
+          <td>Disolventes, pinturas, ácidos.</td>
+          <td>Ventilación, guantes, mascarilla, no comer en el taller.</td>
+        </tr>
+        <tr>
+          <td><strong>Ruido</strong></td>
+          <td>Máquinas ruidosas (sierras, fresadoras).</td>
+          <td>Protección auditiva, límites de tiempo de exposición.</td>
+        </tr>
+        <tr>
+          <td><strong>Ergonómicos</strong></td>
+          <td>Posturas forzadas, movimientos repetitivos.</td>
+          <td>Buenas posturas, pausas, altura adecuada del banco.</td>
+        </tr>
+        <tr>
+          <td><strong>Caídas</strong></td>
+          <td>Objetos en el suelo, superficies resbaladizas.</td>
+          <td>Orden y limpieza, calzado adecuado, iluminación.</td>
+        </tr>
+      </table>
+
+      <h4>Los EPIs: qué son y cuándo se usan</h4>
+      <p>
+        Los <strong>EPIs</strong> (Equipos de Protección Individual) son elementos que protegen al
+        operario de riesgos concretos. No son decorativos: son la última barrera entre la persona
+        y el peligro.
+      </p>
+      <table class="tabla-tipos">
+        <tr>
+          <th>EPI</th>
+          <th>Protege de</th>
+          <th>Cuándo usarlo</th>
+        </tr>
+        <tr>
+          <td><strong>👓 Gafas de protección</strong></td>
+          <td>Proyecciones de partículas, líquidos, virutas.</td>
+          <td>Siempre que se taladre, lije, corte o use química.</td>
+        </tr>
+        <tr>
+          <td><strong>🧤 Guantes</strong></td>
+          <td>Cortes, quemaduras, productos químicos.</td>
+          <td>Manipular materiales cortantes o químicos. ¡No con máquinas giratorias!</td>
+        </tr>
+        <tr>
+          <td><strong>😷 Mascarilla</strong></td>
+          <td>Polvo, vapores, humos.</td>
+          <td>Lijar, pintar, soldar, manipular productos químicos.</td>
+        </tr>
+        <tr>
+          <td><strong>🎧 Protección auditiva</strong></td>
+          <td>Ruido intenso y prolongado.</td>
+          <td>Usar sierras, fresadoras, taladros de columna, martillos.</td>
+        </tr>
+        <tr>
+          <td><strong>👟 Calzado de seguridad</strong></td>
+          <td>Caída de objetos, superficies resbaladizas, electricidad.</td>
+          <td>Permanecer siempre en el taller.</td>
+        </tr>
+        <tr>
+          <td><strong>🧥 Ropa ajustada</strong></td>
+          <td>Atrapamiento por partes móviles.</td>
+          <td>Siempre. Nada de mangas anchas, colgantes o pelo suelto.</td>
+        </tr>
+        <tr>
+          <td><strong>🪖 Pantalla facial</strong></td>
+          <td>Proyecciones en cara y cuello.</td>
+          <td>Esmerilar, cortar con radial, soldar.</td>
+        </tr>
+      </table>
+
+      <h4>Las 10 normas básicas del taller</h4>
+      <ol>
+        <li><strong>Conocer las herramientas</strong> antes de usarlas. Si no sabes cómo funciona algo, pregunta.</li>
+        <li><strong>Usar los EPIs</strong> adecuados a cada tarea. Siempre.</li>
+        <li><strong>Mantener el orden y la limpieza</strong> del puesto de trabajo.</li>
+        <li><strong>No distraerse</strong> ni distraer a quien está usando una máquina.</li>
+        <li><strong>No comer ni beber</strong> en el taller (riesgo químico).</li>
+        <li><strong>Sujetar bien las piezas</strong> con sargentos, tornillos de banco o mordazas.</li>
+        <li><strong>Desconectar las máquinas</strong> antes de cambiar accesorios o hacer mantenimiento.</li>
+        <li><strong>Respetar las protecciones</strong> de las máquinas: nunca quitarlas.</li>
+        <li><strong>Conocer los recursos de emergencia:</strong> extintor, botiquín, salidas, parada de emergencia.</li>
+        <li><strong>Comunicar cualquier incidente</strong> o situación de riesgo al responsable.</li>
+      </ol>
+
+      <h4>Las señales de seguridad</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Color / forma</th>
+          <th>Significado</th>
+          <th>Ejemplo</th>
+        </tr>
+        <tr>
+          <td><strong>🔴 Rojo circular</strong></td>
+          <td>Prohibición.</td>
+          <td>"Prohibido fumar", "No tocar".</td>
+        </tr>
+        <tr>
+          <td><strong>🔵 Azul circular</strong></td>
+          <td>Obligación.</td>
+          <td>"Uso obligatorio de gafas", "Uso obligatorio de guantes".</td>
+        </tr>
+        <tr>
+          <td><strong>🟡 Amarillo triangular</strong></td>
+          <td>Advertencia / peligro.</td>
+          <td>"Riesgo eléctrico", "Material inflamable".</td>
+        </tr>
+        <tr>
+          <td><strong>🟢 Verde cuadrado</strong></td>
+          <td>Salvamento o socorro.</td>
+          <td>"Salida de emergencia", "Botiquín", "Ducha de emergencia".</td>
+        </tr>
+      </table>
+
+      <h4>Qué hacer en caso de accidente</h4>
+      <p>
+        Ante cualquier accidente, sigue el protocolo <strong>PAS</strong>:
+      </p>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>🛡️ Proteger</h5>
+          <p>Antes de actuar, asegúrate de que no hay más peligro para ti ni para la víctima.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>📞 Avisar</h5>
+          <p>Llama al 112 o avisa al responsable del taller. Explica qué ha pasado con claridad.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🩹 Socorrer</h5>
+          <p>Atiende a la víctima si estás formado. No muevas a alguien con posible lesión grave.</p>
+        </div>
+      </div>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> la seguridad no es un obstáculo para trabajar: es una
+        <strong>condición previa</strong> para trabajar bien. Un taller seguro es un taller
+        productivo. Y la seguridad es responsabilidad de <strong>todas las personas</strong>,
+        no solo del profesorado o del responsable.
+      </div>
+    </div>
+
+    <div class="actividad reveal" style="border-top:6px solid var(--rojo)">
+      <span class="kicker rojo">🎮 Reto 5 · Decide con seguridad</span>
+      <h3>¿Qué es lo correcto en cada situación?</h3>
+      <p class="intro">
+        Cinco situaciones reales de taller. Para cada una, elige la opción más segura. Recibirás
+        la explicación del porqué.
+      </p>
+
+      <div class="seg-taller-wrap" id="segTallerWrap"></div>
+      <div id="segTallerMsg"></div>
+    </div>
+
+    <!-- VOCABULARIO -->
+    <div class="actividad reveal" style="border-top:6px solid var(--oxido-oscuro)">
+      <span class="kicker">📚 Vocabulario clave</span>
+      <h3>Diccionario interactivo</h3>
+      <p class="intro">Pulsa sobre cualquier término para ver su explicación detallada.</p>
+      <div class="voc-grid" id="vocGrid"></div>
+      <div id="vocDef"></div>
+    </div>
+  </section>
+
+  <!-- ========== QUIZ ========== -->
+  <section id="quiz">
+    <div class="sec-head reveal">
+      <span class="kicker ambar">🎯 Reto 6 · Cuestionario final</span>
+      <h2>Comprueba lo que has aprendido</h2>
+      <p class="lead">10 preguntas sobre técnicas de fabricación, diseño asistido, materiales y seguridad.</p>
+    </div>
+    <div id="quizContainer"></div>
+    <div id="quizResult" style="display:none;text-align:center;padding:1.8rem;border-radius:var(--radio);color:#fff;background:linear-gradient(135deg,#7c2d12,#431407);box-shadow:var(--sombra-lg)">
+      <div id="quizScore" style="font-size:3rem;font-weight:900;line-height:1;margin-bottom:.4rem">0/10</div>
+      <h3 id="quizTitle" style="color:#fff">¡Buen trabajo!</h3>
+      <p id="quizMsg" style="color:#fed7aa;max-width:560px;margin:0 auto"></p>
+    </div>
+  </section>
+
+  <!-- ========== CERTIFICADO ========== -->
+  <section id="certificado">
+    <div id="certificado">
+      <h2>🏆 Tu certificado de aprovechamiento</h2>
+      <p class="sub">Al completar las actividades obtendrás un certificado personalizado con tus resultados, que podrás descargar en PDF.</p>
+
+      <div class="cert-name" id="certNombre">—</div>
+
+      <div class="cert-stats" id="certStats"></div>
+
+      <div class="cert-warn" id="certWarn" style="display:none">
+        ⚠️ Aún no has completado ninguna actividad. Termina al menos una para generar tu certificado.
+      </div>
+
+      <button class="btn btn-ambar" id="btnCertificado" style="font-size:1rem;padding:.95rem 2rem">
+        📄 Descargar certificado en PDF
+      </button>
+      <p class="cert-note">El PDF se genera como imagen rasterizada: el texto no es editable ni seleccionable, garantizando su integridad.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p style="margin-bottom:.4rem"><strong>Taller de Fabricación</strong> · Técnicas · Materiales · Diseño asistido · Seguridad</p>
+  <p style="margin:0;font-size:.8rem">Aplicación educativa interactiva · Tu progreso se guarda en este navegador</p>
+</footer>
+
+<div id="toast"></div>
+
+<script>
+/* ================================================================
+   1. ESTADO PERSISTENTE
+================================================================ */
+const LS_KEY = 'tallerFabricacion_v4';
+const RETOS_TOTALES = 6;
+
+let esRestauracion = true;
+
+let estado = {
+  nombre: '',
+  retos: [],
+  scores: {
+    tecnicas: 0,
+    vistas: 0,
+    materiales: 0,
+    ruta: 0,
+    seguridad: 0,
+    quiz: 0
+  },
+  respuestas: {
+    tecnicas: {},
+    vistas: {},
+    materiales: {},
+    ruta: [],
+    seguridad: {},
+    quiz: {}
+  },
+  iniciado: null
+};
+
+function guardarEstado(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(estado)); }catch(e){} }
+function cargarEstado(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(raw){
+      const d = JSON.parse(raw);
+      if(d && typeof d === 'object'){
+        estado = Object.assign(estado, d);
+        estado.scores = Object.assign({tecnicas:0,vistas:0,materiales:0,ruta:0,seguridad:0,quiz:0}, d.scores || {});
+        estado.retos = Array.isArray(d.retos) ? d.retos : [];
+        estado.respuestas = Object.assign({
+          tecnicas: {}, vistas: {}, materiales: {}, ruta: [], seguridad: {}, quiz: {}
+        }, d.respuestas || {});
+      }
+    }
+  }catch(e){}
+}
+
+cargarEstado();
+
+/* ================================================================
+   2. PROGRESO
+================================================================ */
+function actualizarProgreso(){
+  const n = estado.retos.length;
+  document.getElementById('progresoPill').textContent = n + ' / ' + RETOS_TOTALES + ' retos';
+  document.getElementById('progresoBarra').style.width = (n / RETOS_TOTALES * 100) + '%';
+}
+function completarReto(id, msg){
+  if(!estado.retos.includes(id)) estado.retos.push(id);
+  guardarEstado();
+  actualizarProgreso();
+  actualizarCertificado();
+  if(msg) toast(msg);
+}
+let toastTimer;
+function toast(texto){
+  const t = document.getElementById('toast');
+  t.innerHTML = '🏅 ' + texto;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 3500);
+}
+
+/* ================================================================
+   3. LOGIN
+================================================================ */
+const overlay = document.getElementById('loginOverlay');
+const card = document.getElementById('loginCard');
+
+function mostrarLogin(){
+  if(estado.nombre){
+    card.innerHTML = `
+      <span class="login-emoji">🔧</span>
+      <h1>¡Hola de nuevo!</h1>
+      <p class="sub">Hemos guardado tu progreso en este navegador.</p>
+      <div class="welcome-back">
+        Continuar como <strong>${escaparHTML(estado.nombre)}</strong><br>
+        <span style="font-size:.82rem">Retos completados: ${estado.retos.length} / ${RETOS_TOTALES}</span>
+      </div>
+      <div class="login-btns">
+        <button class="btn btn-primary" id="btnContinuar">▶ Continuar</button>
+        <button class="btn btn-ghost" id="btnCambiar" style="background:#f1f5f9;color:#0f172a;border-color:#e2e8f0">👤 Cambiar nombre</button>
+      </div>
+    `;
+    document.getElementById('btnContinuar').addEventListener('click', iniciarApp);
+    document.getElementById('btnCambiar').addEventListener('click', ()=>{
+      estado.nombre = '';
+      estado.retos = [];
+      estado.scores = {tecnicas:0,vistas:0,materiales:0,ruta:0,seguridad:0,quiz:0};
+      estado.respuestas = {
+        tecnicas: {}, vistas: {}, materiales: {}, ruta: [], seguridad: {}, quiz: {}
+      };
+      estado.iniciado = null;
+      guardarEstado();
+      renderLoginForm();
+    });
+  } else {
+    renderLoginForm();
+  }
+}
+
+function renderLoginForm(){
+  card.innerHTML = `
+    <span class="login-emoji">🔧</span>
+    <h1>Bienvenido/a al Taller de Fabricación</h1>
+    <p class="sub">Antes de empezar, dinos cómo te llamas. Tu progreso se guardará en este navegador para que puedas continuar cuando quieras.</p>
+    <input type="text" id="inputNombre" placeholder="Escribe tu nombre" maxlength="40" autocomplete="off">
+    <button class="btn btn-primary" id="btnEntrar">🚀 Comenzar la aventura</button>
+    <div class="login-error" id="loginError"></div>
+  `;
+  const inp = document.getElementById('inputNombre');
+  const btn = document.getElementById('btnEntrar');
+  const err = document.getElementById('loginError');
+  const submit = ()=>{
+    const v = inp.value.trim();
+    if(v.length < 2){ err.textContent = 'Por favor, introduce al menos 2 caracteres.'; inp.focus(); return; }
+    estado.nombre = v;
+    estado.iniciado = new Date().toISOString();
+    guardarEstado();
+    iniciarApp();
+  };
+  btn.addEventListener('click', submit);
+  inp.addEventListener('keydown', e=>{ if(e.key === 'Enter') submit(); });
+  setTimeout(()=>inp.focus(), 200);
+}
+
+function iniciarApp(){
+  overlay.classList.add('hidden');
+  document.body.classList.remove('locked');
+  document.getElementById('navUserName').textContent = estado.nombre;
+  document.getElementById('heroNombre').textContent = estado.nombre;
+  actualizarProgreso();
+  actualizarCertificado();
+}
+
+function escaparHTML(s){
+  return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ================================================================
+   4. REVEAL
+================================================================ */
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach((e,i)=>{
+    if(e.isIntersecting){
+      setTimeout(()=>e.target.classList.add('in'), i*70);
+      io.unobserve(e.target);
+    }
+  });
+},{threshold:.12, rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+/* ================================================================
+   5. NAV ACTIVO
+================================================================ */
+const secciones = [...document.querySelectorAll('section[id]')];
+const navLinks = [...document.querySelectorAll('.nav-links a')];
+window.addEventListener('scroll', ()=>{
+  let actual = '';
+  secciones.forEach(s=>{ if(window.scrollY >= s.offsetTop - 120) actual = s.id; });
+  navLinks.forEach(a=>a.classList.toggle('active', a.getAttribute('href') === '#'+actual));
+});
+
+/* ================================================================
+   6. RETO 1 · TÉCNICAS DE FABRICACIÓN
+================================================================ */
+const tecnicasData = [
+  {
+    id:'t1', ico:'🔲', titulo:'Marco de madera a medida',
+    desc:'Se necesita un marco rectangular de madera de 40 × 30 cm, un solo ejemplar, con cortes rectos y sencillos.',
+    correcta:'manual',
+    why:'Para una pieza única, simple y de madera, las técnicas manuales (sierra, limado, ensamblaje) son las más adecuadas: flexibles, suficientes y no requieren preparación de máquina.'
+  },
+  {
+    id:'t2', ico:'🍽️', titulo:'50 llaveros idénticos en plástico',
+    desc:'Se necesitan 50 llaveros idénticos con una forma un poco compleja, en plástico, para regalar en un evento del centro.',
+    correcta:'digital',
+    why:'La impresión 3D permite fabricar series pequeñas de piezas idénticas con formas complejas sin necesidad de moldes. Ideal para series cortas y personalizadas.'
+  },
+  {
+    id:'t3', ico:'⚙️', titulo:'Eje metálico cilíndrico perfecto',
+    desc:'Se necesita un eje de acero de 20 cm de longitud y 8 mm de diámetro, con tolerancia muy precisa (±0,05 mm).',
+    correcta:'mecanica',
+    why:'Para conseguir una pieza cilíndrica metálica con tolerancia muy precisa, la técnica adecuada es el torneado mecánico. Ni la manual ni la impresión 3D alcanzan esa precisión en metal.'
+  },
+  {
+    id:'t4', ico:'📦', titulo:'Caja de cartón personalizada',
+    desc:'Se necesita una caja con un logotipo grabado para un regalo puntual, en cartón grueso.',
+    correcta:'digital',
+    why:'El corte láser permite cortar y grabar el cartón con precisión y con un acabado profesional, incluyendo el logotipo, en una sola operación.'
+  },
+  {
+    id:'t5', ico:'🛠️', titulo:'Reparar la pata de una silla',
+    desc:'Una pata de silla se ha soltado y hay que volver a unirla con refuerzos. Es una reparación puntual.',
+    correcta:'manual',
+    why:'Una reparación sencilla no requiere máquinas ni procesos digitales. Con herramientas manuales (destornillador, cola, escuadras) se resuelve rápido y bien.'
+  },
+  {
+    id:'t6', ico:'🏭', titulo:'500 piezas idénticas en plástico',
+    desc:'Se necesitan 500 piezas idénticas de plástico, con geometría compleja, para un proyecto de todo el centro.',
+    correcta:'mecanica',
+    why:'Para series largas de plástico con geometría compleja, la inyección (o el moldeo mecánico) es la técnica industrial adecuada. La impresión 3D sería demasiado lenta.'
+  },
+  {
+    id:'t7', ico:'🔷', titulo:'Pieza de acrílico con grabado decorativo',
+    desc:'Se necesita una pieza de acrílico transparente con un grabado decorativo fino y bordes pulidos.',
+    correcta:'digital',
+    why:'El corte y grabado láser es la técnica más adecuada para acrílico: corta con precisión, graba detalles finos y deja los bordes pulidos.'
+  },
+  {
+    id:'t8', ico:'🔩', titulo:'Roscar el extremo de un tubo metálico',
+    desc:'Se necesita hacer una rosca interior a un tubo de latón de 1 cm de diámetro, en un solo ejemplar.',
+    correcta:'mecanica',
+    why:'Roscar requiere una herramienta específica (macho de roscar) y control preciso del giro y la profundidad. Se hace con técnicas mecánicas, no manuales improvisadas.'
+  }
+];
+
+const TECNICAS_INFO = {
+  manual: {txt:'🔨 Manual', ico:'🔨'},
+  mecanica:{txt:'⚙️ Mecánica', ico:'⚙️'},
+  digital:{txt:'💻 Digital (3D/láser)', ico:'💻'}
+};
+
+let tecRespondidas = 0, tecAciertos = 0;
+
+function aplicarTecnicaUI(div, btns, fb, item, elegido){
+  const acierto = elegido === item.correcta;
+  btns.forEach(x=>{
+    x.disabled = true;
+    if(x.dataset.v === item.correcta) x.classList.add('correct');
+    else if(x.dataset.v === elegido) x.classList.add('wrong');
+  });
+  fb.innerHTML = (acierto ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>No exactamente.</strong> ') +
+                 `La técnica más adecuada es <strong>${TECNICAS_INFO[item.correcta].txt}</strong>. ` + item.why;
+  fb.classList.add('show');
+  div.classList.add('done');
+  return acierto;
+}
+
+function mostrarMensajeFinalTecnicas(){
+  document.getElementById('tecFabMsg').innerHTML =
+    `Has acertado <strong>${tecAciertos} de ${tecnicasData.length}</strong> casos. ` +
+    (tecAciertos >= 6 ? '¡Sabes elegir la técnica de fabricación adecuada!' : 'Repasa los casos fallados.');
+}
+
+function initTecnicas(){
+  const cont = document.getElementById('tecFabGrid');
+  if(!cont) return;
+  cont.innerHTML = '';
+  tecRespondidas = 0;
+  tecAciertos = 0;
+  tecnicasData.forEach((item)=>{
+    const div = document.createElement('div');
+    div.className = 'tec-fab-card';
+    div.innerHTML = `
+      <div class="tfc-head">
+        <span class="tfc-ico">${item.ico}</span>
+        <div>
+          <p class="tfc-titulo">${item.titulo}</p>
+          <p class="tfc-desc">${item.desc}</p>
+        </div>
+      </div>
+      <div class="tec-fab-opciones">
+        <button class="tec-fab-btn" data-id="${item.id}" data-v="manual">🔨 Manual</button>
+        <button class="tec-fab-btn" data-id="${item.id}" data-v="mecanica">⚙️ Mecánica</button>
+        <button class="tec-fab-btn" data-id="${item.id}" data-v="digital">💻 Digital</button>
+      </div>
+      <div class="tec-fab-fb"></div>
+    `;
+    cont.appendChild(div);
+    const btns = div.querySelectorAll('.tec-fab-btn');
+    const fb = div.querySelector('.tec-fab-fb');
+
+    const saved = estado.respuestas.tecnicas[item.id];
+    if(saved){
+      const acierto = aplicarTecnicaUI(div, btns, fb, item, saved);
+      tecRespondidas++;
+      if(acierto) tecAciertos++;
+    } else {
+      btns.forEach(b=>{
+        b.addEventListener('click', ()=>{
+          const elegido = b.dataset.v;
+          estado.respuestas.tecnicas[item.id] = elegido;
+          const acierto = aplicarTecnicaUI(div, btns, fb, item, elegido);
+          guardarEstado();
+          tecRespondidas++;
+          if(acierto) tecAciertos++;
+          if(tecRespondidas === tecnicasData.length){
+            mostrarMensajeFinalTecnicas();
+            if(tecAciertos > estado.scores.tecnicas){
+              estado.scores.tecnicas = tecAciertos;
+            }
+            completarReto('tecnicas', '¡Técnicas de fabricación dominadas!');
+          }
+        });
+      });
+    }
+  });
+
+  if(tecRespondidas === tecnicasData.length){
+    mostrarMensajeFinalTecnicas();
+    if(tecAciertos > estado.scores.tecnicas){
+      estado.scores.tecnicas = tecAciertos;
+    }
+    completarReto('tecnicas');
+  }
+}
+
+initTecnicas();
+
+/* ================================================================
+   7. RETO 2 · DEL PLANO AL TALLER
+================================================================ */
+const preguntasPlano = [
+  {
+    q: '¿Cuánto mide REALMENTE el tramo vertical de la escuadra?',
+    ops: ['60 mm', '120 mm', '240 mm', '80 mm'],
+    c: 1,
+    e: 'La cota del tramo vertical indica 120 mm. Esa es la medida real de la pieza, independientemente de la escala del dibujo.'
+  },
+  {
+    q: '¿Qué significa la anotación "Ø 8 mm" junto a cada taladro?',
+    ops: [
+      'Que hay 8 taladros',
+      'Que el diámetro de cada taladro es de 8 mm',
+      'Que el taladro está a 8 mm del borde',
+      'Que el tornillo mide 8 mm de largo'
+    ],
+    c: 1,
+    e: 'El símbolo Ø (diámetro) seguido de "8 mm" indica que el agujero que hay que hacer tiene 8 mm de diámetro. Es una cota estándar en cualquier plano técnico.'
+  },
+  {
+    q: 'El plano está a escala 1:2. ¿Cuánto mide el tramo vertical EN EL PAPEL?',
+    ops: ['240 mm', '120 mm', '60 mm', '30 mm'],
+    c: 2,
+    e: 'Escala 1:2 significa que el dibujo es la mitad del tamaño real. Como el tramo real mide 120 mm, en el papel medirá 120 ÷ 2 = 60 mm.'
+  },
+  {
+    q: '¿Qué material hay que pedir en el almacén para fabricar esta pieza?',
+    ops: ['Madera de pino', 'Aluminio 6061', 'Acero inoxidable', 'Plástico PLA'],
+    c: 1,
+    e: 'La ficha del plano especifica claramente "Aluminio 6061". El material de la pieza siempre viene indicado en el cajetín del plano.'
+  },
+  {
+    q: '¿Cuántos taladros hay que hacer y de qué diámetro?',
+    ops: [
+      'Un taladro de 8 mm en el centro',
+      'Dos taladros de 8 mm, uno en cada tramo',
+      'Cuatro taladros de 8 mm',
+      'No lleva taladros'
+    ],
+    c: 1,
+    e: 'El plano muestra dos taladros: el A en el tramo vertical y el B en el tramo horizontal. Ambos son de Ø 8 mm, según las cotas.'
+  },
+  {
+    q: '¿Qué herramienta es la más adecuada para hacer los dos taladros en el taller?',
+    ops: [
+      'Un cúter',
+      'Un taladro de columna con broca de 8 mm y la pieza bien sujeta',
+      'Una lima redonda',
+      'Un destornillador'
+    ],
+    c: 1,
+    e: 'Para hacer agujeros precisos en aluminio con Ø 8 mm, se usa un taladro (de columna preferiblemente para mayor precisión) con broca adecuada para metal y la pieza firmemente sujeta.'
+  }
+];
+
+let planoRespondidas = 0, planoAciertos = 0;
+
+function aplicarPlanoUI(div, btns, fb, p, j){
+  const acierto = j === p.c;
+  btns.forEach(x=>x.disabled = true);
+  btns.forEach(x=>{
+    if(parseInt(x.dataset.j, 10) === p.c) x.classList.add('correct');
+  });
+  if(!acierto) btns[j].classList.add('wrong');
+  fb.innerHTML = (acierto ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>No exactamente.</strong> ') + p.e;
+  fb.classList.add('show');
+  return acierto;
+}
+
+function mostrarMensajeFinalPlano(){
+  document.getElementById('planoMsg').innerHTML =
+    `Has acertado <strong>${planoAciertos} de ${preguntasPlano.length}</strong> preguntas sobre el plano. ` +
+    (planoAciertos >= 5 ? '¡Sabes interpretar planos como un/a técnico/a!' : 'Repasa las preguntas usando la ficha del plano.');
+}
+
+function initPreguntasPlano(){
+  const cont = document.getElementById('preguntasPlano');
+  if(!cont) return;
+  cont.innerHTML = '';
+  planoRespondidas = 0;
+  planoAciertos = 0;
+
+  preguntasPlano.forEach((p, i)=>{
+    const div = document.createElement('div');
+    div.className = 'pregunta-plano';
+    div.innerHTML = `
+      <h5>📐 Pregunta ${i+1}: ${p.q}</h5>
+      <div class="pp-opciones">
+        ${p.ops.map((o, j)=>`<button class="pp-op" data-i="${i}" data-j="${j}">${o}</button>`).join('')}
+      </div>
+      <div class="pp-fb"></div>
+    `;
+    cont.appendChild(div);
+    const btns = div.querySelectorAll('.pp-op');
+    const fb = div.querySelector('.pp-fb');
+
+    const saved = estado.respuestas.vistas[i];
+    if(saved !== undefined && saved !== null){
+      const acierto = aplicarPlanoUI(div, btns, fb, p, parseInt(saved, 10));
+      planoRespondidas++;
+      if(acierto) planoAciertos++;
+    } else {
+      btns.forEach(b=>{
+        b.addEventListener('click', ()=>{
+          const j = parseInt(b.dataset.j, 10);
+          estado.respuestas.vistas[i] = j;
+          const acierto = aplicarPlanoUI(div, btns, fb, p, j);
+          guardarEstado();
+          planoRespondidas++;
+          if(acierto) planoAciertos++;
+          if(planoRespondidas === preguntasPlano.length){
+            mostrarMensajeFinalPlano();
+            if(planoAciertos > estado.scores.vistas){
+              estado.scores.vistas = planoAciertos;
+            }
+            completarReto('vistas', '¡Lectura de planos dominada!');
+          }
+        });
+      });
+    }
+  });
+
+  if(planoRespondidas === preguntasPlano.length){
+    mostrarMensajeFinalPlano();
+    if(planoAciertos > estado.scores.vistas){
+      estado.scores.vistas = planoAciertos;
+    }
+    completarReto('vistas');
+  }
+}
+
+initPreguntasPlano();
+
+/* ================================================================
+   8. RETO 3 · SELECTOR DE MATERIALES
+================================================================ */
+const materialesData = [
+  {
+    id:'m1', ico:'📦', titulo:'Caja de herramientas resistente',
+    necesidad:'Debe aguantar golpes, peso y humedad. Debe poder cerrarse con bisagras.',
+    requisitos:['Resistente','Impermeable','Ligera'],
+    opciones:[
+      {t:'Madera de pino', ok:false, why:'La madera de pino es fácil de trabajar pero se hincha con la humedad y no resiste bien los golpes fuertes.'},
+      {t:'Polipropileno (PP)', ok:true, why:'El polipropileno es resistente, impermeable, ligero y muy usado en cajas de herramientas profesionales.'},
+      {t:'Vidrio templado', ok:false, why:'El vidrio es frágil ante impactos, pesa mucho y no es adecuado para una caja de herramientas.'},
+      {t:'Cartón corrugado', ok:false, why:'El cartón no resiste la humedad ni el peso de las herramientas.'}
+    ]
+  },
+  {
+    id:'m2', ico:'🏠', titulo:'Maqueta de un edificio',
+    necesidad:'Debe ser fácil de cortar, ligera, rígida y permitir uniones con cola.',
+    requisitos:['Ligera','Fácil de cortar','Rígida'],
+    opciones:[
+      {t:'Cartón pluma', ok:true, why:'El cartón pluma es ligero, rígido, fácil de cortar con cúter y muy usado en maquetas arquitectónicas.'},
+      {t:'Acero inoxidable', ok:false, why:'El acero es muy pesado, difícil de cortar sin herramientas industriales y excesivo para una maqueta.'},
+      {t:'Hormigón', ok:false, why:'El hormigón no es adecuado para maquetas ligeras: pesa mucho y requiere tiempo de fraguado.'},
+      {t:'Gomaespuma blanda', ok:false, why:'La gomaespuma es demasiado blanda y no mantiene la forma de un edificio.'}
+    ]
+  },
+  {
+    id:'m3', ico:'🔩', titulo:'Tornillo para mobiliario',
+    necesidad:'Debe roscar en madera sin deformarse, resistir tensión y no oxidarse en interiores.',
+    requisitos:['Duro','Resistente a tensión','Anticorrosión'],
+    opciones:[
+      {t:'Acero al carbono cincado', ok:true, why:'Es el material estándar para tornillos: duro, resistente a la tracción y el cincado le da protección anticorrosión.'},
+      {t:'Aluminio blando', ok:false, why:'El aluminio blando se deforma con el par de apriete y no aguanta bien la tensión.'},
+      {t:'Plástico ABS', ok:false, why:'El plástico no tiene la dureza ni la resistencia necesarias para un tornillo estructural.'},
+      {t:'Cobre puro', ok:false, why:'El cobre es blando, caro y no se usa para tornillos estructurales.'}
+    ]
+  },
+  {
+    id:'m4', ico:'🏎️', titulo:'Carrocería de coche de carreras',
+    necesidad:'Debe ser lo más ligera posible y a la vez muy rígida y capaz de absorber impactos.',
+    requisitos:['Muy ligera','Rígida','Absorbe impactos'],
+    opciones:[
+      {t:'Fibra de carbono', ok:true, why:'La fibra de carbono es el material estrella de la competición: ligerísima, muy rígida y con gran capacidad de absorción de energía.'},
+      {t:'Hormigón armado', ok:false, why:'El hormigón es pesadísimo y no se usa en carrocerías.'},
+      {t:'Vidrio común', ok:false, why:'El vidrio es frágil y se rompe con cualquier impacto.'},
+      {t:'Madera contrachapada', ok:false, why:'La madera se puede usar en prototipos, pero no alcanza las prestaciones de la fibra de carbono.'}
+    ]
+  },
+  {
+    id:'m5', ico:'🍶', titulo:'Botella reutilizable',
+    necesidad:'Debe ser ligera, no alterar el sabor del agua, resistir caídas y poder reciclarse.',
+    requisitos:['Ligera','Inerte','Resistente a golpes'],
+    opciones:[
+      {t:'Acero inoxidable', ok:true, why:'El acero inoxidable es inerte (no altera el sabor), ligero, muy resistente y 100% reciclable. Ideal para botellas reutilizables.'},
+      {t:'Vidrio grueso', ok:false, why:'El vidrio es inerte pero pesa mucho y se rompe con facilidad al caer.'},
+      {t:'Plomo', ok:false, why:'El plomo es tóxico y absolutamente inadecuado para contacto con alimentos.'},
+      {t:'Cartón encerado', ok:false, why:'El cartón encerado no resiste bien el uso continuado y no es reutilizable a largo plazo.'}
+    ]
+  },
+  {
+    id:'m6', ico:'🛠️', titulo:'Base de un prototipo electrónico',
+    necesidad:'Debe ser aislante, ligera, fácil de taladrar y no conducir electricidad.',
+    requisitos:['Aislante','Ligera','Fácil de taladrar'],
+    opciones:[
+      {t:'Acrílico (PMMA)', ok:true, why:'El acrílico es aislante, ligero y fácil de taladrar y cortar. Muy usado en prototipos electrónicos.'},
+      {t:'Chapa de cobre', ok:false, why:'El cobre conduce electricidad. Sería un cortocircuito andante.'},
+      {t:'Acero galvanizado', ok:false, why:'El acero conduce electricidad y es pesado para un prototipo.'},
+      {t:'Papel de aluminio', ok:false, why:'El aluminio conduce la electricidad y no tiene rigidez estructural.'}
+    ]
+  },
+  {
+    id:'m7', ico:'🪟', titulo:'Ventana exterior de vivienda',
+    necesidad:'Debe dejar pasar la luz, aislar del frío y del calor y resistir el viento.',
+    requisitos:['Transparente','Aislante','Resistente al viento'],
+    opciones:[
+      {t:'Doble acristalamiento con cámara de aire', ok:true, why:'El doble acristalamiento con cámara de aire mejora el aislamiento térmico y acústico, y es resistente al viento.'},
+      {t:'Vidrio simple', ok:false, why:'El vidrio simple deja pasar la luz pero aísla muy poco: se pierde calor en invierno y entra calor en verano.'},
+      {t:'Policarbonato celular', ok:false, why:'El policarbonato es traslúcido pero no transparente: no permite ver a través.'},
+      {t:'Plástico film transparente', ok:false, why:'El film no tiene rigidez ni resistencia al viento.'}
+    ]
+  },
+  {
+    id:'m8', ico:'♻️', titulo:'Ensaladera desechable para picnic',
+    necesidad:'Debe ser ligera, barata, apta para alimentos y compostable o reciclable.',
+    requisitos:['Ligera','Apta alimentos','Sostenible'],
+    opciones:[
+      {t:'Bagazo de caña de azúcar', ok:true, why:'El bagazo de caña es un subproducto vegetal: apto para alimentos, compostable y muy ligero. Alternativa sostenible al plástico.'},
+      {t:'Poliestireno expandido (corcho blanco)', ok:false, why:'El poliestireno expandido no es biodegradable, contamina mucho y tarda siglos en descomponerse.'},
+      {t:'Vidrio grueso', ok:false, why:'El vidrio es pesado para un picnic y se rompe con facilidad.'},
+      {t:'Acero inoxidable', ok:false, why:'El acero inoxidable no es "desechable": sería una ensaladera reutilizable, no apta para este uso.'}
+    ]
+  }
+];
+
+let matRespondidas = 0, matAciertos = 0;
+
+function aplicarMaterialUI(div, btns, fb, item, j){
+  const op = item.opciones[j];
+  btns.forEach(x=>{
+    x.disabled = true;
+    const idx = parseInt(x.dataset.j, 10);
+    if(item.opciones[idx].ok) x.classList.add('correct');
+  });
+  btns[j].classList.add('wrong');
+  if(op.ok) btns[j].classList.remove('wrong');
+  fb.innerHTML = (op.ok ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>No es la mejor opción.</strong> ') + op.why;
+  fb.classList.add('show');
+  div.classList.add('done');
+  return op.ok;
+}
+
+function mostrarMensajeFinalMateriales(){
+  document.getElementById('matMsg').innerHTML =
+    `Has elegido correctamente <strong>${matAciertos} de ${materialesData.length}</strong> materiales. ` +
+    (matAciertos >= 6 ? '¡Sabes seleccionar materiales como un/a ingeniero/a!' : 'Repasa los casos fallados.');
+}
+
+function initMateriales(){
+  const cont = document.getElementById('matSelectorWrap');
+  if(!cont) return;
+  cont.innerHTML = '';
+  matRespondidas = 0;
+  matAciertos = 0;
+
+  materialesData.forEach((item)=>{
+    const div = document.createElement('div');
+    div.className = 'mat-card';
+    div.innerHTML = `
+      <div class="mat-head">
+        <span class="mat-ico">${item.ico}</span>
+        <div>
+          <p class="mat-titulo">${item.titulo}</p>
+          <p class="mat-necesidad">${item.necesidad}</p>
+          <div class="mat-requisitos">
+            ${item.requisitos.map(r=>`<span class="mat-req">${r}</span>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div class="mat-opciones">
+        ${item.opciones.map((o, j)=>`
+          <button class="mat-btn" data-i="${item.id}" data-j="${j}">${o.t}</button>
+        `).join('')}
+      </div>
+      <div class="mat-fb"></div>
+    `;
+    cont.appendChild(div);
+    const btns = div.querySelectorAll('.mat-btn');
+    const fb = div.querySelector('.mat-fb');
+
+    const saved = estado.respuestas.materiales[item.id];
+    if(saved !== undefined && saved !== null){
+      const acierto = aplicarMaterialUI(div, btns, fb, item, parseInt(saved, 10));
+      matRespondidas++;
+      if(acierto) matAciertos++;
+    } else {
+      btns.forEach(b=>{
+        b.addEventListener('click', ()=>{
+          const j = parseInt(b.dataset.j, 10);
+          estado.respuestas.materiales[item.id] = j;
+          const acierto = aplicarMaterialUI(div, btns, fb, item, j);
+          guardarEstado();
+          matRespondidas++;
+          if(acierto) matAciertos++;
+          if(matRespondidas === materialesData.length){
+            mostrarMensajeFinalMateriales();
+            if(matAciertos > estado.scores.materiales){
+              estado.scores.materiales = matAciertos;
+            }
+            completarReto('materiales', '¡Selección de materiales completada!');
+          }
+        });
+      });
+    }
+  });
+
+  if(matRespondidas === materialesData.length){
+    mostrarMensajeFinalMateriales();
+    if(matAciertos > estado.scores.materiales){
+      estado.scores.materiales = matAciertos;
+    }
+    completarReto('materiales');
+  }
+}
+
+initMateriales();
+
+/* ================================================================
+   9. RETO 4 · RUTA DE FABRICACIÓN
+================================================================ */
+const rutaFabData = [
+  {id:'r1', nombre:'1. Diseño', ico:'✏️', desc:'Definir la pieza: forma, medidas, material y función. Se hace con croquis y planos de diseño asistido.'},
+  {id:'r2', nombre:'2. Planificación', ico:'📋', desc:'Decidir qué técnicas, herramientas y materiales se van a usar, y en qué orden.'},
+  {id:'r3', nombre:'3. Preparación', ico:'📐', desc:'Medir, marcar y preparar los materiales. Verificar herramientas y EPIs.'},
+  {id:'r4', nombre:'4. Mecanizado', ico:'⚙️', desc:'Cortar, taladrar, limar, tornear... Dar forma a las piezas según el plano.'},
+  {id:'r5', nombre:'5. Ensamblaje', ico:'🔩', desc:'Unir las piezas mediante tornillos, cola, soldadura u otros sistemas.'},
+  {id:'r6', nombre:'6. Acabado', ico:'🎨', desc:'Lijar, pintar, barnizar o pulir la superficie para mejorar aspecto y protección.'},
+  {id:'r7', nombre:'7. Verificación', ico:'🔍', desc:'Comprobar que la pieza final cumple las medidas, la función y la calidad requeridas.'}
+];
+
+let rutaActualIdx = 0;
+
+function initRutaFab(){
+  const prog = document.getElementById('rutaFabProgreso');
+  const disp = document.getElementById('rutaFabDisponibles');
+  if(!prog || !disp) return;
+  prog.innerHTML = '';
+  disp.innerHTML = '';
+  rutaActualIdx = 0;
+
+  rutaFabData.forEach((f, i)=>{
+    const slot = document.createElement('div');
+    slot.className = 'ruta-fab-slot';
+    if(i === 0) slot.classList.add('activo');
+    slot.innerHTML = `<div class="rfs-num">${i+1}</div><div class="rfs-txt">—</div>`;
+    prog.appendChild(slot);
+  });
+
+  const mezcla = [...rutaFabData].sort(()=>Math.random()-0.5);
+  mezcla.forEach(f=>{
+    const el = document.createElement('div');
+    el.className = 'ruta-fab-card';
+    el.dataset.id = f.id;
+    el.innerHTML = `
+      <span class="rfc-ico">${f.ico}</span>
+      <div class="rfc-info">
+        <div class="rfc-nombre">${f.nombre.replace(/^\d+\.\s*/, '')}</div>
+        <div class="rfc-desc">${f.desc}</div>
+      </div>
+    `;
+    el.addEventListener('click', ()=>clickRutaFab(el));
+    disp.appendChild(el);
+  });
+
+  // Restaurar orden guardado
+  const savedOrder = Array.isArray(estado.respuestas.ruta) ? estado.respuestas.ruta : [];
+  const slots = prog.querySelectorAll('.ruta-fab-slot');
+  savedOrder.forEach((id, idx)=>{
+    const phase = rutaFabData.find(x=>x.id === id);
+    if(!phase) return;
+    const card = disp.querySelector(`.ruta-fab-card[data-id="${id}"]`);
+    if(card) card.classList.add('usada');
+    if(slots[idx]){
+      slots[idx].classList.remove('activo');
+      slots[idx].classList.add('lleno');
+      slots[idx].querySelector('.rfs-txt').textContent = phase.nombre.replace(/^\d+\.\s*/, '');
+    }
+    rutaActualIdx = idx + 1;
+  });
+  if(rutaActualIdx < rutaFabData.length && slots[rutaActualIdx]){
+    slots[rutaActualIdx].classList.add('activo');
+  }
+
+  if(rutaActualIdx === rutaFabData.length){
+    document.getElementById('rutaFabMsg').innerHTML = '🎉 ¡Has ordenado correctamente todas las fases de fabricación!';
+    if(rutaActualIdx > estado.scores.ruta){
+      estado.scores.ruta = rutaActualIdx;
+    }
+    completarReto('ruta');
+  } else {
+    document.getElementById('rutaFabMsg').textContent = '';
+  }
+}
+
+function clickRutaFab(el){
+  if(el.classList.contains('usada')) return;
+  const idx = rutaActualIdx;
+  const esperada = rutaFabData[idx];
+  const clicked = el.dataset.id;
+  const msg = document.getElementById('rutaFabMsg');
+
+  if(clicked === esperada.id){
+    el.classList.add('usada');
+    const slot = document.querySelectorAll('.ruta-fab-slot')[idx];
+    slot.classList.remove('activo');
+    slot.classList.add('lleno');
+    slot.querySelector('.rfs-txt').textContent = esperada.nombre.replace(/^\d+\.\s*/, '');
+
+    estado.respuestas.ruta.push(esperada.id);
+    rutaActualIdx++;
+
+    if(rutaActualIdx < rutaFabData.length){
+      document.querySelectorAll('.ruta-fab-slot')[rutaActualIdx].classList.add('activo');
+      msg.textContent = `✅ ¡Bien! Llevas ${rutaActualIdx}/7. Continúa.`;
+    }
+
+    if(rutaActualIdx > estado.scores.ruta){
+      estado.scores.ruta = rutaActualIdx;
+    }
+    guardarEstado();
+    actualizarCertificado();
+
+    if(rutaActualIdx === rutaFabData.length){
+      msg.innerHTML = '🎉 ¡Has ordenado correctamente todas las fases de fabricación!';
+      completarReto('ruta', '¡Ruta de fabricación dominada!');
+    }
+  } else {
+    el.style.animation = 'none';
+    el.offsetHeight;
+    el.style.animation = 'shake .4s';
+    msg.innerHTML = `❌ Esa no es la fase ${idx + 1}.<br><span style="font-size:.82rem;color:var(--gris)">Pista: la fase ${idx + 1} tiene que ver con <em>${esperada.desc.toLowerCase().split(',')[0]}</em></span>`;
+    setTimeout(()=>{ el.style.animation = ''; }, 500);
+  }
+}
+
+initRutaFab();
+
+/* ================================================================
+   10. RETO 5 · SEGURIDAD EN EL TALLER
+================================================================ */
+const seguridadData = [
+  {
+    id:'s1', ico:'🔌', titulo:'Vas a usar el taladro de columna',
+    desc:'Antes de empezar a taladrar una pieza metálica, ¿qué es lo PRIMERO que debes hacer?',
+    opciones:[
+      {t:'Encender el taladro y probar la broca', ok:false, why:'Antes de encender la máquina hay que preparar el puesto y la protección. Encender sin preparación es peligroso.'},
+      {t:'Sujetar la pieza con el tornillo de banco y ponerte las gafas de protección', ok:true, why:'¡Correcto! La pieza debe estar firmemente sujeta y el operario debe llevar EPI antes de encender. Así se evitan accidentes.'},
+      {t:'Llamar a un compañero para que sujete la pieza con la mano', ok:false, why:'Nunca se debe sujetar una pieza a mano mientras se taladra: puede girar y producir lesiones graves.'}
+    ]
+  },
+  {
+    id:'s2', ico:'🔥', titulo:'Estás soldando con estaño',
+    desc:'Durante la soldadura electrónica, ¿qué precauciones son imprescindibles?',
+    opciones:[
+      {t:'Ventilación adecuada, gafas y cuidado con las superficies calientes', ok:true, why:'¡Correcto! Los vapores del estaño son tóxicos y el soldador alcanza 350 °C. Ventilación, gafas y control de temperatura son clave.'},
+      {t:'Nada especial: el estaño no es peligroso', ok:false, why:'Los vapores del fundente y del estaño pueden ser irritantes y tóxicos. No debe soldarse sin ventilación.'},
+      {t:'Solo hace falta llevar guantes de plástico', ok:false, why:'Los guantes de plástico no protegen del calor y pueden derretirse sobre la piel.'}
+    ]
+  },
+  {
+    id:'s3', ico:'🪚', titulo:'Vas a cortar madera con la sierra de marquetería',
+    desc:'¿Cómo debes trabajar para hacerlo con seguridad?',
+    opciones:[
+      {t:'Con la pieza sujeta al banco, movimientos controlados y gafas de protección', ok:true, why:'¡Correcto! La pieza sujeta evita deslizamientos, los movimientos controlados evitan cortes y las gafas protegen de proyecciones.'},
+      {t:'Sujetando la pieza con la mano en el aire para verla mejor', ok:false, why:'Sujetar la pieza a mano mientras se corta es muy peligroso: un deslizamiento puede causar un corte grave.'},
+      {t:'Sin gafas: molestan y no pasa nada', ok:false, why:'Las gafas son imprescindibles al serrar: las virutas y el polvo pueden dañar los ojos.'}
+    ]
+  },
+  {
+    id:'s4', ico:'🧴', titulo:'Vas a usar disolvente para limpiar',
+    desc:'Debes limpiar una pieza con disolvente. ¿Cómo lo haces con seguridad?',
+    opciones:[
+      {t:'En una zona bien ventilada, con guantes y mascarilla, y alejado de fuentes de calor', ok:true, why:'¡Correcto! Los disolventes son inflamables y tóxicos. Ventilación, EPI y alejamiento de fuentes de calor son esenciales.'},
+      {t:'En una habitación cerrada para no molestar', ok:false, why:'En un espacio cerrado los vapores se acumulan y son muy peligrosos para la salud.'},
+      {t:'Con las manos directamente, así se limpia mejor', ok:false, why:'El contacto directo con disolventes puede dañar la piel y absorberse por vía cutánea.'}
+    ]
+  },
+  {
+    id:'s5', ico:'🖨️', titulo:'Estás usando la impresora 3D',
+    desc:'¿Qué precauciones debes tener en cuenta al imprimir en 3D con PLA?',
+    opciones:[
+      {t:'Ventilación de la zona, no tocar la boquilla caliente y supervisar la impresión', ok:true, why:'¡Correcto! Aunque el PLA es de los filamentos menos tóxicos, la boquilla alcanza 200 °C y hay que ventilar y supervisar la impresión.'},
+      {t:'Puedo tocar la boquilla sin problema porque el PLA es frío', ok:false, why:'El PLA se funde a 200 °C. La boquilla y el hotend están muy calientes y provocan quemaduras graves.'},
+      {t:'No hace falta supervisar: la impresora se apaña sola', ok:false, why:'Una impresión sin supervisar puede fallar, producir humo o generar residuos peligrosos. Siempre hay que revisarla.'}
+    ]
+  }
+];
+
+let segRespondidas = 0, segAciertos = 0;
+
+function aplicarSeguridadUI(div, btns, fb, s, j){
+  const op = s.opciones[j];
+  btns.forEach(x=>{
+    x.disabled = true;
+    const idx = parseInt(x.dataset.j, 10);
+    if(s.opciones[idx].ok) x.classList.add('correct');
+  });
+  btns[j].classList.add('wrong');
+  if(op.ok) btns[j].classList.remove('wrong');
+  fb.innerHTML = (op.ok ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>No es seguro.</strong> ') + op.why;
+  fb.classList.add('show');
+  div.classList.add('done');
+  return op.ok;
+}
+
+function mostrarMensajeFinalSeguridad(){
+  document.getElementById('segTallerMsg').innerHTML =
+    `Has identificado correctamente <strong>${segAciertos} de ${seguridadData.length}</strong> situaciones seguras. ` +
+    (segAciertos >= 4 ? '¡Tienes una excelente cultura de seguridad en el taller!' : 'Repasa las situaciones falladas.');
+}
+
+function initSeguridadTaller(){
+  const cont = document.getElementById('segTallerWrap');
+  if(!cont) return;
+  cont.innerHTML = '';
+  segRespondidas = 0;
+  segAciertos = 0;
+
+  seguridadData.forEach((s, i)=>{
+    const div = document.createElement('div');
+    div.className = 'seg-taller-card';
+    div.innerHTML = `
+      <div class="st-head">
+        <span class="st-ico">${s.ico}</span>
+        <div>
+          <p class="st-titulo">${s.titulo}</p>
+          <p class="st-desc">${s.desc}</p>
+        </div>
+      </div>
+      <div class="st-opciones">
+        ${s.opciones.map((o, j)=>`
+          <button class="st-btn" data-i="${i}" data-j="${j}">${o.t}</button>
+        `).join('')}
+      </div>
+      <div class="st-fb"></div>
+    `;
+    cont.appendChild(div);
+    const btns = div.querySelectorAll('.st-btn');
+    const fb = div.querySelector('.st-fb');
+
+    const saved = estado.respuestas.seguridad[s.id];
+    if(saved !== undefined && saved !== null){
+      const acierto = aplicarSeguridadUI(div, btns, fb, s, parseInt(saved, 10));
+      segRespondidas++;
+      if(acierto) segAciertos++;
+    } else {
+      btns.forEach(b=>{
+        b.addEventListener('click', ()=>{
+          const j = parseInt(b.dataset.j, 10);
+          estado.respuestas.seguridad[s.id] = j;
+          const acierto = aplicarSeguridadUI(div, btns, fb, s, j);
+          guardarEstado();
+          segRespondidas++;
+          if(acierto) segAciertos++;
+          if(segRespondidas === seguridadData.length){
+            mostrarMensajeFinalSeguridad();
+            if(segAciertos > estado.scores.seguridad){
+              estado.scores.seguridad = segAciertos;
+            }
+            completarReto('seguridad', '¡Seguridad en el taller dominada!');
+          }
+        });
+      });
+    }
+  });
+
+  if(segRespondidas === seguridadData.length){
+    mostrarMensajeFinalSeguridad();
+    if(segAciertos > estado.scores.seguridad){
+      estado.scores.seguridad = segAciertos;
+    }
+    completarReto('seguridad');
+  }
+}
+
+initSeguridadTaller();
+
+/* ================================================================
+   11. VOCABULARIO
+================================================================ */
+const vocabulario = [
+  {ico:'🔨', t:'Técnica manual', d:'Fabricación realizada con herramientas de mano (sierra, lima, taladro portátil, destornillador). Flexible y adecuada para piezas únicas o reparaciones, pero más lenta y con menor precisión que las máquinas.'},
+  {ico:'⚙️', t:'Técnica mecánica', d:'Fabricación con máquinas-herramienta (torno, fresadora, taladro de columna, plegadora). Ofrece alta precisión, buenos acabados y rapidez en series repetitivas.'},
+  {ico:'💻', t:'Técnica digital', d:'Fabricación controlada por ordenador: impresión 3D, corte láser, fresado CNC. Permite geometrías complejas y personalización sin moldes, ideal para prototipos y series cortas.'},
+  {ico:'📐', t:'Diseño asistido (CAD)', d:'Uso de programas informáticos para crear planos y modelos 3D de las piezas antes de fabricarlas. Permite simular, modificar y compartir el diseño con precisión.'},
+  {ico:'📏', t:'Cota', d:'Medida anotada en un plano técnico que indica una dimensión de la pieza. Todas las cotas se expresan en milímetros, salvo que se indique lo contrario.'},
+  {ico:'⌀', t:'Símbolo Ø (diámetro)', d:'Símbolo normalizado que aparece antes de una medida para indicar que se refiere al diámetro de un agujero o de una pieza cilíndrica. Ejemplo: Ø 8 mm significa 8 mm de diámetro.'},
+  {ico:'📏', t:'Escala', d:'Relación entre la medida del dibujo y la medida real de la pieza. Escala 1:2 significa que el dibujo es la mitad del tamaño real; escala 2:1, el doble.'},
+  {ico:'🎯', t:'Acotación', d:'Conjunto de cotas que se indican en un plano para que la pieza pueda fabricarse con exactitud. Debe ser completa, clara y sin ambigüedades.'},
+  {ico:'🧱', t:'Propiedades de los materiales', d:'Características que definen su comportamiento: dureza, resistencia, densidad, elasticidad, conductividad térmica y eléctrica, resistencia a la corrosión.'},
+  {ico:'🌱', t:'Material sostenible', d:'Material cuyo ciclo de vida tiene bajo impacto ambiental: renovable, reciclable, biodegradable o de origen local. Ejemplos: madera certificada, bagazo de caña, aluminio reciclado.'},
+  {ico:'🔩', t:'Ensamblaje', d:'Unión de varias piezas para formar el producto final. Puede hacerse con tornillos, cola, soldadura, remaches o sistemas de encaje.'},
+  {ico:'🎨', t:'Acabado', d:'Conjunto de operaciones finales para mejorar el aspecto y la protección de la pieza: lijado, pulido, pintura, barniz, galvanizado.'},
+  {ico:'🔍', t:'Verificación', d:'Comprobación final de que la pieza fabricada cumple las medidas, la forma, la función y la calidad especificadas en el plano.'},
+  {ico:'🦺', t:'EPI (Equipo de Protección Individual)', d:'Elemento que protege al operario de riesgos específicos: gafas, guantes, mascarilla, protección auditiva, calzado de seguridad. Su uso es obligatorio en muchas tareas.'},
+  {ico:'⚠️', t:'Riesgo laboral', d:'Posibilidad de que una persona sufra un daño durante el trabajo. En el taller destacan los cortes, proyecciones, quemaduras, descargas eléctricas y exposición a sustancias tóxicas.'},
+  {ico:'🧯', t:'Normas de seguridad', d:'Reglas básicas para trabajar sin accidentes: orden y limpieza, uso correcto de herramientas, no distraerse, conocer la ubicación del extintor y del botiquín.'},
+  {ico:'♻️', t:'Desperdicio de material', d:'Material que se pierde durante la fabricación por mal cálculo, mala técnica o mal diseño. Reducirlo es un objetivo de sostenibilidad y eficiencia.'},
+  {ico:'📋', t:'Ruta de fabricación', d:'Secuencia ordenada de fases que se siguen para fabricar un producto: diseño, planificación, preparación, mecanizado, ensamblaje, acabado y verificación.'},
+  {ico:'📊', t:'Cajetín del plano', d:'Recuadro normalizado en la esquina del plano que contiene la información esencial: nombre de la pieza, material, escala, autor, fecha, tolerancias generales y sistema de proyección.'},
+  {ico:'🔬', t:'Tolerancia', d:'Margen de error admitido en una medida. En fabricación real ninguna pieza sale con la medida exacta; la tolerancia indica cuánto puede desviarse sin dejar de ser válida.'},
+  {ico:'🛠️', t:'DfM (Diseño para fabricación)', d:'Enfoque de diseño que optimiza la pieza para que sea fácil y económica de fabricar: menos piezas, formas simples, ensamblajes sencillos.'},
+  {ico:'🎯', t:'Precisión', d:'Grado de exactitud con el que una pieza se ajusta a las medidas especificadas en el plano. Depende de la técnica, la herramienta y el cuidado del operario.'},
+  {ico:'🧪', t:'Norma UNE / ISO', d:'Documento técnico que establece especificaciones para garantizar la calidad, la seguridad y la interoperabilidad de productos y procesos. Ejemplo: ISO 14040 para ACV.'},
+  {ico:'🔵', t:'Señal de obligación', d:'Señal circular azul que indica una acción obligatoria: uso de gafas, guantes, mascarilla, etc. Su incumplimiento puede sancionarse.'}
+];
+
+(function initVoc(){
+  const grid = document.getElementById('vocGrid');
+  const defBox = document.getElementById('vocDef');
+  if(!grid) return;
+  vocabulario.forEach((v)=>{
+    const b = document.createElement('button');
+    b.className = 'voc-term';
+    b.innerHTML = `<span style="font-size:1.1rem">${v.ico}</span><span>${v.t}</span>`;
+    b.addEventListener('click', ()=>{
+      const yaActivo = b.classList.contains('active');
+      grid.querySelectorAll('.voc-term').forEach(x=>x.classList.remove('active'));
+      if(yaActivo){
+        defBox.classList.remove('show');
+        setTimeout(()=>{ defBox.innerHTML=''; }, 500);
+        return;
+      }
+      b.classList.add('active');
+      defBox.innerHTML = `<h4>${v.ico} ${v.t}</h4><p>${v.d}</p>`;
+      defBox.classList.add('show');
+    });
+    grid.appendChild(b);
+  });
+})();
+
+/* ================================================================
+   12. QUIZ FINAL
+================================================================ */
+const preguntasQuiz = [
+  {
+    q:'¿Qué caracteriza a las técnicas de fabricación manuales?',
+    o:['Son las más rápidas y precisas del taller','Emplean herramientas de mano y son flexibles','Funcionan solo con plásticos y maderas blandas','Necesitan un ordenador con programa CNC'],
+    c:1,
+    e:'Las técnicas manuales son flexibles y útiles para piezas únicas, prototipos o reparaciones, aunque son más lentas y con menor precisión que las mecánicas o digitales.'
+  },
+  {
+    q:'¿Cuál es la técnica MÁS adecuada para fabricar 50 llaveros idénticos con forma compleja en plástico?',
+    o:['Técnicas manuales','Impresión 3D (digital)','Torno mecánico','Fundición industrial'],
+    c:1,
+    e:'Para series cortas de piezas plásticas con geometría compleja, la impresión 3D es ideal: no necesita moldes y permite formas personalizadas.'
+  },
+  {
+    q:'En un plano técnico, ¿qué significa la anotación "Ø 8 mm"?',
+    o:['Que hay 8 agujeros','Que el diámetro del agujero es de 8 mm','Que el agujero está a 8 mm del borde','Que el agujero es cuadrado'],
+    c:1,
+    e:'El símbolo Ø significa "diámetro". Junto a "8 mm" indica que el agujero tiene 8 milímetros de diámetro.'
+  },
+  {
+    q:'Si un plano está a escala 1:2 y una pieza mide 120 mm en la realidad, ¿cuánto medirá el dibujo en el papel?',
+    o:['240 mm','120 mm','60 mm','30 mm'],
+    c:2,
+    e:'Escala 1:2 significa que el dibujo es la mitad del tamaño real. 120 mm reales ÷ 2 = 60 mm en el papel.'
+  },
+  {
+    q:'Un producto debe ser ligero, inerte y no alterar el sabor del agua. ¿Qué material elegirías?',
+    o:['Acero inoxidable','Vidrio grueso templado','Plomo en aleación con estaño','Cartón encerado de doble capa'],
+    c:0,
+    e:'El acero inoxidable es inerte, ligero, muy resistente y reciclable. Es el material estándar para botellas reutilizables de calidad.'
+  },
+  {
+    q:'¿Cuál es el orden correcto de las 7 fases de fabricación?',
+    o:['Mecanizado → Diseño → Ensamblaje → Acabado → Verificación','Diseño → Planificación → Preparación → Mecanizado → Ensamblaje → Acabado → Verificación','Planificación → Diseño → Preparación → Mecanizado → Ensamblaje → Acabado → Verificación','Diseño → Preparación → Planificación → Mecanizado → Ensamblaje → Acabado → Verificación'],
+    c:1,
+    e:'El proceso sigue una secuencia lógica: primero se diseña, luego se planifica, se prepara el material, se mecaniza, se ensambla, se da acabado y finalmente se verifica.'
+  },
+  {
+    q:'Antes de taladrar una pieza metálica con el taladro de columna, ¿qué es imprescindible?',
+    o:['Sujetar bien la pieza y llevar gafas de protección','Encender la máquina a máxima velocidad y probar la broca','Sujetar la pieza con la mano y mirar desde cerca','Quitar todas las protecciones para ver mejor el trabajo'],
+    c:0,
+    e:'La pieza debe estar firmemente sujeta (por ejemplo con un tornillo de banco) y el operario debe llevar gafas. Así se evitan accidentes graves.'
+  },
+  {
+    q:'¿Qué significa EPI?',
+    o:['Equipo de Producción Industrial','Equipo de Protección Individual','Estándar de Precisión Industrial','Elemento de Pintura y Imprimación'],
+    c:1,
+    e:'EPI es Equipo de Protección Individual: gafas, guantes, mascarilla, protección auditiva… Elementos que protegen al operario de riesgos concretos.'
+  },
+  {
+    q:'En un plano técnico, ¿qué información viene indicada en el cajetín (cuadro de datos)?',
+    o:['El precio del material y el coste de fabricación','Material, escala, tolerancias y nombre de la pieza','El nombre del cliente y la dirección de entrega','El tiempo de fabricación y la fecha de entrega'],
+    c:1,
+    e:'El cajetín del plano contiene los datos esenciales: nombre de la pieza, material, escala, tolerancias, autor y fecha. Es la "ficha de identidad" de la pieza.'
+  },
+  {
+    q:'¿Qué comprobación se hace en la fase de "verificación"?',
+    o:['Se elige el material más adecuado para la pieza','Se comprueba que la pieza cumple las medidas','Se pinta y se barniza la superficie de la pieza','Se compra el material necesario para fabricar la pieza'],
+    c:1,
+    e:'En la verificación se compara la pieza final con el plano: se miden las cotas, se comprueba la forma, la función y la calidad antes de dar el producto por terminado.'
+  }
+];
+
+let quizRespondidas = 0, quizAciertos = 0;
+
+function mostrarResultadoQuiz(){
+  const res = document.getElementById('quizResult');
+  document.getElementById('quizScore').textContent = quizAciertos + '/' + preguntasQuiz.length;
+  const pct = Math.round(quizAciertos / preguntasQuiz.length * 100);
+  let titulo, msg;
+  if(pct === 100){ titulo = '🏆 ¡Perfecto!'; msg = 'Dominas las técnicas de fabricación, el diseño asistido, la selección de materiales y la seguridad.'; }
+  else if(pct >= 75){ titulo = '🌟 ¡Muy bien!'; msg = 'Tienes una comprensión sólida. Repasa las preguntas falladas para afinar los detalles.'; }
+  else if(pct >= 50){ titulo = '👍 Buen intento'; msg = 'Vas por el camino correcto. Vuelve a las secciones de técnicas, plano, materiales y seguridad.'; }
+  else { titulo = '📚 A seguir aprendiendo'; msg = 'Revisa con calma cada sección y vuelve a intentarlo.'; }
+  document.getElementById('quizTitle').textContent = titulo;
+  document.getElementById('quizMsg').textContent = msg;
+  res.style.display = 'block';
+
+  if(!esRestauracion){
+    res.scrollIntoView({behavior:'smooth', block:'center'});
+  }
+
+  if(quizAciertos > estado.scores.quiz){
+    estado.scores.quiz = quizAciertos;
+  }
+  completarReto('quiz', esRestauracion ? null : '¡Cuestionario final completado! ' + quizAciertos + '/' + preguntasQuiz.length);
+}
+
+(function initQuiz(){
+  const cont = document.getElementById('quizContainer');
+  if(!cont) return;
+  cont.innerHTML = '';
+  quizRespondidas = 0;
+  quizAciertos = 0;
+
+  preguntasQuiz.forEach((p, i)=>{
+    const div = document.createElement('div');
+    div.className = 'q reveal';
+    div.innerHTML = `
+      <span class="q-num">PREGUNTA ${i+1}</span>
+      <h4>${p.q}</h4>
+      <div class="opts">
+        ${p.o.map((o,j)=>`
+          <button class="opt" data-i="${i}" data-j="${j}">
+            <span class="letter">${String.fromCharCode(65+j)}</span>
+            <span>${o}</span>
+          </button>`).join('')}
+      </div>
+      <div class="expl"></div>
+    `;
+    cont.appendChild(div);
+    io.observe(div);
+    const btns = div.querySelectorAll('.opt');
+    const expl = div.querySelector('.expl');
+
+    const saved = estado.respuestas.quiz[i];
+    if(saved !== undefined && saved !== null){
+      const j = parseInt(saved, 10);
+      btns.forEach(x=>x.disabled = true);
+      btns.forEach(x=>{ if(parseInt(x.dataset.j,10) === p.c) x.classList.add('correct'); });
+      if(j !== p.c) btns[j].classList.add('wrong');
+      else quizAciertos++;
+      expl.innerHTML = (j === p.c ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>Respuesta incorrecta.</strong> ') + p.e;
+      expl.classList.add('show');
+      quizRespondidas++;
+    } else {
+      btns.forEach(b=>{
+        b.addEventListener('click', ()=>{
+          const j = parseInt(b.dataset.j,10);
+          estado.respuestas.quiz[i] = j;
+          btns.forEach(x=>x.disabled = true);
+          btns.forEach(x=>{ if(parseInt(x.dataset.j,10) === p.c) x.classList.add('correct'); });
+          if(j !== p.c) b.classList.add('wrong');
+          else quizAciertos++;
+          expl.innerHTML = (j === p.c ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>Respuesta incorrecta.</strong> ') + p.e;
+          expl.classList.add('show');
+          guardarEstado();
+          quizRespondidas++;
+          if(quizRespondidas === preguntasQuiz.length) mostrarResultadoQuiz();
+        });
+      });
+    }
+  });
+
+  if(quizRespondidas === preguntasQuiz.length){
+    mostrarResultadoQuiz();
+  }
+})();
+
+/* ================================================================
+   13. CERTIFICADO Y PDF RASTERIZADO
+================================================================ */
+function actualizarCertificado(){
+  const stats = document.getElementById('certStats');
+  const nombreEl = document.getElementById('certNombre');
+  const warn = document.getElementById('certWarn');
+  const btn = document.getElementById('btnCertificado');
+
+  nombreEl.textContent = estado.nombre || '—';
+
+  const s = estado.scores;
+  const nRetos = estado.retos.length;
+
+  const items = [
+    {num: (s.tecnicas>0 ? s.tecnicas + '/8' : '—'), lbl:'Técnicas'},
+    {num: (s.vistas>0 ? s.vistas + '/6' : '—'), lbl:'Plano'},
+    {num: (s.materiales>0 ? s.materiales + '/8' : '—'), lbl:'Materiales'},
+    {num: (s.ruta>0 ? s.ruta + '/7' : '—'), lbl:'Ruta'},
+    {num: (s.seguridad>0 ? s.seguridad + '/5' : '—'), lbl:'Seguridad'},
+    {num: (s.quiz>0 ? s.quiz + '/10' : '—'), lbl:'Cuestionario'},
+    {num: nRetos + '/' + RETOS_TOTALES, lbl:'Retos totales'}
+  ];
+
+  stats.innerHTML = items.map(it=>`
+    <div class="cert-stat">
+      <div class="num">${it.num}</div>
+      <div class="lbl">${it.lbl}</div>
+    </div>
+  `).join('');
+
+  if(nRetos === 0){
+    warn.style.display = 'block';
+    btn.disabled = true;
+    btn.style.opacity = .55;
+    btn.style.cursor = 'not-allowed';
+  } else {
+    warn.style.display = 'none';
+    btn.disabled = false;
+    btn.style.opacity = 1;
+    btn.style.cursor = 'pointer';
+  }
+}
+
+document.getElementById('btnCertificado').addEventListener('click', ()=>{
+  if(!estado.nombre){ toast('Introduce tu nombre primero'); return; }
+  if(estado.retos.length === 0){ toast('Completa al menos un reto para obtener el certificado'); return; }
+  generarPDFRasterizado();
+});
+
+function generarPDFRasterizado(){
+  if(!(window.jspdf && window.jspdf.jsPDF)){
+    toast('No se ha podido cargar la librería PDF. Inténtalo de nuevo.');
+    return;
+  }
+  try{
+    const DPI = 300;
+    const W_MM = 297, H_MM = 210;
+    const W = Math.round(W_MM / 25.4 * DPI);
+    const H = Math.round(H_MM / 25.4 * DPI);
+    const mm = v => v / 25.4 * DPI;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = '#fff7ed';
+    ctx.fillRect(0,0,W,H);
+
+    ctx.strokeStyle = '#7c2d12';
+    ctx.lineWidth = mm(2);
+    ctx.strokeRect(mm(10), mm(10), W-mm(20), H-mm(20));
+    ctx.lineWidth = mm(0.5);
+    ctx.strokeRect(mm(14), mm(14), W-mm(28), H-mm(28));
+
+    ctx.fillStyle = '#7c2d12';
+    ctx.fillRect(mm(14), mm(14), mm(20), mm(3));
+    ctx.fillRect(mm(14), mm(14), mm(3), mm(20));
+    ctx.fillRect(W-mm(34), mm(14), mm(20), mm(3));
+    ctx.fillRect(W-mm(17), mm(14), mm(3), mm(20));
+    ctx.fillRect(mm(14), H-mm(17), mm(20), mm(3));
+    ctx.fillRect(mm(14), H-mm(34), mm(3), mm(20));
+    ctx.fillRect(W-mm(34), H-mm(17), mm(20), mm(3));
+    ctx.fillRect(W-mm(17), H-mm(34), mm(3), mm(20));
+
+    ctx.fillStyle = '#7c2d12';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = `bold ${mm(9)}px Arial, sans-serif`;
+    ctx.fillText('CERTIFICADO DE APROVECHAMIENTO', W/2, mm(38));
+
+    ctx.fillStyle = '#64748b';
+    ctx.font = `${mm(4)}px Arial, sans-serif`;
+    ctx.fillText('Taller de Fabricación · Técnicas, materiales y diseño asistido', W/2, mm(48));
+
+    ctx.strokeStyle = '#65a30d';
+    ctx.lineWidth = mm(0.8);
+    ctx.beginPath();
+    ctx.moveTo(W/2 - mm(60), mm(53));
+    ctx.lineTo(W/2 + mm(60), mm(53));
+    ctx.stroke();
+
+    ctx.fillStyle = '#475569';
+    ctx.font = `${mm(4.5)}px Arial, sans-serif`;
+    ctx.fillText('Se certifica que', W/2, mm(68));
+
+    ctx.fillStyle = '#0f172a';
+    ctx.font = `bold ${mm(14)}px Arial, sans-serif`;
+    ctx.fillText(estado.nombre, W/2, mm(85));
+
+    ctx.fillStyle = '#334155';
+    ctx.font = `${mm(4)}px Arial, sans-serif`;
+    ctx.fillText('ha completado las actividades interactivas de la aplicación educativa sobre fabricación', W/2, mm(97));
+    ctx.fillText('de productos y soluciones tecnológicas, obteniendo:', W/2, mm(104));
+
+    const s = estado.scores;
+    const resultados = [
+      ['Selección de técnicas de fabricación', s.tecnicas>0 ? s.tecnicas + ' / 8 aciertos' : 'No realizado'],
+      ['Lectura del plano técnico', s.vistas>0 ? s.vistas + ' / 6 aciertos' : 'No realizado'],
+      ['Selección de materiales', s.materiales>0 ? s.materiales + ' / 8 aciertos' : 'No realizada'],
+      ['Ruta de fabricación ordenada', s.ruta>0 ? s.ruta + ' / 7 fases' : 'No completada'],
+      ['Seguridad en el taller', s.seguridad>0 ? s.seguridad + ' / 5 aciertos' : 'No realizado'],
+      ['Cuestionario final', s.quiz>0 ? s.quiz + ' / 10' : 'No realizado'],
+      ['Retos completados', estado.retos.length + ' / ' + RETOS_TOTALES]
+    ];
+
+    const tableX = mm(60);
+    const tableY = mm(116);
+    const rowH = mm(9);
+    const colW1 = mm(110), colW2 = mm(70);
+    const totalW = colW1 + colW2;
+
+    ctx.fillStyle = '#7c2d12';
+    ctx.fillRect(tableX, tableY, totalW, mm(9));
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `bold ${mm(3.6)}px Arial, sans-serif`;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('ACTIVIDAD', tableX + mm(4), tableY + mm(4.5));
+    ctx.fillText('RESULTADO', tableX + colW1 + mm(4), tableY + mm(4.5));
+
+    resultados.forEach((row, i)=>{
+      const y = tableY + mm(9) + i * rowH;
+      if(i % 2 === 0){
+        ctx.fillStyle = '#ffedd5';
+        ctx.fillRect(tableX, y, totalW, rowH);
+      }
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = mm(0.2);
+      ctx.strokeRect(tableX, y, totalW, rowH);
+      ctx.fillStyle = '#1e293b';
+      ctx.font = `${mm(3.6)}px Arial, sans-serif`;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(row[0], tableX + mm(4), y + rowH/2);
+      ctx.font = `bold ${mm(3.6)}px Arial, sans-serif`;
+      ctx.fillText(row[1], tableX + colW1 + mm(4), y + rowH/2);
+    });
+
+    const fecha = new Date().toLocaleDateString('es-ES', {day:'numeric', month:'long', year:'numeric'});
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#64748b';
+    ctx.font = `${mm(3.5)}px Arial, sans-serif`;
+    ctx.fillText('Fecha de emisión: ' + fecha, W/2, H - mm(24));
+    ctx.font = `${mm(3)}px Arial, sans-serif`;
+    ctx.fillText('Este certificado acredita la realización de las actividades interactivas de la aplicación educativa.', W/2, H - mm(17));
+
+    const imgData = canvas.toDataURL('image/png');
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
+    doc.addImage(imgData, 'PNG', 0, 0, W_MM, H_MM, undefined, 'FAST');
+    doc.save('Certificado_TallerFabricacion_' + estado.nombre.replace(/[^a-zA-Z0-9]/g,'_') + '.pdf');
+    toast('¡Certificado descargado!');
+  } catch(err){
+    console.error(err);
+    toast('No se pudo generar el PDF.');
+  }
+}
+
+/* ================================================================
+   14. INICIALIZACIÓN
+================================================================ */
+esRestauracion = false;
+mostrarLogin();
+actualizarProgreso();
+</script>
+</body>
+</html>
