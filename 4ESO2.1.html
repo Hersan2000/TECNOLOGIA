@@ -1,0 +1,3128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Productos con Criterio · Análisis de diseño, ciclo de vida y sostenibilidad</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --esmeralda:#059669; --esmeralda-claro:#d1fae5; --esmeralda-oscuro:#065f46;
+  --ambar:#a16207; --ambar-claro:#fef3c7; --ambar-oscuro:#78350f;
+  --azul:#0284c7; --azul-claro:#e0f2fe; --azul-oscuro:#075985;
+  --rojo:#dc2626; --rojo-claro:#fee2e2;
+  --rosa:#db2777; --rosa-claro:#fce7f3;
+  --gris:#64748b; --gris-claro:#f1f5f9; --gris-oscuro:#1e293b;
+  --blanco:#fff; --negro:#0f172a;
+  --sombra:0 10px 30px rgba(15,23,42,.08);
+  --sombra-lg:0 20px 50px rgba(15,23,42,.14);
+  --radio:20px;
+  --fuente:'Segoe UI',system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+  --mono:'Consolas','Monaco','Courier New',monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0; font-family:var(--fuente); background:var(--gris-claro); color:var(--negro); line-height:1.7; -webkit-font-smoothing:antialiased;}
+body.locked{overflow:hidden}
+h1,h2,h3,h4{line-height:1.2; margin:0 0 .5rem}
+p{margin:0 0 1rem}
+
+/* LOGIN */
+#loginOverlay{
+  position:fixed; inset:0; z-index:2000;
+  background:radial-gradient(1000px 600px at 20% 10%,#065f46 0%,transparent 60%),
+             radial-gradient(900px 500px at 85% 90%,#78350f 0%,transparent 55%),
+             linear-gradient(160deg,#052e26,#0f172a);
+  display:grid; place-items:center; padding:1.2rem;
+  transition:opacity .6s, visibility .6s;
+}
+#loginOverlay.hidden{opacity:0; visibility:hidden; pointer-events:none}
+.login-card{
+  background:#fff; border-radius:26px; padding:2.2rem 2rem;
+  max-width:500px; width:100%; box-shadow:0 30px 70px rgba(0,0,0,.4);
+  text-align:center; position:relative; overflow:hidden;
+  animation:aparecer .6s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes aparecer{from{opacity:0;transform:translateY(24px) scale(.96)}to{opacity:1;transform:none}}
+.login-card::before{content:""; position:absolute; top:0; left:0; right:0; height:6px;
+  background:linear-gradient(90deg,var(--esmeralda),var(--ambar),var(--azul));}
+.login-emoji{font-size:3.4rem; line-height:1; margin-bottom:.5rem; display:block}
+.login-card h1{font-size:1.55rem; color:var(--esmeralda-oscuro); letter-spacing:-.4px}
+.login-card p.sub{font-size:.94rem; color:var(--gris); margin-bottom:1.5rem}
+.login-card input{width:100%; font-family:inherit; font-size:1.02rem; padding:.95rem 1.1rem;
+  border-radius:14px; border:2px solid #e2e8f0; background:#f8fafc; color:var(--negro);
+  transition:.2s; text-align:center; font-weight:600; margin-bottom:1rem;}
+.login-card input:focus{outline:none; border-color:var(--esmeralda); background:#fff; box-shadow:0 0 0 5px rgba(5,150,105,.14);}
+.login-card .btn{width:100%; justify-content:center}
+.login-error{font-size:.82rem; color:var(--rojo); margin-top:.7rem; min-height:1.2em; font-weight:700}
+.welcome-back{background:var(--esmeralda-claro); border:1.5px solid #a7f3d0; border-radius:14px;
+  padding:1rem; margin-bottom:1.2rem; font-size:.92rem; color:var(--esmeralda-oscuro);}
+.welcome-back strong{font-size:1.05rem}
+.login-btns{display:flex; gap:.6rem; flex-wrap:wrap; justify-content:center}
+.login-btns .btn{flex:1; min-width:130px; justify-content:center}
+
+/* PROGRESO */
+#progresoGlobal{position:fixed; top:0; left:0; right:0; height:5px; background:rgba(255,255,255,.2); z-index:1000;}
+#progresoBarra{height:100%; width:0%; transition:width .6s cubic-bezier(.2,.8,.2,1);
+  background:linear-gradient(90deg,var(--esmeralda),var(--ambar),var(--azul));
+  box-shadow:0 0 12px rgba(5,150,105,.6);}
+
+/* NAV */
+nav{position:sticky; top:0; z-index:900; background:rgba(255,255,255,.9); backdrop-filter:blur(14px);
+  border-bottom:1px solid #e2e8f0; padding:.55rem .8rem;}
+.nav-inner{max-width:1200px; margin:0 auto; display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;}
+.nav-brand{font-weight:800; font-size:.92rem; letter-spacing:.5px; color:var(--esmeralda-oscuro);
+  display:flex; align-items:center; gap:.45rem; margin-right:auto;}
+.nav-brand .dot{width:11px;height:11px;border-radius:50%;background:linear-gradient(135deg,var(--esmeralda),var(--ambar));}
+.nav-user{font-size:.8rem; font-weight:800; color:var(--esmeralda-oscuro);
+  background:var(--esmeralda-claro); padding:.3rem .8rem; border-radius:999px;
+  display:flex; align-items:center; gap:.35rem;}
+.nav-links{display:flex; gap:.3rem; flex-wrap:wrap}
+.nav-links a{font-size:.8rem; font-weight:600; text-decoration:none; color:var(--gris-oscuro);
+  padding:.35rem .7rem; border-radius:999px; transition:.25s; white-space:nowrap;}
+.nav-links a:hover{background:var(--esmeralda-claro); color:var(--esmeralda-oscuro)}
+.nav-links a.active{background:var(--esmeralda-oscuro); color:#fff}
+#progresoPill{font-size:.72rem; font-weight:800; color:var(--esmeralda-oscuro); background:var(--esmeralda-claro);
+  padding:.3rem .7rem; border-radius:999px; white-space:nowrap;}
+
+/* HERO */
+header.hero{position:relative; overflow:hidden; color:#fff;
+  background:radial-gradient(1200px 600px at 15% -10%,#065f46 0%,transparent 60%),
+             radial-gradient(900px 500px at 90% 10%,#78350f 0%,transparent 55%),
+             linear-gradient(160deg,#052e26,#0f172a);
+  padding:4.5rem 1.2rem 4rem;}
+.blob{position:absolute; border-radius:50%; filter:blur(70px); opacity:.4; animation:flotar 14s ease-in-out infinite}
+.blob.b1{width:340px;height:340px;background:#059669;top:-90px;left:-60px}
+.blob.b2{width:280px;height:280px;background:#a16207;bottom:-110px;right:-40px;animation-delay:-5s}
+.blob.b3{width:220px;height:220px;background:#0284c7;top:40%;right:25%;animation-delay:-9s}
+@keyframes flotar{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(28px,-32px) scale(1.12)}}
+.hero-inner{position:relative; max-width:1000px; margin:0 auto; text-align:center}
+.badge-top{display:inline-flex; align-items:center; gap:.5rem; font-size:.76rem; font-weight:800;
+  letter-spacing:1.4px; text-transform:uppercase; color:#6ee7b7;
+  background:rgba(5,150,105,.18); border:1px solid rgba(110,231,183,.4);
+  padding:.42rem 1rem; border-radius:999px; margin-bottom:1.2rem;}
+header.hero h1{font-size:clamp(1.85rem,5.2vw,3.3rem); font-weight:900; letter-spacing:-1px; margin-bottom:.7rem;}
+header.hero h1 span{background:linear-gradient(90deg,#6ee7b7,#fbbf24,#7dd3fc);
+  -webkit-background-clip:text; background-clip:text; color:transparent;}
+.hero-sub{max-width:800px; margin:0 auto 1.6rem; color:#cbd5e1; font-size:clamp(.95rem,2.2vw,1.1rem)}
+.hero-sub strong{color:#6ee7b7}
+.hero-chips{display:flex; gap:.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:2rem}
+.chip{font-size:.74rem; font-weight:800; letter-spacing:.6px; padding:.34rem .8rem; border-radius:999px;
+  background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.22); color:#e2e8f0;}
+.hero-cta{display:flex; gap:.7rem; justify-content:center; flex-wrap:wrap}
+.btn{display:inline-flex; align-items:center; gap:.45rem; cursor:pointer; border:none;
+  font-family:inherit; font-size:.92rem; font-weight:800; padding:.8rem 1.5rem; border-radius:999px;
+  text-decoration:none; transition:transform .2s, box-shadow .2s, background .2s;}
+.btn-primary{background:linear-gradient(135deg,var(--esmeralda),var(--esmeralda-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(5,150,105,.4)}
+.btn-primary:hover{transform:translateY(-3px); box-shadow:0 16px 34px rgba(5,150,105,.5)}
+.btn-ghost{background:rgba(255,255,255,.1); color:#fff; border:1.5px solid rgba(255,255,255,.3)}
+.btn-ghost:hover{background:rgba(255,255,255,.2); transform:translateY(-3px)}
+.btn-ambar{background:linear-gradient(135deg,var(--ambar),var(--ambar-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(161,98,7,.4)}
+.btn-ambar:hover{transform:translateY(-3px)}
+.btn-azul{background:linear-gradient(135deg,var(--azul),var(--azul-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(2,132,199,.4)}
+.btn-azul:hover{transform:translateY(-3px)}
+.btn-rosa{background:linear-gradient(135deg,var(--rosa),#831843); color:#fff; box-shadow:0 10px 26px rgba(219,39,119,.4)}
+.btn-rosa:hover{transform:translateY(-3px)}
+
+/* LAYOUT */
+main{max-width:1200px; margin:0 auto; padding:0 1.1rem 5rem}
+section{padding:3.2rem 0 1rem; scroll-margin-top:70px}
+.sec-head{margin-bottom:1.8rem}
+.kicker{display:inline-block; font-size:.72rem; font-weight:900; letter-spacing:1.6px; text-transform:uppercase;
+  color:var(--esmeralda-oscuro); background:var(--esmeralda-claro); padding:.3rem .75rem; border-radius:999px; margin-bottom:.7rem;}
+.kicker.ambar{color:var(--ambar-oscuro); background:var(--ambar-claro)}
+.kicker.azul{color:var(--azul-oscuro); background:var(--azul-claro)}
+.kicker.rosa{color:var(--rosa); background:var(--rosa-claro)}
+.sec-head h2{font-size:clamp(1.5rem,3.6vw,2.15rem); font-weight:900; letter-spacing:-.6px}
+.sec-head p.lead{color:var(--gris); max-width:900px; font-size:1rem}
+.card{background:var(--blanco); border-radius:var(--radio); padding:1.6rem; box-shadow:var(--sombra); border:1px solid #e2e8f0;}
+.grid{display:grid; gap:1.1rem}
+.g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.reveal{opacity:0; transform:translateY(26px); transition:opacity .7s cubic-bezier(.2,.8,.2,1), transform .7s cubic-bezier(.2,.8,.2,1)}
+.reveal.in{opacity:1; transform:none}
+
+/* PILARES */
+.pilar{background:#fff; border-radius:16px; padding:1.3rem; border:1px solid #e2e8f0;
+  border-top:5px solid var(--esmeralda); box-shadow:var(--sombra); transition:.3s;}
+.pilar:hover{transform:translateY(-6px); box-shadow:var(--sombra-lg)}
+.pilar .ico{font-size:2rem; display:block; margin-bottom:.5rem}
+.pilar h4{font-size:1.05rem; color:var(--esmeralda-oscuro)}
+.pilar p{font-size:.9rem; color:var(--gris); margin:0}
+
+/* ========== TEORÍA EXPANDIDA ========== */
+.teoria{
+  background:#fff; border-radius:var(--radio); padding:1.6rem; box-shadow:var(--sombra);
+  border:1px solid #e2e8f0; margin-bottom:1.4rem;
+}
+.teoria h3{
+  color:var(--esmeralda-oscuro); font-size:1.15rem; margin-bottom:.8rem;
+  display:flex; align-items:center; gap:.5rem;
+}
+.teoria h3 .th-ico{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:34px; height:34px; border-radius:10px;
+  background:var(--esmeralda-claro); color:var(--esmeralda-oscuro);
+  font-size:1rem;
+}
+.teoria h4{
+  color:var(--esmeralda-oscuro); font-size:1rem; margin-top:1.2rem; margin-bottom:.5rem;
+  padding-left:.6rem; border-left:4px solid var(--esmeralda);
+}
+.teoria p{font-size:.94rem; color:var(--gris-oscuro); margin-bottom:.8rem}
+.teoria ul, .teoria ol{font-size:.92rem; color:var(--gris-oscuro); margin:0 0 1rem; padding-left:1.3rem}
+.teoria li{margin-bottom:.35rem}
+.teoria li strong{color:var(--esmeralda-oscuro)}
+.teoria .destacado{
+  background:linear-gradient(150deg,var(--esmeralda-claro),#fff);
+  border-left:4px solid var(--esmeralda); border-radius:0 12px 12px 0;
+  padding:.9rem 1.1rem; margin:1rem 0; font-size:.92rem;
+  color:var(--esmeralda-oscuro);
+}
+.teoria .destacado strong{color:var(--esmeralda-oscuro); font-weight:900}
+.teoria.ambar .th-ico{background:var(--ambar-claro); color:var(--ambar-oscuro)}
+.teoria.ambar h3{color:var(--ambar-oscuro)}
+.teoria.ambar h4{color:var(--ambar-oscuro); border-color:var(--ambar)}
+.teoria.ambar li strong{color:var(--ambar-oscuro)}
+.teoria.ambar .destacado{background:linear-gradient(150deg,var(--ambar-claro),#fff); border-color:var(--ambar); color:var(--ambar-oscuro)}
+.teoria.azul .th-ico{background:var(--azul-claro); color:var(--azul-oscuro)}
+.teoria.azul h3{color:var(--azul-oscuro)}
+.teoria.azul h4{color:var(--azul-oscuro); border-color:var(--azul)}
+.teoria.azul li strong{color:var(--azul-oscuro)}
+.teoria.azul .destacado{background:linear-gradient(150deg,var(--azul-claro),#fff); border-color:var(--azul); color:var(--azul-oscuro)}
+.teoria.rosa .th-ico{background:var(--rosa-claro); color:var(--rosa)}
+.teoria.rosa h3{color:var(--rosa)}
+.teoria.rosa h4{color:var(--rosa); border-color:var(--rosa)}
+.teoria.rosa li strong{color:var(--rosa)}
+.teoria.rosa .destacado{background:linear-gradient(150deg,var(--rosa-claro),#fff); border-color:var(--rosa); color:var(--rosa)}
+.teoria .ejemplo{
+  background:#f8fafc; border-radius:10px; padding:.7rem .9rem;
+  font-size:.85rem; color:var(--gris-oscuro); margin:.5rem 0;
+  border-left:3px solid var(--gris);
+}
+.teoria .ejemplo strong{color:var(--gris-oscuro)}
+.teoria .tabla-tipos{
+  width:100%; border-collapse:collapse; margin:.8rem 0 1rem;
+  font-size:.86rem;
+}
+.teoria .tabla-tipos th, .teoria .tabla-tipos td{
+  padding:.6rem .7rem; text-align:left;
+  border-bottom:1px solid #e2e8f0;
+}
+.teoria .tabla-tipos th{
+  background:var(--esmeralda-claro); color:var(--esmeralda-oscuro);
+  font-weight:900; font-size:.78rem; text-transform:uppercase; letter-spacing:.4px;
+}
+.teoria.ambar .tabla-tipos th{background:var(--ambar-claro); color:var(--ambar-oscuro)}
+.teoria.azul .tabla-tipos th{background:var(--azul-claro); color:var(--azul-oscuro)}
+.teoria.rosa .tabla-tipos th{background:var(--rosa-claro); color:var(--rosa)}
+.teoria .tabla-tipos tr:nth-child(even) td{background:#f8fafc}
+.teoria .grid-teoria{
+  display:grid; gap:.8rem; grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  margin:1rem 0;
+}
+.teoria .bloque-teoria{
+  background:#f8fafc; border-radius:12px; padding:.9rem 1rem;
+  border-top:3px solid var(--esmeralda);
+}
+.teoria.ambar .bloque-teoria{border-color:var(--ambar)}
+.teoria.azul .bloque-teoria{border-color:var(--azul)}
+.teoria.rosa .bloque-teoria{border-color:var(--rosa)}
+.teoria .bloque-teoria h5{
+  font-size:.88rem; font-weight:900; color:var(--esmeralda-oscuro);
+  margin:0 0 .4rem;
+}
+.teoria.ambar .bloque-teoria h5{color:var(--ambar-oscuro)}
+.teoria.azul .bloque-teoria h5{color:var(--azul-oscuro)}
+.teoria.rosa .bloque-teoria h5{color:var(--rosa)}
+.teoria .bloque-teoria p{font-size:.85rem; margin:0; color:var(--gris)}
+.teoria .fases{
+  display:grid; gap:.6rem; grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  margin:1rem 0;
+}
+.teoria .fase{
+  background:#fff; border:2px solid var(--esmeralda-claro); border-radius:12px;
+  padding:.75rem; text-align:center; position:relative;
+}
+.teoria.ambar .fase{border-color:var(--ambar-claro)}
+.teoria.azul .fase{border-color:var(--azul-claro)}
+.teoria.rosa .fase{border-color:var(--rosa-claro)}
+.teoria .fase .fase-num{
+  display:inline-block; font-size:.72rem; font-weight:900; background:var(--esmeralda);
+  color:#fff; padding:.15rem .55rem; border-radius:999px; margin-bottom:.35rem;
+}
+.teoria.ambar .fase .fase-num{background:var(--ambar)}
+.teoria.azul .fase .fase-num{background:var(--azul)}
+.teoria.rosa .fase .fase-num{background:var(--rosa)}
+.teoria .fase h6{font-size:.85rem; font-weight:900; color:var(--esmeralda-oscuro); margin:.2rem 0}
+.teoria.ambar .fase h6{color:var(--ambar-oscuro)}
+.teoria.azul .fase h6{color:var(--azul-oscuro)}
+.teoria.rosa .fase h6{color:var(--rosa)}
+.teoria .fase p{font-size:.75rem; color:var(--gris); margin:0; line-height:1.35}
+
+/* ACTIVIDADES */
+.actividad{background:#fff; border-radius:var(--radio); padding:1.6rem; box-shadow:var(--sombra);
+  border:1px solid #e2e8f0; margin-top:1.6rem;}
+.actividad h3{color:var(--esmeralda-oscuro); font-size:1.15rem; margin-bottom:.3rem}
+.actividad .intro{font-size:.93rem; color:var(--gris); margin-bottom:1rem}
+
+/* ========== RETO 1: RADIOGRAFÍA SMARTPHONE ========== */
+.radiografia-wrap{display:grid; gap:1.3rem; grid-template-columns:1fr 1fr;}
+@media(max-width:820px){.radiografia-wrap{grid-template-columns:1fr}}
+.telefono-box{
+  background:linear-gradient(160deg,#0f172a,#1e293b); border-radius:20px; padding:1.2rem;
+  display:flex; align-items:center; justify-content:center; min-height:460px;
+}
+#telefonoSVG{width:100%; max-width:340px; height:auto;}
+.hotspot{cursor:pointer; transition:.3s;}
+.hotspot circle{
+  fill:rgba(5,150,105,.15); stroke:var(--esmeralda); stroke-width:2.5;
+  transition:.3s;
+}
+.hotspot:hover circle{fill:rgba(5,150,105,.4);}
+.hotspot circle.detectado{fill:rgba(5,150,105,.95); stroke:#fff; stroke-width:3;}
+.hotspot .hotspot-num{
+  fill:#fff; font-weight:900; font-size:14px; text-anchor:middle; dominant-baseline:central;
+  pointer-events:none;
+}
+.comp-detalle{
+  background:#fff; border-radius:16px; padding:1.2rem; border:1px solid #e2e8f0;
+  box-shadow:var(--sombra); min-height:220px;
+}
+.comp-detalle h4{color:var(--esmeralda-oscuro); font-size:1.1rem; margin-bottom:.4rem; display:flex; align-items:center; gap:.5rem}
+.comp-detalle .cd-tag{
+  display:inline-block; font-size:.7rem; font-weight:800; padding:.2rem .55rem;
+  background:var(--esmeralda-claro); color:var(--esmeralda-oscuro); border-radius:999px;
+  margin-right:.3rem; margin-bottom:.3rem;
+}
+.comp-detalle p{font-size:.9rem; color:var(--gris-oscuro); margin-bottom:.6rem}
+.comp-detalle .cd-vacio{color:var(--gris); font-style:italic}
+.comp-info-list{
+  list-style:none; padding:0; margin:.6rem 0 0; display:flex; flex-direction:column; gap:.35rem;
+}
+.comp-info-list li{
+  font-size:.85rem; padding:.5rem .7rem; border-radius:8px;
+  background:#f8fafc; border-left:3px solid var(--esmeralda); color:var(--gris-oscuro);
+}
+.comp-info-list li strong{color:var(--esmeralda-oscuro)}
+.radiografia-progreso{
+  text-align:center; margin-top:1rem; font-weight:900; color:var(--esmeralda-oscuro); font-size:1.05rem;
+}
+
+/* ========== RETO 2: CRONOLOGÍA ========== */
+.timeline-wrap{
+  background:linear-gradient(150deg,#fffbeb,#fff); border:1px solid #fde68a;
+  border-radius:18px; padding:1.4rem;
+}
+.timeline-track{
+  position:relative; height:6px; background:#fde68a; border-radius:999px; margin:2.5rem .5rem;
+}
+.timeline-points{
+  position:absolute; top:-14px; left:0; right:0; display:flex; justify-content:space-between;
+}
+.timeline-point{
+  width:34px; height:34px; border-radius:50%; background:#fff; border:3px solid var(--ambar);
+  display:grid; place-items:center; cursor:pointer; transition:.25s; font-weight:900; font-size:.85rem;
+  color:var(--ambar-oscuro); margin-top:-11px;
+}
+.timeline-point:hover{transform:scale(1.15)}
+.timeline-point.activo{background:var(--ambar); color:#fff; transform:scale(1.2); box-shadow:0 0 0 6px rgba(161,98,7,.2)}
+.timeline-point.visto{background:var(--esmeralda); border-color:var(--esmeralda); color:#fff}
+.timeline-info{
+  background:#fff; border-radius:14px; padding:1.2rem; margin-top:1.2rem;
+  border:1px solid #fde68a; min-height:170px;
+}
+.timeline-info h4{color:var(--ambar-oscuro); font-size:1.05rem; margin-bottom:.3rem}
+.timeline-info .ti-año{
+  display:inline-block; font-size:.75rem; font-weight:900; padding:.25rem .65rem;
+  background:var(--ambar); color:#fff; border-radius:999px; margin-bottom:.5rem;
+  letter-spacing:.5px;
+}
+.timeline-info p{font-size:.9rem; color:var(--gris-oscuro); margin-bottom:.5rem}
+.timeline-info .ti-vacio{color:var(--gris); font-style:italic}
+.timeline-progreso{
+  text-align:center; font-weight:800; color:var(--ambar-oscuro); margin-top:1rem;
+  font-size:.95rem;
+}
+
+/* ========== RETO 3: ACV COMPARADO ========== */
+.acv-productos{
+  display:grid; gap:1rem; grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  margin-bottom:1.4rem;
+}
+.acv-card{
+  background:#fff; border:2px solid #e2e8f0; border-radius:16px; padding:1rem 1.1rem;
+  transition:.3s; cursor:pointer;
+}
+.acv-card:hover{border-color:var(--azul); box-shadow:var(--sombra-lg); transform:translateY(-3px)}
+.acv-card.sel{border-color:var(--azul); background:linear-gradient(150deg,#e0f2fe,#fff); box-shadow:0 0 0 4px rgba(2,132,199,.15)}
+.acv-card.visto{border-left:4px solid var(--esmeralda)}
+.acv-card .acv-head{display:flex; gap:.6rem; align-items:center; margin-bottom:.7rem}
+.acv-card .acv-ico{font-size:2rem}
+.acv-card .acv-nombre{font-size:.98rem; font-weight:900; color:var(--azul-oscuro)}
+.acv-card .acv-desc{font-size:.82rem; color:var(--gris); margin:0}
+.acv-barras{display:flex; flex-direction:column; gap:.4rem; margin-top:.6rem}
+.acv-barra{
+  display:grid; grid-template-columns:100px 1fr 60px; gap:.5rem; align-items:center;
+  font-size:.78rem; font-weight:700; color:var(--gris-oscuro);
+}
+.acv-barra .ab-label{text-align:right}
+.acv-barra .ab-track{height:16px; background:#e2e8f0; border-radius:8px; overflow:hidden}
+.acv-barra .ab-fill{height:100%; border-radius:8px; transition:width .5s; width:0}
+.acv-barra .ab-val{text-align:left; color:var(--azul-oscuro); font-weight:900; font-size:.82rem}
+#acvDetalle{
+  background:linear-gradient(150deg,#075985,#082f49); color:#fff; border-radius:16px;
+  padding:1.3rem; margin-bottom:1.2rem; display:none;
+}
+#acvDetalle.show{display:block; animation:aparecer .4s}
+#acvDetalle h4{color:#7dd3fc; font-size:1.05rem; margin-bottom:.5rem}
+#acvDetalle p{font-size:.88rem; color:#e0f2fe; margin-bottom:.4rem}
+#acvDetalle .acv-total{
+  display:flex; justify-content:space-between; align-items:center; margin-top:.8rem;
+  padding-top:.8rem; border-top:1px solid rgba(125,211,252,.3);
+}
+#acvDetalle .acv-total .at-num{font-size:1.6rem; font-weight:900; color:#fbbf24}
+#acvDetalle .acv-total .at-lbl{font-size:.72rem; text-transform:uppercase; letter-spacing:1px; color:#bae6fd; font-weight:800}
+#acvPreguntas{margin-top:1rem}
+.acv-pregunta{
+  background:#fff; border-radius:14px; padding:1rem 1.1rem; border:1px solid #e2e8f0;
+  margin-bottom:.7rem;
+}
+.acv-pregunta h5{font-size:.92rem; color:var(--azul-oscuro); margin-bottom:.7rem}
+.acv-opciones{display:grid; gap:.4rem; grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.acv-op{
+  font-family:inherit; font-size:.83rem; font-weight:700; cursor:pointer;
+  padding:.55rem .8rem; border-radius:10px; border:2px solid #e2e8f0; background:#f8fafc;
+  color:var(--gris-oscuro); transition:.2s;
+}
+.acv-op:hover:not(:disabled){border-color:var(--azul); background:var(--azul-claro); color:var(--azul-oscuro)}
+.acv-op:disabled{cursor:default}
+.acv-op.correct{background:#dcfce7; border-color:#16a34a; color:#15803d}
+.acv-op.wrong{background:#fee2e2; border-color:#dc2626; color:#b91c1c}
+.acv-fb{
+  margin-top:.6rem; font-size:.82rem; background:#f8fafc; border-left:3px solid var(--azul);
+  padding:.55rem .8rem; border-radius:0 10px 10px 0; display:none; color:var(--gris-oscuro);
+}
+.acv-fb.show{display:block}
+#acvMsg{text-align:center; margin-top:1rem; font-weight:800; color:var(--azul-oscuro); min-height:1.4em}
+
+/* ========== RETO 4: INSPECTOR DE DISEÑO ========== */
+.inspector-wrap{display:grid; gap:1rem; grid-template-columns:repeat(auto-fit,minmax(300px,1fr));}
+.insp-card{
+  background:#fff; border:2px solid #e2e8f0; border-radius:16px; padding:1rem 1.1rem;
+  transition:.3s; display:flex; flex-direction:column; gap:.7rem;
+}
+.insp-card.done{border-color:var(--esmeralda); background:#f0fdf4}
+.insp-head{display:flex; gap:.6rem; align-items:flex-start}
+.insp-ico{font-size:1.6rem; flex-shrink:0}
+.insp-titulo{font-size:.92rem; font-weight:900; color:var(--esmeralda-oscuro); margin:0 0 .2rem}
+.insp-desc{font-size:.84rem; color:var(--gris-oscuro); margin:0; line-height:1.5}
+.insp-btns{display:grid; grid-template-columns:1fr 1fr; gap:.4rem}
+.insp-btn{
+  font-family:inherit; font-size:.78rem; font-weight:800; cursor:pointer;
+  padding:.55rem .5rem; border-radius:10px; border:2px solid #e2e8f0; background:#f8fafc;
+  color:var(--gris-oscuro); transition:.2s;
+}
+.insp-btn:hover:not(:disabled){border-color:var(--esmeralda); background:var(--esmeralda-claro); color:var(--esmeralda-oscuro)}
+.insp-btn:disabled{cursor:default; opacity:.55}
+.insp-btn.correct{background:#dcfce7; border-color:#16a34a; color:#15803d; opacity:1}
+.insp-btn.wrong{background:#fee2e2; border-color:#dc2626; color:#b91c1c; opacity:1}
+.insp-fb{
+  font-size:.8rem; border-radius:10px; padding:0; max-height:0; overflow:hidden;
+  transition:.35s; color:var(--gris-oscuro);
+}
+.insp-fb.show{max-height:240px; padding:.6rem .75rem; background:#fff; border-left:3px solid var(--esmeralda)}
+#inspMsg{text-align:center; margin-top:1.2rem; font-weight:800; color:var(--esmeralda-oscuro); min-height:1.4em}
+
+/* ========== RETO 5: FIN DE VIDA ========== */
+.finvida-wrap{display:grid; gap:1rem; grid-template-columns:repeat(auto-fit,minmax(320px,1fr));}
+.fv-card{
+  background:#fff; border:2px solid #e2e8f0; border-radius:16px; padding:1.1rem;
+  transition:.3s; display:flex; flex-direction:column; gap:.8rem;
+}
+.fv-card.done{border-color:var(--esmeralda); background:#f0fdf4}
+.fv-head{display:flex; gap:.7rem; align-items:center}
+.fv-ico{font-size:2.4rem}
+.fv-nombre{font-size:1rem; font-weight:900; color:var(--esmeralda-oscuro); margin:0}
+.fv-estado{font-size:.78rem; color:var(--gris); margin:.1rem 0 0}
+.fv-opciones{display:grid; gap:.4rem}
+.fv-op{
+  font-family:inherit; font-size:.83rem; font-weight:700; cursor:pointer; text-align:left;
+  padding:.6rem .85rem; border-radius:10px; border:2px solid #e2e8f0; background:#f8fafc;
+  color:var(--gris-oscuro); transition:.2s; display:flex; gap:.5rem; align-items:center;
+}
+.fv-op:hover:not(:disabled){border-color:var(--esmeralda); background:var(--esmeralda-claro); color:var(--esmeralda-oscuro); transform:translateX(4px)}
+.fv-op:disabled{cursor:default}
+.fv-op .fvo-ico{font-size:1.1rem; flex-shrink:0}
+.fv-op.correct{background:#dcfce7; border-color:#16a34a; color:#15803d}
+.fv-op.wrong{background:#fee2e2; border-color:#dc2626; color:#7f1d1d}
+.fv-fb{
+  font-size:.82rem; border-radius:10px; padding:0; max-height:0; overflow:hidden;
+  transition:.35s; color:var(--gris-oscuro);
+}
+.fv-fb.show{max-height:240px; padding:.6rem .8rem; background:#fff; border-left:3px solid var(--esmeralda)}
+#fvMsg{text-align:center; margin-top:1.2rem; font-weight:800; color:var(--esmeralda-oscuro); min-height:1.4em}
+
+/* QUIZ */
+.q{background:#fff; border-radius:16px; padding:1.3rem 1.4rem; box-shadow:var(--sombra);
+  border:1px solid #e2e8f0; margin-bottom:1rem;}
+.q-num{display:inline-block; font-size:.72rem; font-weight:900; letter-spacing:1px; color:#fff;
+  background:var(--esmeralda-oscuro); padding:.2rem .6rem; border-radius:8px; margin-bottom:.6rem;}
+.q h4{font-size:1rem; margin-bottom:.9rem}
+.opts{display:grid; gap:.5rem}
+.opt{text-align:left; font-family:inherit; font-size:.9rem; font-weight:600; cursor:pointer;
+  padding:.7rem .9rem; border-radius:12px; border:2px solid #e2e8f0; background:#f8fafc; color:var(--gris-oscuro);
+  transition:.2s; display:flex; gap:.6rem; align-items:flex-start;}
+.opt:hover:not(:disabled){border-color:var(--esmeralda); background:var(--esmeralda-claro); color:var(--esmeralda-oscuro); transform:translateX(4px)}
+.opt:disabled{cursor:default}
+.opt .letter{flex:0 0 24px; height:24px; border-radius:7px; background:#e2e8f0; color:var(--gris-oscuro);
+  display:grid; place-items:center; font-size:.75rem; font-weight:900;}
+.opt.correct{background:#dcfce7; border-color:#16a34a; color:#14532d}
+.opt.correct .letter{background:#16a34a; color:#fff}
+.opt.wrong{background:#fee2e2; border-color:#dc2626; color:#7f1d1d}
+.opt.wrong .letter{background:#dc2626; color:#fff}
+.expl{margin-top:.85rem; font-size:.86rem; background:#ecfdf5; border-left:4px solid var(--esmeralda);
+  padding:.7rem .9rem; border-radius:0 10px 10px 0; color:var(--gris-oscuro); display:none;}
+.expl.show{display:block}
+
+/* VOCABULARIO */
+.voc-grid{display:grid; gap:.6rem; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); margin-bottom:1rem}
+.voc-term{text-align:left; font-family:inherit; font-size:.88rem; font-weight:800; cursor:pointer;
+  padding:.85rem 1rem; border-radius:14px; border:2px solid #e2e8f0; background:#fff;
+  color:var(--gris-oscuro); transition:.25s; display:flex; align-items:center; gap:.5rem;}
+.voc-term:hover{border-color:var(--esmeralda); background:var(--esmeralda-claro); color:var(--esmeralda-oscuro); transform:translateY(-3px)}
+.voc-term.active{background:var(--esmeralda-oscuro); color:#fff; border-color:var(--esmeralda-oscuro)}
+#vocDef{max-height:0; overflow:hidden; transition:max-height .5s cubic-bezier(.2,.8,.2,1), padding .3s;
+  background:linear-gradient(150deg,#065f46,#052e26); color:#fff; border-radius:16px; padding:0 1.4rem;}
+#vocDef.show{max-height:440px; padding:1.3rem 1.4rem}
+#vocDef h4{color:#6ee7b7; font-size:1.05rem; margin-bottom:.5rem}
+#vocDef p{color:#a7f3d0; font-size:.92rem; margin:0}
+
+/* CERTIFICADO */
+#certificado{background:linear-gradient(150deg,#065f46,#052e26); color:#fff; border-radius:26px;
+  padding:2.4rem 1.8rem; box-shadow:var(--sombra-lg); text-align:center; position:relative; overflow:hidden;}
+#certificado::before{content:""; position:absolute; inset:14px; border:2px solid rgba(110,231,183,.35);
+  border-radius:18px; pointer-events:none;}
+#certificado h2{color:#6ee7b7; font-size:1.5rem; margin-bottom:.3rem}
+#certificado p.sub{color:#a7f3d0; font-size:.95rem; max-width:560px; margin:0 auto 1.4rem}
+.cert-name{font-size:clamp(1.6rem,5vw,2.4rem); font-weight:900; letter-spacing:-.5px; margin:.6rem 0 1rem;
+  background:linear-gradient(90deg,#6ee7b7,#fbbf24,#7dd3fc); -webkit-background-clip:text; background-clip:text; color:transparent;}
+.cert-stats{display:grid; gap:.7rem; grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  max-width:820px; margin:0 auto 1.6rem;}
+.cert-stat{background:rgba(255,255,255,.09); border:1px solid rgba(110,231,183,.3);
+  border-radius:14px; padding:.8rem .6rem; text-align:center;}
+.cert-stat .num{font-size:1.35rem; font-weight:900; color:#fbbf24; line-height:1}
+.cert-stat .lbl{font-size:.7rem; color:#a7f3d0; text-transform:uppercase; letter-spacing:.9px; font-weight:800; margin-top:.3rem}
+.cert-warn{background:rgba(251,191,36,.14); border:1px solid rgba(251,191,36,.4);
+  color:#fde68a; font-size:.86rem; padding:.7rem 1rem; border-radius:12px;
+  max-width:600px; margin:0 auto 1.2rem;}
+.cert-note{font-size:.78rem; color:#94a3b8; margin-top:1rem; max-width:560px; margin-left:auto; margin-right:auto;}
+
+/* Toast */
+#toast{position:fixed; bottom:1.4rem; left:50%; transform:translate(-50%,140%); z-index:1200;
+  background:var(--negro); color:#fff; font-weight:700; font-size:.88rem; padding:.85rem 1.4rem;
+  border-radius:999px; box-shadow:var(--sombra-lg); transition:transform .45s cubic-bezier(.2,.8,.2,1);
+  display:flex; align-items:center; gap:.55rem; max-width:92vw; text-align:center;}
+#toast.show{transform:translate(-50%,0)}
+
+footer{background:var(--negro); color:#94a3b8; text-align:center; padding:2.6rem 1.2rem; font-size:.85rem;}
+footer strong{color:#6ee7b7}
+
+@media(max-width:640px){
+  .card{padding:1.2rem}
+  .nav-brand span.txt{display:none}
+  .telefono-box{min-height:auto}
+}
+</style>
+</head>
+<body class="locked">
+
+<div id="loginOverlay">
+  <div class="login-card" id="loginCard"></div>
+</div>
+
+<div id="progresoGlobal"><div id="progresoBarra"></div></div>
+
+<nav>
+  <div class="nav-inner">
+    <div class="nav-brand"><span class="dot"></span><span class="txt">Productos con Criterio</span></div>
+    <div class="nav-user">👤 <span id="navUserName">—</span></div>
+    <div class="nav-links">
+      <a href="#intro">Inicio</a>
+      <a href="#radiografia">Radiografía</a>
+      <a href="#evolucion">Evolución</a>
+      <a href="#acv">Ciclo de vida</a>
+      <a href="#inspector">Inspector</a>
+      <a href="#finvida">Fin de vida</a>
+      <a href="#quiz">Quiz</a>
+      <a href="#certificado">Certificado</a>
+    </div>
+    <div id="progresoPill">0 / 6 retos</div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+  <div class="hero-inner">
+    <div class="badge-top">🔬 Análisis de producto</div>
+    <h1>Analiza el diseño de los <span>productos</span> que usas</h1>
+    <p class="hero-sub">
+      Hola, <strong id="heroNombre">amigo/a</strong>. Aprende a <strong>analizar productos tecnológicos
+      con pensamiento científico</strong>: su composición, su evolución, su ciclo de vida, sus decisiones
+      de diseño y su fin de vida. Todo con actividades interactivas y tu certificado final.
+    </p>
+    <div class="hero-chips">
+      <span class="chip">🔬 Pensamiento científico</span>
+      <span class="chip">♻️ Ciclo de vida</span>
+      <span class="chip">📊 Demanda</span>
+      <span class="chip">🎯 Diseño ético</span>
+      <span class="chip">🔧 Fin de vida</span>
+    </div>
+    <div class="hero-cta">
+      <a href="#intro" class="btn btn-primary">🚀 Empezar</a>
+      <a href="#certificado" class="btn btn-ghost">🏆 Mi certificado</a>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============ INTRO ============ -->
+  <section id="intro">
+    <div class="sec-head reveal">
+      <span class="kicker">Punto de partida</span>
+      <h2>Mirar un producto con ojos de ingeniero/a</h2>
+      <p class="lead">
+        Un producto tecnológico no aparece de la nada. Detrás hay <strong>decisiones de diseño</strong>
+        (qué materiales, qué forma, qué funciones), una <strong>evolución histórica</strong>, una
+        <strong>demanda del mercado</strong> y un <strong>impacto ambiental</strong> a lo largo de
+        todo su ciclo de vida. Analizarlo con criterio científico y ético nos permite decidir qué
+        productos merece la pena usar, cómo usarlos y qué hacer con ellos al final.
+      </p>
+    </div>
+
+    <!-- TEORÍA AMPLIADA: INTRO -->
+    <div class="teoria reveal">
+      <h3><span class="th-ico">📘</span> ¿Qué es el análisis de producto?</h3>
+      <p>
+        El <strong>análisis de producto</strong> es el estudio sistemático de un producto
+        tecnológico para entender su <strong>composición</strong>, su <strong>funcionamiento</strong>,
+        su <strong>evolución histórica</strong>, sus <strong>impactos ambientales y sociales</strong>
+        y su <strong>adecuación a una necesidad real</strong>. Se apoya en el
+        <strong>pensamiento científico</strong>: observar, medir, comparar y sacar conclusiones
+        basadas en datos verificables.
+      </p>
+
+      <h4>¿Por qué analizar productos?</h4>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>🔍 Comprender mejor</h5>
+          <p>Entender cómo funcionan los objetos que usamos a diario y por qué están diseñados como están.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🌱 Consumir con criterio</h5>
+          <p>Tomar decisiones de compra informadas, basadas en datos reales y no solo en la publicidad.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>♻️ Reducir el impacto</h5>
+          <p>Saber cuándo alargar la vida útil, reparar, reciclar o sustituir un producto según su huella real.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>💡 Mejorar diseños futuros</h5>
+          <p>Detectar los fallos y aciertos de los productos actuales para diseñar mejores soluciones en el futuro.</p>
+        </div>
+      </div>
+
+      <h4>Los 5 ejes del análisis de producto</h4>
+      <div class="fases">
+        <div class="fase">
+          <span class="fase-num">EJE 1</span>
+          <h6>🧱 Composición</h6>
+          <p>¿De qué materiales está hecho? ¿De dónde vienen?</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">EJE 2</span>
+          <h6>📈 Evolución</h6>
+          <p>¿Cómo ha cambiado a lo largo del tiempo?</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">EJE 3</span>
+          <h6>♻️ Ciclo de vida</h6>
+          <p>¿Qué impacto genera en cada fase de su existencia?</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">EJE 4</span>
+          <h6>🎨 Diseño</h6>
+          <p>¿Qué decisiones se tomaron al diseñarlo? ¿Fueron responsables?</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">EJE 5</span>
+          <h6>🔧 Fin de vida</h6>
+          <p>¿Qué pasa cuando deja de funcionar? ¿Se recicla, se reutiliza o se tira?</p>
+        </div>
+      </div>
+
+      <h4>El pensamiento científico aplicado al producto</h4>
+      <p>
+        Analizar un producto no es opinar sobre él: es aplicar un método riguroso. Los cuatro
+        pasos del pensamiento científico aplicado al análisis de producto son:
+      </p>
+      <ol>
+        <li><strong>Observar:</strong> describir objetivamente el producto (forma, materiales, funciones).</li>
+        <li><strong>Medir:</strong> cuantificar datos (peso, consumo, huella, precio, vida útil).</li>
+        <li><strong>Comparar:</strong> contrastar con alternativas del mercado o con la evolución histórica.</li>
+        <li><strong>Concluir:</strong> sacar conclusiones basadas en datos verificables, no en opiniones.</li>
+      </ol>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> un análisis serio de producto requiere <strong>fuentes
+        fiables</strong>. Los datos de las etiquetas comerciales suelen ser incompletos. Por eso
+        hay que acudir a informes de ACV, documentación técnica oficial, estudios científicos y
+        comparativas independientes. Las opiniones sin datos no son análisis.
+      </div>
+
+      <h4>Análisis subjetivo vs. análisis objetivo</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Tipo</th>
+          <th>Características</th>
+          <th>Ejemplo</th>
+        </tr>
+        <tr>
+          <td><strong>Subjetivo</strong></td>
+          <td>Basado en impresiones, gustos o publicidad.</td>
+          <td>"Este móvil es el mejor porque es el más bonito".</td>
+        </tr>
+        <tr>
+          <td><strong>Objetivo</strong></td>
+          <td>Basado en datos medibles y verificables.</td>
+          <td>"Este móvil tiene 55 kg CO₂e de huella, 3 años de vida útil y 82 % de materiales reciclables".</td>
+        </tr>
+      </table>
+
+      <h4>Productos que vamos a analizar en esta aplicación</h4>
+      <p>
+        A lo largo de los 5 bloques de esta aplicación trabajaremos con productos tecnológicos
+        cotidianos desde distintas perspectivas:
+      </p>
+      <ul>
+        <li><strong>Radiografía:</strong> el smartphone, con sus 60+ elementos químicos.</li>
+        <li><strong>Evolución:</strong> el teléfono móvil desde 1983 hasta hoy.</li>
+        <li><strong>Ciclo de vida:</strong> comparación entre smartphone, nevera y camiseta.</li>
+        <li><strong>Diseño:</strong> decisiones responsables y problemáticas en productos reales.</li>
+        <li><strong>Fin de vida:</strong> qué hacer con 6 productos cuando llegan al final de su uso.</li>
+      </ul>
+    </div>
+
+    <div class="grid g4">
+      <div class="pilar reveal" style="border-top-color:var(--esmeralda)">
+        <span class="ico">🔬</span>
+        <h4>Pensamiento científico</h4>
+        <p>Observar, medir, comparar y sacar conclusiones basadas en datos y fuentes fiables.</p>
+      </div>
+      <div class="pilar reveal" style="border-top-color:var(--ambar)">
+        <span class="ico">📈</span>
+        <h4>Evolución y demanda</h4>
+        <p>Cómo los productos cambian con el tiempo y cómo responde el mercado a esos cambios.</p>
+      </div>
+      <div class="pilar reveal" style="border-top-color:var(--azul)">
+        <span class="ico">♻️</span>
+        <h4>Ciclo de vida</h4>
+        <p>Extracción, fabricación, uso y fin de vida. Cada fase tiene impactos distintos.</p>
+      </div>
+      <div class="pilar reveal" style="border-top-color:var(--rosa)">
+        <span class="ico">🎯</span>
+        <h4>Diseño ético</h4>
+        <p>Decisiones responsables, inclusivas y sostenibles. Productos pensados para todas las personas.</p>
+      </div>
+    </div>
+
+    <div class="card reveal" style="margin-top:1.5rem; border-left:6px solid var(--esmeralda)">
+      <h3 style="color:var(--esmeralda-oscuro)">🎯 Todo análisis busca responder a una necesidad</h3>
+      <p style="font-size:.95rem; color:var(--gris-oscuro)">
+        El objetivo final del análisis es comprobar si un producto <strong>responde realmente a una
+        necesidad</strong> de forma eficiente, sostenible, ética e inclusiva. Y para eso, hay que
+        mirarlo por dentro (composición), por fuera (evolución y demanda), en su impacto (ciclo de
+        vida) y en su final (fin de vida y reciclaje).
+      </p>
+    </div>
+  </section>
+
+  <!-- ========== RETO 1: RADIOGRAFÍA ========== -->
+  <section id="radiografia">
+    <div class="sec-head reveal">
+      <span class="kicker">Bloque 1</span>
+      <h2>🔬 Radiografía de un smartphone</h2>
+      <p class="lead">
+        Los smartphones concentran más de 60 elementos químicos distintos. Algunos son abundantes
+        y fáciles de obtener; otros son <strong>minerales críticos o de conflicto</strong>. Conocer
+        qué compone un producto es el primer paso para analizar su impacto.
+      </p>
+    </div>
+
+    <!-- TEORÍA EXPANDIDA: COMPOSICIÓN -->
+    <div class="teoria reveal">
+      <h3><span class="th-ico">🧱</span> Composición y materiales de un producto tecnológico</h3>
+      <p>
+        Un smartphone moderno contiene <strong>más de 60 elementos químicos distintos</strong>,
+        entre ellos metales preciosos, tierras raras y minerales críticos. Entender qué contiene
+        y de dónde viene cada material es imprescindible para analizar su impacto.
+      </p>
+
+      <h4>Clasificación de los materiales de un smartphone</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Categoría</th>
+          <th>Ejemplos</th>
+          <th>Función</th>
+        </tr>
+        <tr>
+          <td><strong>Metales comunes</strong></td>
+          <td>Aluminio, cobre, hierro, estaño</td>
+          <td>Estructura, contactos, soldaduras.</td>
+        </tr>
+        <tr>
+          <td><strong>Metales preciosos</strong></td>
+          <td>Oro, plata, paladio</td>
+          <td>Contactos de alta conductividad.</td>
+        </tr>
+        <tr>
+          <td><strong>Tierras raras</strong></td>
+          <td>Neodimio, disprosio, praseodimio</td>
+          <td>Imanes, pantallas, vibradores.</td>
+        </tr>
+        <tr>
+          <td><strong>Minerales de conflicto (3TG)</strong></td>
+          <td>Estaño, tantalio, tungsteno, oro</td>
+          <td>Condensadores, resistencias.</td>
+        </tr>
+        <tr>
+          <td><strong>Plásticos y vidrio</strong></td>
+          <td>Policarbonato, vidrio templado</td>
+          <td>Carcasa, pantalla.</td>
+        </tr>
+        <tr>
+          <td><strong>Materiales peligrosos</strong></td>
+          <td>Plomo, mercurio, cadmio, bromo</td>
+          <td>Componentes electrónicos antiguos.</td>
+        </tr>
+      </table>
+
+      <h4>Los minerales críticos y por qué son un problema</h4>
+      <p>
+        Se llaman <strong>materiales críticos</strong> a aquellos cuya disponibilidad es limitada,
+        cuya extracción está concentrada en pocos países o cuya obtención genera graves impactos
+        ambientales y sociales. Entre los más problemáticos:
+      </p>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>🔋 Cobalto</h5>
+          <p>Usado en baterías de litio. Más del 60 % se extrae en la República Democrática del Congo, donde se han documentado graves abusos laborales, incluido trabajo infantil.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>💧 Litio</h5>
+          <p>Esencial en baterías. Su extracción en salares consume enormes cantidades de agua, afectando a comunidades locales en Chile, Argentina y Bolivia.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>⚡ Tierras raras</h5>
+          <p>Neodimio, disprosio y otros. Su refinado genera residuos radiactivos. China controla cerca del 80 % del mercado mundial.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>💣 Minerales de conflicto</h5>
+          <p>Estaño, tantalio, tungsteno y oro (3TG). Su extracción en zonas de conflicto financia grupos armados y viola derechos humanos.</p>
+        </div>
+      </div>
+
+      <h4>Ejemplo de composición de un smartphone medio</h4>
+      <div class="ejemplo">
+        <strong>Composición aproximada por peso:</strong><br>
+        • <strong>Vidrio y cerámica:</strong> 40 %<br>
+        • <strong>Plásticos:</strong> 20 %<br>
+        • <strong>Metales comunes</strong> (aluminio, cobre, hierro): 15 %<br>
+        • <strong>Metales preciosos</strong> (oro, plata, paladio): &lt;1 %<br>
+        • <strong>Otros materiales</strong> (tierras raras, minerales de conflicto): 25 %
+      </div>
+      <div class="destacado">
+        <strong>💡 Reflexión:</strong> aunque los metales preciosos y las tierras raras suponen
+        menos del 5 % del peso, son los materiales más valiosos, más escasos y más problemáticos
+        social y ambientalmente. Por eso <strong>recuperarlos al final de la vida útil</strong>
+        es tan importante.
+      </div>
+
+      <h4>El problema de la extracción: huella social y ambiental</h4>
+      <p>
+        La extracción de minerales críticos está asociada a:
+      </p>
+      <ul>
+        <li><strong>Conflictos armados:</strong> el control de minas financia guerras en varios países africanos.</li>
+        <li><strong>Trabajo infantil:</strong> especialmente en minas de cobalto artesanales.</li>
+        <li><strong>Contaminación de agua y suelo:</strong> los residuos de la minería y el refinado contaminan ecosistemas enteros.</li>
+        <li><strong>Desplazamiento de comunidades:</strong> pueblos enteros son reasentados para abrir minas.</li>
+        <li><strong>Alta huella de carbono:</strong> la extracción y refinado consumen mucha energía.</li>
+      </ul>
+
+      <h4>¿Cómo saber qué contiene un producto?</h4>
+      <ul>
+        <li><strong>Etiquetado:</strong> algunos fabricantes publican la composición en su web.</li>
+        <li><strong>Informes de sostenibilidad:</strong> cada vez más empresas los publican anualmente.</li>
+        <li><strong>Guías de reparación (iFixit):</strong> documentan los componentes internos.</li>
+        <li><strong>Estudios científicos:</strong> análisis químicos independientes publicados en revistas.</li>
+        <li><strong>Bases de datos:</strong> como la Base de Datos de Materiales del USGS.</li>
+      </ul>
+    </div>
+
+    <div class="actividad reveal" style="border-top:6px solid var(--esmeralda)">
+      <span class="kicker">🎮 Reto 1 · Radiografía interactiva</span>
+      <h3>Pulsa cada punto para descubrir qué hay dentro</h3>
+      <p class="intro">
+        El teléfono tiene 6 <strong>puntos de interés</strong>. Púlsalos para descubrir qué
+        materiales contiene cada componente, de dónde vienen y qué impacto tiene.
+      </p>
+
+      <div class="radiografia-wrap">
+        <div class="telefono-box">
+          <svg id="telefonoSVG" viewBox="0 0 340 480" xmlns="http://www.w3.org/2000/svg">
+            <rect x="60" y="20" width="220" height="440" rx="32" fill="#1e293b" stroke="#475569" stroke-width="3"/>
+            <rect x="72" y="40" width="196" height="400" rx="22" fill="#0f172a" stroke="#334155" stroke-width="2"/>
+            <rect x="80" y="55" width="180" height="370" rx="14" fill="url(#screenGrad)" stroke="#1e40af" stroke-width="1"/>
+            <rect x="145" y="48" width="50" height="8" rx="4" fill="#0f172a"/>
+            <circle cx="170" cy="52" r="3" fill="#1e293b"/>
+            <defs>
+              <linearGradient id="screenGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#3b82f6"/>
+                <stop offset="50%" stop-color="#0ea5e9"/>
+                <stop offset="100%" stop-color="#7c3aed"/>
+              </linearGradient>
+            </defs>
+            <rect x="100" y="80" width="32" height="32" rx="8" fill="#fff" opacity=".25"/>
+            <rect x="145" y="80" width="32" height="32" rx="8" fill="#fff" opacity=".25"/>
+            <rect x="190" y="80" width="32" height="32" rx="8" fill="#fff" opacity=".25"/>
+            <rect x="100" y="125" width="32" height="32" rx="8" fill="#fff" opacity=".25"/>
+            <rect x="145" y="125" width="32" height="32" rx="8" fill="#fff" opacity=".25"/>
+            <rect x="190" y="125" width="32" height="32" rx="8" fill="#fff" opacity=".25"/>
+
+            <g class="hotspot" data-id="pantalla">
+              <circle cx="80" cy="80" r="16"/>
+              <text class="hotspot-num" x="80" y="80">1</text>
+            </g>
+            <g class="hotspot" data-id="camara">
+              <circle cx="270" cy="60" r="16"/>
+              <text class="hotspot-num" x="270" y="60">2</text>
+            </g>
+            <g class="hotspot" data-id="bateria">
+              <circle cx="100" cy="410" r="16"/>
+              <text class="hotspot-num" x="100" y="410">3</text>
+            </g>
+            <g class="hotspot" data-id="chip">
+              <circle cx="240" cy="240" r="16"/>
+              <text class="hotspot-num" x="240" y="240">4</text>
+            </g>
+            <g class="hotspot" data-id="altavoz">
+              <circle cx="240" cy="410" r="16"/>
+              <text class="hotspot-num" x="240" y="410">5</text>
+            </g>
+            <g class="hotspot" data-id="carcasa">
+              <circle cx="290" cy="350" r="16"/>
+              <text class="hotspot-num" x="290" y="350">6</text>
+            </g>
+          </svg>
+        </div>
+
+        <div class="comp-detalle" id="compDetalle">
+          <p class="cd-vacio">Pulsa sobre un punto numerado para ver los detalles de cada componente.</p>
+        </div>
+      </div>
+
+      <div class="radiografia-progreso" id="radioProgreso">Componentes explorados: 0 / 6</div>
+    </div>
+  </section>
+
+  <!-- ========== RETO 2: EVOLUCIÓN ========== -->
+  <section id="evolucion">
+    <div class="sec-head reveal">
+      <span class="kicker ambar">Bloque 2</span>
+      <h2>📈 Evolución del producto: del ladrillo al smartphone</h2>
+      <p class="lead">
+        Los productos no son estáticos: <strong>evolucionan</strong> con la tecnología, las
+        necesidades de las personas y las presiones del mercado. Analizar esa evolución permite
+        entender por qué los productos actuales son como son.
+      </p>
+    </div>
+
+    <!-- TEORÍA EXPANDIDA: EVOLUCIÓN -->
+    <div class="teoria ambar reveal">
+      <h3><span class="th-ico">🕰️</span> Evolución de los productos tecnológicos</h3>
+      <p>
+        Todo producto tecnológico sigue un <strong>ciclo de vida comercial</strong> y se transforma
+        con el tiempo según la innovación, las necesidades sociales y la presión del mercado.
+        Entender esa evolución permite analizar por qué los productos actuales son como son y
+        anticipar hacia dónde irán.
+      </p>
+
+      <h4>El ciclo de vida comercial de un producto</h4>
+      <div class="fases">
+        <div class="fase">
+          <span class="fase-num">FASE 1</span>
+          <h6>🌱 Introducción</h6>
+          <p>El producto se lanza. Pocas ventas, precio alto, mucha inversión en marketing.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">FASE 2</span>
+          <h6>📈 Crecimiento</h6>
+          <p>Las ventas aumentan rápido. Aparecen competidores. Bajan los precios.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">FASE 3</span>
+          <h6>🏔️ Madurez</h6>
+          <p>Las ventas se estabilizan. Fuerte competencia, márgenes ajustados.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">FASE 4</span>
+          <h6>📉 Declive</h6>
+          <p>Las ventas caen. Aparecen sustitutos. El producto se retira o se reinventa.</p>
+        </div>
+      </div>
+
+      <h4>La evolución del teléfono móvil en 5 grandes hitos</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Hito</th>
+          <th>Innovación</th>
+          <th>Impacto</th>
+        </tr>
+        <tr>
+          <td><strong>1983</strong></td>
+          <td>Motorola DynaTAC 8000X</td>
+          <td>Primer móvil portátil. 1 kg y 3.995 $.</td>
+        </tr>
+        <tr>
+          <td><strong>1992-1997</strong></td>
+          <td>SMS y pantalla en color</td>
+          <td>El móvil deja de ser solo para llamar.</td>
+        </tr>
+        <tr>
+          <td><strong>2007</strong></td>
+          <td>iPhone: pantalla táctil + internet móvil</td>
+          <td>Nace el smartphone moderno.</td>
+        </tr>
+        <tr>
+          <td><strong>2010-2016</strong></td>
+          <td>Explosión de apps y redes sociales</td>
+          <td>El móvil se convierte en centro de la vida digital.</td>
+        </tr>
+        <tr>
+          <td><strong>2020s</strong></td>
+          <td>Plegables, 5G y regulación de reparación</td>
+          <td>Foco en sostenibilidad y derecho a reparar.</td>
+        </tr>
+      </table>
+
+      <h4>Las 4 fuerzas que impulsan la evolución de un producto</h4>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>🚀 Innovación tecnológica</h5>
+          <p>Aparecen nuevos materiales, componentes o procesos que permiten hacer algo que antes no era posible.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>👥 Necesidades sociales</h5>
+          <p>Los hábitos y expectativas de las personas cambian: más movilidad, más conexión, más rapidez.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>💼 Presión del mercado</h5>
+          <p>Las empresas necesitan vender más, así que innovan o cambian para diferenciarse.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>⚖️ Regulación</h5>
+          <p>Las leyes y normativas (protección de datos, derecho a reparar, sostenibilidad) condicionan el diseño.</p>
+        </div>
+      </div>
+
+      <h4>La obsolescencia: por qué los productos dejan de usarse</h4>
+      <p>
+        Se llama <strong>obsolescencia</strong> al proceso por el que un producto deja de ser útil
+        o deseable, aunque pueda seguir funcionando. Existen varios tipos:
+      </p>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Tipo</th>
+          <th>Descripción</th>
+          <th>Ejemplo</th>
+        </tr>
+        <tr>
+          <td><strong>Técnica</strong></td>
+          <td>Falla o se queda anticuado técnicamente.</td>
+          <td>Un móvil 3G deja de tener cobertura.</td>
+        </tr>
+        <tr>
+          <td><strong>Programada</strong></td>
+          <td>Se diseña para durar menos de lo posible.</td>
+          <td>Baterías no reemplazables.</td>
+        </tr>
+        <tr>
+          <td><strong>Percibida</strong></td>
+          <td>Funciona, pero el usuario lo cambia por moda.</td>
+          <td>Cambiar de móvil cada año.</td>
+        </tr>
+        <tr>
+          <td><strong>De software</strong></td>
+          <td>Deja de recibir actualizaciones y apps.</td>
+          <td>Apps que exigen nuevos sistemas operativos.</td>
+        </tr>
+        <tr>
+          <td><strong>Ecológica</strong></td>
+          <td>Ya no cumple normativa ambiental.</td>
+          <td>Vehículos diésel antiguos.</td>
+        </tr>
+      </table>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> la <strong>obsolescencia programada</strong> es una
+        práctica cuestionable que acorta la vida útil de los productos para forzar su sustitución.
+        Frente a ella, la <strong>economía circular</strong> propone diseñar productos duraderos,
+        reparables y actualizables. Conocer esta distinción es clave para analizar críticamente
+        cualquier producto.
+      </div>
+
+      <h4>La demanda: cómo el mercado condiciona la evolución</h4>
+      <p>
+        La <strong>demanda</strong> es la cantidad de un producto que las personas están dispuestas
+        a comprar. Analizarla permite entender:
+      </p>
+      <ul>
+        <li><strong>Qué productos tienen sentido:</strong> los que responden a necesidades reales de mucha gente.</li>
+        <li><strong>Cómo evolucionan:</strong> si la demanda sube, se invierte en innovar; si baja, el producto decae.</li>
+        <li><strong>Qué precios son aceptables:</strong> la disposición a pagar marca el rango de precios.</li>
+        <li><strong>Qué segmentos existen:</strong> hay demandas distintas según edad, poder adquisitivo o contexto.</li>
+      </ul>
+    </div>
+
+    <div class="actividad reveal" style="border-top:6px solid var(--ambar)">
+      <span class="kicker ambar">🎮 Reto 2 · Cronología interactiva</span>
+      <h3>Recorre la evolución del teléfono móvil</h3>
+      <p class="intro">
+        Pulsa cada hito de la línea temporal para descubrir qué innovación introdujo. Cuando los
+        hayas visto todos, responderás a unas preguntas.
+      </p>
+
+      <div class="timeline-wrap">
+        <div class="timeline-track">
+          <div class="timeline-points" id="timelinePoints"></div>
+        </div>
+        <div class="timeline-info" id="timelineInfo">
+          <p class="ti-vacio">Pulsa un hito de la línea temporal para ver la información.</p>
+        </div>
+        <div class="timeline-progreso" id="timelineProgreso">Hitos explorados: 0 / 6</div>
+      </div>
+
+      <div id="evolucionPreguntas" style="margin-top:1.4rem"></div>
+    </div>
+  </section>
+
+  <!-- ========== RETO 3: ACV ========== -->
+  <section id="acv">
+    <div class="sec-head reveal">
+      <span class="kicker azul">Bloque 3</span>
+      <h2>♻️ Análisis del Ciclo de Vida (ACV)</h2>
+      <p class="lead">
+        El <strong>Análisis del Ciclo de Vida (ACV)</strong> evalúa el impacto ambiental de un
+        producto en todas sus fases: extracción de materias primas, fabricación, distribución,
+        uso y fin de vida. Los datos de ACV permiten tomar decisiones basadas en evidencia.
+      </p>
+    </div>
+
+    <!-- TEORÍA EXPANDIDA: ACV -->
+    <div class="teoria azul reveal">
+      <h3><span class="th-ico">♻️</span> El Análisis del Ciclo de Vida (ACV)</h3>
+      <p>
+        El <strong>Análisis del Ciclo de Vida</strong> (ACV o LCA por sus siglas en inglés,
+        <em>Life Cycle Assessment</em>) es una metodología científica normalizada (ISO 14040 y
+        ISO 14044) que evalúa el <strong>impacto ambiental</strong> de un producto desde la cuna
+        hasta la tumba. Es la herramienta más rigurosa para comparar productos desde el punto de
+        vista ambiental.
+      </p>
+
+      <h4>Las 4 fases del ACV según ISO 14040</h4>
+      <div class="fases">
+        <div class="fase">
+          <span class="fase-num">FASE 1</span>
+          <h6>🎯 Definición de objetivos y alcance</h6>
+          <p>Qué se va a analizar, con qué límites y con qué unidad funcional.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">FASE 2</span>
+          <h6>📋 Inventario (ICV)</h6>
+          <p>Recopilar todos los flujos de entrada (energía, agua, materiales) y salida (emisiones, residuos).</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">FASE 3</span>
+          <h6>📊 Evaluación de impacto (EICV)</h6>
+          <p>Traducir los datos en impactos: huella de carbono, acidificación, eutrofización…</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">FASE 4</span>
+          <h6>💡 Interpretación</h6>
+          <p>Sacar conclusiones y recomendaciones basadas en los datos obtenidos.</p>
+        </div>
+      </div>
+
+      <h4>Las 5 fases del ciclo de vida de un producto</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Fase</th>
+          <th>Qué incluye</th>
+          <th>Impactos típicos</th>
+        </tr>
+        <tr>
+          <td><strong>⛏️ Extracción</strong></td>
+          <td>Minería, refinado de materias primas.</td>
+          <td>Destrucción del paisaje, contaminación de agua, energía intensiva.</td>
+        </tr>
+        <tr>
+          <td><strong>🏭 Fabricación</strong></td>
+          <td>Transformación, ensamblaje, montaje.</td>
+          <td>Alto consumo energético, emisiones de CO₂, residuos industriales.</td>
+        </tr>
+        <tr>
+          <td><strong>🚚 Distribución</strong></td>
+          <td>Transporte y almacenamiento.</td>
+          <td>Emisiones por combustibles fósiles, embalajes.</td>
+        </tr>
+        <tr>
+          <td><strong>🏠 Uso</strong></td>
+          <td>Consumo energético, agua, consumibles durante la vida útil.</td>
+          <td>Varía mucho según el producto: alto en nevera, bajo en smartphone.</td>
+        </tr>
+        <tr>
+          <td><strong>🗑️ Fin de vida</strong></td>
+          <td>Reutilización, reciclaje, vertedero o incineración.</td>
+          <td>Contaminación del suelo, pérdida de materiales, emisiones.</td>
+        </tr>
+      </table>
+
+      <h4>La unidad funcional: el concepto clave del ACV</h4>
+      <p>
+        La <strong>unidad funcional</strong> es la referencia sobre la que se mide el impacto.
+        Sin ella, comparar productos no tiene sentido. Ejemplos:
+      </p>
+      <ul>
+        <li>Comparar 1 kg de dos materiales distintos no es válido: hay que comparar "la cantidad de material que cumple la misma función".</li>
+        <li>Comparar "un smartphone" con "una nevera" no tiene sentido: son productos con funciones distintas.</li>
+        <li>Lo correcto es comparar productos que cumplan la misma función durante el mismo tiempo.</li>
+      </ul>
+
+      <h4>Impactos ambientales que mide un ACV</h4>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>🌍 Huella de carbono</h5>
+          <p>Emisiones de gases de efecto invernadero (kg CO₂ eq).</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>💧 Huella hídrica</h5>
+          <p>Consumo de agua dulce (litros o m³).</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>⚡ Energía incorporada</h5>
+          <p>Energía total consumida a lo largo del ciclo (MJ).</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🌫️ Acidificación</h5>
+          <p>Emisiones que acidifican suelos y aguas (SO₂ eq).</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🌱 Eutrofización</h5>
+          <p>Exceso de nutrientes en agua que provoca algas (PO₄ eq).</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🗑️ Residuos generados</h5>
+          <p>Kilogramos de residuos generados por fase.</p>
+        </div>
+      </div>
+
+      <h4>Datos reales: huella de carbono de un smartphone</h4>
+      <div class="ejemplo">
+        <strong>Reparto típico de la huella de carbono (55 kg CO₂ eq):</strong><br>
+        • <strong>Fabricación:</strong> ~80 % (44 kg CO₂ eq)<br>
+        • <strong>Distribución:</strong> ~5 % (3 kg CO₂ eq)<br>
+        • <strong>Uso (3 años):</strong> ~10 % (5,5 kg CO₂ eq)<br>
+        • <strong>Fin de vida:</strong> ~5 % (2,5 kg CO₂ eq)
+      </div>
+
+      <h4>Comparación de productos: cada uno tiene un "punto caliente"</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Producto</th>
+          <th>Punto caliente</th>
+          <th>Estrategia para reducir impacto</th>
+        </tr>
+        <tr>
+          <td><strong>📱 Smartphone</strong></td>
+          <td>Fabricación (chips, pantalla, batería).</td>
+          <td>Alargar la vida útil, reparar, comprar de segunda mano.</td>
+        </tr>
+        <tr>
+          <td><strong>❄️ Nevera</strong></td>
+          <td>Uso (electricidad 24/7 durante años).</td>
+          <td>Elegir modelo eficiente (etiqueta A), mantener bien, no cambiar.</td>
+        </tr>
+        <tr>
+          <td><strong>👕 Camiseta</strong></td>
+          <td>Repartido entre extracción, fabricación y uso.</td>
+          <td>Fibras orgánicas, lavar en frío, usar muchos años.</td>
+        </tr>
+        <tr>
+          <td><strong>🚗 Coche</strong></td>
+          <td>Uso (combustible durante toda la vida útil).</td>
+          <td>Reducir uso, compartir, eléctrico con energía renovable.</td>
+        </tr>
+        <tr>
+          <td><strong>💻 Portátil</strong></td>
+          <td>Fabricación (chips, batería, pantalla).</td>
+          <td>Alargar vida útil, actualizar en vez de sustituir.</td>
+        </tr>
+      </table>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> cada producto tiene un "punto caliente" distinto. En
+        smartphones y portátiles, la fabricación concentra la mayor huella. En neveras y coches,
+        el uso. En ropa, el impacto está repartido. <strong>La estrategia para reducir el impacto
+        depende del punto caliente</strong>: no sirve la misma solución para todo.
+      </div>
+
+      <h4>¿Cómo se usa un ACV para decidir?</h4>
+      <ol>
+        <li><strong>Elegir el producto y la unidad funcional:</strong> qué se va a analizar y con qué referencia.</li>
+        <li><strong>Definir el alcance:</strong> ¿de la cuna a la tumba? ¿de la cuna a la puerta?</li>
+        <li><strong>Recoger datos:</strong> de fuentes verificadas (informes, bases de datos especializadas).</li>
+        <li><strong>Calcular impactos:</strong> con herramientas como OpenLCA o GaBi.</li>
+        <li><strong>Interpretar y decidir:</strong> identificar puntos calientes y proponer mejoras.</li>
+      </ol>
+    </div>
+
+    <div class="actividad reveal" style="border-top:6px solid var(--azul)">
+      <span class="kicker azul">🎮 Reto 3 · Compara el ciclo de vida</span>
+      <h3>¿Cuál es la fase de mayor impacto en cada producto?</h3>
+      <p class="intro">
+        Pulsa cada producto para ver su análisis de ciclo de vida en 4 fases. Después, responde
+        a las preguntas de análisis científico usando los datos.
+      </p>
+
+      <div class="acv-productos" id="acvProductos"></div>
+
+      <div id="acvDetalle"></div>
+
+      <div id="acvPreguntas"></div>
+      <div id="acvMsg"></div>
+    </div>
+  </section>
+
+  <!-- ========== RETO 4: INSPECTOR ========== -->
+  <section id="inspector">
+    <div class="sec-head reveal">
+      <span class="kicker">Bloque 4</span>
+      <h2>🎯 Inspector de decisiones de diseño</h2>
+      <p class="lead">
+        El diseño de un producto implica <strong>muchas decisiones</strong>: qué materiales usar,
+        cómo facilitar la reparación, si es accesible para todas las personas, cuánto dura…
+        Algunas decisiones son responsables, inclusivas y sostenibles; otras no. Aprender a
+        distinguirlas es análisis crítico de producto.
+      </p>
+    </div>
+
+    <!-- TEORÍA EXPANDIDA: DISEÑO -->
+    <div class="teoria reveal">
+      <h3><span class="th-ico">🎨</span> Diseño responsable: principios y enfoques</h3>
+      <p>
+        El <strong>diseño</strong> es el conjunto de decisiones que definen cómo será un producto:
+        qué materiales, qué forma, qué funciones, cómo se fabrica, cómo se usa y qué pasa cuando
+        deja de funcionar. Un buen diseño no solo busca que el producto funcione: también busca
+        que sea <strong>responsable, accesible, duradero y sostenible</strong>.
+      </p>
+
+      <h4>Los 4 pilares del diseño responsable</h4>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>♻️ Sostenibilidad</h5>
+          <p>Materiales reciclados o renovables, bajo consumo energético, diseño para el reciclaje.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🧩 Accesibilidad</h5>
+          <p>Productos utilizables por el mayor número de personas posible, sin adaptaciones especiales.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>⚖️ Ética</h5>
+          <p>Respeto a los derechos humanos, transparencia, ausencia de obsolescencia programada.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🔧 Reparabilidad</h5>
+          <p>Diseño que facilita la reparación: piezas accesibles, manuales, repuestos disponibles.</p>
+        </div>
+      </div>
+
+      <h4>El diseño para X (DfX): los enfoques específicos</h4>
+      <p>
+        El <strong>Diseño para X (DfX, Design for X)</strong> es una familia de metodologías que
+        optimizan el producto para un objetivo concreto. Los más habituales:
+      </p>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Enfoque</th>
+          <th>Objetivo</th>
+          <th>Ejemplo práctico</th>
+        </tr>
+        <tr>
+          <td><strong>DfR (Reparabilidad)</strong></td>
+          <td>Facilitar la reparación.</td>
+          <td>Móviles con batería reemplazable y tornillos estándar.</td>
+        </tr>
+        <tr>
+          <td><strong>DfD (Desmontaje)</strong></td>
+          <td>Facilitar la separación de materiales.</td>
+          <td>Productos con encajes en vez de pegamentos.</td>
+        </tr>
+        <tr>
+          <td><strong>DfE (Medioambiente)</strong></td>
+          <td>Reducir el impacto ambiental.</td>
+          <td>Uso de materiales reciclados y energías renovables.</td>
+        </tr>
+        <tr>
+          <td><strong>DfA (Accesibilidad)</strong></td>
+          <td>Diseñar para todas las personas.</td>
+          <td>Textos alternativos, contraste, controles adaptables.</td>
+        </tr>
+        <tr>
+          <td><strong>DfM (Fabricación)</strong></td>
+          <td>Facilitar y abaratar la producción.</td>
+          <td>Piezas que se montan sin herramientas especiales.</td>
+        </tr>
+        <tr>
+          <td><strong>DfS (Sostenibilidad)</strong></td>
+          <td>Minimizar la huella total.</td>
+          <td>Diseñar para la larga vida útil y el reciclaje.</td>
+        </tr>
+      </table>
+
+      <h4>El diseño universal: 7 principios</h4>
+      <p>
+        El <strong>diseño universal</strong> es un enfoque que busca crear productos y entornos
+        utilizables por todas las personas, sin necesidad de adaptaciones. Sus 7 principios son:
+      </p>
+      <ol>
+        <li><strong>Uso equitativo:</strong> útil y atractivo para todas las personas.</li>
+        <li><strong>Flexibilidad:</strong> se adapta a distintas preferencias y capacidades.</li>
+        <li><strong>Uso simple e intuitivo:</strong> fácil de entender sin experiencia previa.</li>
+        <li><strong>Información perceptible:</strong> comunica por múltiples canales sensoriales.</li>
+        <li><strong>Tolerancia al error:</strong> minimiza riesgos de accidentes.</li>
+        <li><strong>Bajo esfuerzo físico:</strong> utilizable sin fatiga.</li>
+        <li><strong>Espacio y tamaño:</strong> apropiado para cualquier persona.</li>
+      </ol>
+
+      <h4>Decisiones responsables vs. problemáticas</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Decisión responsable ✅</th>
+          <th>Decisión problemática ❌</th>
+        </tr>
+        <tr>
+          <td>Batería reemplazable por el usuario.</td>
+          <td>Batería pegada que no se puede sustituir.</td>
+        </tr>
+        <tr>
+          <td>Piezas de repuesto durante 10 años.</td>
+          <td>Piezas propietarias más caras que el producto nuevo.</td>
+        </tr>
+        <tr>
+          <td>Manuales de reparación publicados en abierto.</td>
+          <td>Manuales secretos o solo accesibles a técnicos oficiales.</td>
+        </tr>
+        <tr>
+          <td>Materiales reciclados y composición transparente.</td>
+          <td>Sustancias tóxicas no declaradas.</td>
+        </tr>
+        <tr>
+          <td>Diseño accesible con subtítulos y contraste.</td>
+          <td>Diseño que excluye a personas con diversidad funcional.</td>
+        </tr>
+        <tr>
+          <td>Actualizaciones de software de largo plazo.</td>
+          <td>Obsolescencia programada de software a los 2 años.</td>
+        </tr>
+        <tr>
+          <td>Embalaje mínimo y reciclable.</td>
+          <td>Embalajes múltiples con plásticos innecesarios.</td>
+        </tr>
+      </table>
+
+      <h4>El derecho a reparar</h4>
+      <p>
+        En los últimos años ha crecido un movimiento internacional por el <strong>derecho a
+        reparar</strong>: que las personas puedan arreglar sus productos sin depender del
+        fabricante. Algunas medidas concretas:
+      </p>
+      <ul>
+        <li><strong>Índice de reparabilidad:</strong> Francia obliga a mostrar una puntuación en algunos productos.</li>
+        <li><strong>Directiva europea de reparación:</strong> obliga a ofrecer reparación tras la garantía.</li>
+        <li><strong>Piezas y manuales obligatorios:</strong> algunos países exigen disponibilidad mínima de 10 años.</li>
+        <li><strong>Etiquetado de durabilidad:</strong> información clara sobre vida útil esperada.</li>
+      </ul>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> las decisiones de diseño no son neutrales. Cada elección
+        sobre materiales, formas, uniones o software tiene consecuencias ambientales, sociales y
+        éticas. Un buen análisis de producto debe <strong>cuestionar esas decisiones</strong> y
+        preguntarse si podrían haberse tomado de otra forma.
+      </div>
+    </div>
+
+    <div class="actividad reveal" style="border-top:6px solid var(--esmeralda)">
+      <span class="kicker">🎮 Reto 4 · Analiza cada decisión</span>
+      <h3>¿Es una decisión de diseño responsable?</h3>
+      <p class="intro">
+        Lee cada decisión de diseño de un producto real o hipotético y decide si está alineada
+        con criterios éticos, responsables, inclusivos y sostenibles.
+      </p>
+
+      <div class="inspector-wrap" id="inspectorWrap"></div>
+      <div id="inspMsg"></div>
+    </div>
+  </section>
+
+  <!-- ========== RETO 5: FIN DE VIDA ========== -->
+  <section id="finvida">
+    <div class="sec-head reveal">
+      <span class="kicker rosa">Bloque 5</span>
+      <h2>🔧 Fin de vida: ¿qué hacer con este producto?</h2>
+      <p class="lead">
+        Todo producto llega al final de su vida útil. Las decisiones que tomamos en ese momento
+        (reutilizar, reparar, reciclar o desechar) determinan una parte muy importante de su
+        impacto ambiental. Y no siempre la opción más obvia es la mejor.
+      </p>
+    </div>
+
+    <!-- TEORÍA EXPANDIDA: FIN DE VIDA -->
+    <div class="teoria rosa reveal">
+      <h3><span class="th-ico">🔧</span> Fin de vida y economía circular</h3>
+      <p>
+        El <strong>fin de vida</strong> de un producto es el momento en que deja de cumplir su
+        función. La forma en que se gestiona ese momento determina una parte muy importante de
+        su impacto ambiental total, y es donde mejor se ve la diferencia entre un modelo lineal
+        y uno circular.
+      </p>
+
+      <h4>Modelo lineal vs. modelo circular</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Modelo lineal</th>
+          <th>Modelo circular</th>
+        </tr>
+        <tr>
+          <td>Extraer → Producir → Usar → Tirar.</td>
+          <td>Extraer → Producir → Usar → Reutilizar → Reparar → Reciclar.</td>
+        </tr>
+        <tr>
+          <td>Los recursos se agotan.</td>
+          <td>Los recursos se mantienen en uso el mayor tiempo posible.</td>
+        </tr>
+        <tr>
+          <td>Muchos residuos.</td>
+          <td>Residuos mínimos, tratados como recurso.</td>
+        </tr>
+        <tr>
+          <td>Productos de vida corta.</td>
+          <td>Productos duraderos, reparables y actualizables.</td>
+        </tr>
+      </table>
+
+      <h4>La jerarquía de residuos: las 6 R</h4>
+      <p>
+        La <strong>jerarquía de residuos</strong> establece el orden de preferencia para gestionar
+        un producto al final de su vida. Cuanto más arriba, mejor para el medioambiente:
+      </p>
+      <div class="fases">
+        <div class="fase">
+          <span class="fase-num">1</span>
+          <h6>🚫 Rechazar</h6>
+          <p>No comprar lo que no se necesita. La mejor opción.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">2</span>
+          <h6>🔽 Reducir</h6>
+          <p>Consumir menos, con menos materiales y menos envases.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">3</span>
+          <h6>🔁 Reutilizar</h6>
+          <p>Dar una segunda vida al producto sin transformarlo.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">4</span>
+          <h6>🔧 Reparar</h6>
+          <p>Arreglar lo que se ha roto para alargar su vida útil.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">5</span>
+          <h6>♻️ Reciclar</h6>
+          <p>Transformar los materiales para fabricar nuevos productos.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">6</span>
+          <h6>🗑️ Eliminar</h6>
+          <p>Último recurso: vertedero o incineración controlada.</p>
+        </div>
+      </div>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> reciclar es bueno, pero <strong>reutilizar o reparar es
+        mejor</strong>. Reciclar consume energía y materiales; reutilizar o reparar conserva el
+        producto entero. La mejor opción es siempre <strong>no generar el residuo</strong>.
+      </div>
+
+      <h4>¿Qué hacer con cada tipo de producto?</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Producto</th>
+          <th>Mejor opción</th>
+          <th>Dónde llevarlo</th>
+        </tr>
+        <tr>
+          <td><strong>📱 Móvil que aún funciona</strong></td>
+          <td>Reutilizar (regalar, vender, donar).</td>
+          <td>Plataformas de segunda mano, ONG, familiares.</td>
+        </tr>
+        <tr>
+          <td><strong>📱 Móvil que no funciona</strong></td>
+          <td>Reciclar como RAEE.</td>
+          <td>Punto limpio o tienda de telefonía.</td>
+        </tr>
+        <tr>
+          <td><strong>💻 Portátil con pantalla rota</strong></td>
+          <td>Reparar la pantalla y seguir usándolo.</td>
+          <td>Servicio técnico o taller de reparación.</td>
+        </tr>
+        <tr>
+          <td><strong>🔋 Batería hinchada</strong></td>
+          <td>Llevar URGENTEMENTE a punto autorizado.</td>
+          <td>Punto limpio con contenedor específico. ¡Nunca a la basura!</td>
+        </tr>
+        <tr>
+          <td><strong>👕 Ropa con agujero</strong></td>
+          <td>Reparar (coser) o reutilizar como trapo.</td>
+          <td>Casa, taller de arreglos, contenedor de ropa.</td>
+        </tr>
+        <tr>
+          <td><strong>🖨️ Impresora rota sin arreglo</strong></td>
+          <td>Reciclar como RAEE.</td>
+          <td>Punto limpio autorizado.</td>
+        </tr>
+        <tr>
+          <td><strong>🪑 Silla con respaldo roto</strong></td>
+          <td>Reparar (sustituir respaldo).</td>
+          <td>Piezas de repuesto o taller de muebles.</td>
+        </tr>
+      </table>
+
+      <h4>Los RAEE: residuos de aparatos eléctricos y electrónicos</h4>
+      <p>
+        Los <strong>RAEE</strong> son uno de los flujos de residuos que más crece en el mundo:
+        más de 50 millones de toneladas anuales. Contienen:
+      </p>
+      <ul>
+        <li><strong>Materiales valiosos:</strong> oro, plata, cobre, paladio, aluminio, tierras raras.</li>
+        <li><strong>Sustancias peligrosas:</strong> plomo, mercurio, cadmio, retardantes de llama bromados.</li>
+        <li><strong>Plásticos y vidrios</strong> que se pueden reciclar.</li>
+      </ul>
+      <p>
+        Por eso <strong>nunca deben tirarse a la basura normal</strong>. Deben llevarse a:
+      </p>
+      <ul>
+        <li><strong>Puntos limpios municipales.</strong></li>
+        <li><strong>Tiendas de electrónica</strong> que aceptan residuos (obligación legal en muchos países).</li>
+        <li><strong>Campañas de recogida</strong> en centros educativos o comercios.</li>
+        <li><strong>Servicios de recogida a domicilio</strong> de algunos ayuntamientos.</li>
+      </ul>
+
+      <h4>El reciclaje de RAEE paso a paso</h4>
+      <ol>
+        <li><strong>Recogida y transporte</strong> al punto de tratamiento autorizado.</li>
+        <li><strong>Desmontaje manual</strong> de componentes peligrosos (baterías, condensadores, pantallas).</li>
+        <li><strong>Trituración y separación</strong> de materiales por densidad, magnetismo o corrientes eléctricas.</li>
+        <li><strong>Refinado</strong> para obtener metales puros reutilizables.</li>
+        <li><strong>Gestión de residuos finales</strong>: lo que no se puede recuperar se trata o se elimina de forma segura.</li>
+      </ol>
+
+      <div class="destacado">
+        <strong>💡 Regla de oro:</strong> antes de tirar o reciclar un producto, pregúntate siempre:
+        <strong>¿puedo reutilizarlo? ¿puedo repararlo? ¿puedo donarlo?</strong>. Solo si la
+        respuesta es no a todo, hay que plantearse el reciclaje o la eliminación. La jerarquía de
+        residuos no es un capricho: es la forma más eficaz de reducir el impacto ambiental.
+      </div>
+
+      <h4>El problema del reciclaje tecnológico</h4>
+      <p>
+        Aunque el reciclaje es mejor que tirar, no es una solución perfecta:
+      </p>
+      <ul>
+        <li><strong>No todo se recicla:</strong> muchos materiales críticos se pierden en el proceso.</li>
+        <li><strong>Consume energía:</strong> separar y refinar materiales requiere mucha energía.</li>
+        <li><strong>Puede exportarse a países pobres:</strong> con condiciones laborales y ambientales precarias.</li>
+        <li><strong>No cierra del todo el ciclo:</strong> el material reciclado no siempre se usa para el mismo producto.</li>
+      </ul>
+      <p>
+        Por eso, la jerarquía de residuos sitúa el reciclaje como una opción <em>después</em> de
+        rechazar, reducir, reutilizar y reparar.
+      </p>
+    </div>
+
+    <div class="actividad reveal" style="border-top:6px solid var(--rosa)">
+      <span class="kicker rosa">🎮 Reto 5 · Decide el fin de vida</span>
+      <h3>¿Qué es lo mejor para cada producto?</h3>
+      <p class="intro">
+        Cada producto llega a un estado concreto. Elige entre las opciones disponibles cuál es
+        la mejor decisión según la jerarquía de residuos: <strong>rechazar > reducir > reutilizar > reparar > reciclar > eliminar</strong>.
+      </p>
+
+      <div class="finvida-wrap" id="finvidaWrap"></div>
+      <div id="fvMsg"></div>
+    </div>
+
+    <!-- VOCABULARIO -->
+    <div class="actividad reveal" style="border-top:6px solid var(--esmeralda-oscuro)">
+      <span class="kicker">📚 Vocabulario clave</span>
+      <h3>Diccionario interactivo</h3>
+      <p class="intro">Pulsa sobre cualquier término para ver su explicación detallada.</p>
+      <div class="voc-grid" id="vocGrid"></div>
+      <div id="vocDef"></div>
+    </div>
+  </section>
+
+  <!-- ========== QUIZ ========== -->
+  <section id="quiz">
+    <div class="sec-head reveal">
+      <span class="kicker ambar">🎯 Reto 6 · Cuestionario final</span>
+      <h2>Comprueba lo que has aprendido</h2>
+      <p class="lead">10 preguntas sobre análisis de producto, ciclo de vida, diseño responsable y fin de vida.</p>
+    </div>
+    <div id="quizContainer"></div>
+    <div id="quizResult" style="display:none;text-align:center;padding:1.8rem;border-radius:var(--radio);color:#fff;background:linear-gradient(135deg,#065f46,#052e26);box-shadow:var(--sombra-lg)">
+      <div id="quizScore" style="font-size:3rem;font-weight:900;line-height:1;margin-bottom:.4rem">0/10</div>
+      <h3 id="quizTitle" style="color:#fff">¡Buen trabajo!</h3>
+      <p id="quizMsg" style="color:#a7f3d0;max-width:560px;margin:0 auto"></p>
+    </div>
+  </section>
+
+  <!-- ========== CERTIFICADO ========== -->
+  <section id="certificado">
+    <div id="certificado">
+      <h2>🏆 Tu certificado de aprovechamiento</h2>
+      <p class="sub">Al completar las actividades obtendrás un certificado personalizado con tus resultados, que podrás descargar en PDF.</p>
+
+      <div class="cert-name" id="certNombre">—</div>
+
+      <div class="cert-stats" id="certStats"></div>
+
+      <div class="cert-warn" id="certWarn" style="display:none">
+        ⚠️ Aún no has completado ninguna actividad. Termina al menos una para generar tu certificado.
+      </div>
+
+      <button class="btn btn-ambar" id="btnCertificado" style="font-size:1rem;padding:.95rem 2rem">
+        📄 Descargar certificado en PDF
+      </button>
+      <p class="cert-note">El PDF se genera como imagen rasterizada: el texto no es editable ni seleccionable, garantizando su integridad.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p style="margin-bottom:.4rem"><strong>Productos con Criterio</strong> · Análisis de diseño · Ciclo de vida · Sostenibilidad</p>
+  <p style="margin:0;font-size:.8rem">Aplicación educativa interactiva · Tu progreso se guarda en este navegador</p>
+</footer>
+
+<div id="toast"></div>
+
+<script>
+/* ================================================================
+   1. ESTADO PERSISTENTE
+================================================================ */
+const LS_KEY = 'productosCriterio_v3';
+const RETOS_TOTALES = 6;
+
+let estado = {
+  nombre: '',
+  retos: [],
+  scores: {
+    radiografia: 0,
+    evolucion: 0,
+    acv: 0,
+    inspector: 0,
+    finvida: 0,
+    quiz: 0
+  },
+  iniciado: null,
+  detalles: {
+    radiografia: [],
+    evolucion: { vistos: [], respuestas: {} },
+    acv: { vistos: [], respuestas: {} },
+    inspector: { respuestas: {} },
+    finvida: { respuestas: {} },
+    quiz: { respuestas: {} }
+  }
+};
+
+function guardarEstado(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(estado)); }catch(e){} }
+
+function cargarEstado(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(raw){
+      const d = JSON.parse(raw);
+      if(d && typeof d === 'object'){
+        estado = Object.assign(estado, d);
+        estado.scores = Object.assign({
+          radiografia:0, evolucion:0, acv:0, inspector:0, finvida:0, quiz:0
+        }, d.scores || {});
+        estado.retos = Array.isArray(d.retos) ? d.retos : [];
+
+        const dDet = d.detalles || {};
+        estado.detalles = {
+          radiografia: Array.isArray(dDet.radiografia) ? dDet.radiografia : [],
+          evolucion: Object.assign({vistos:[], respuestas:{}}, dDet.evolucion || {}),
+          acv: Object.assign({vistos:[], respuestas:{}}, dDet.acv || {}),
+          inspector: Object.assign({respuestas:{}}, dDet.inspector || {}),
+          finvida: Object.assign({respuestas:{}}, dDet.finvida || {}),
+          quiz: Object.assign({respuestas:{}}, dDet.quiz || {})
+        };
+        // Asegurar que respuestas son objetos
+        if(typeof estado.detalles.evolucion.respuestas !== 'object') estado.detalles.evolucion.respuestas = {};
+        if(typeof estado.detalles.acv.respuestas !== 'object') estado.detalles.acv.respuestas = {};
+        if(typeof estado.detalles.inspector.respuestas !== 'object') estado.detalles.inspector.respuestas = {};
+        if(typeof estado.detalles.finvida.respuestas !== 'object') estado.detalles.finvida.respuestas = {};
+        if(typeof estado.detalles.quiz.respuestas !== 'object') estado.detalles.quiz.respuestas = {};
+      }
+    }
+  }catch(e){}
+}
+
+// Cargar estado ANTES de inicializar las actividades
+cargarEstado();
+
+/* ================================================================
+   2. PROGRESO
+================================================================ */
+function actualizarProgreso(){
+  const n = estado.retos.length;
+  document.getElementById('progresoPill').textContent = n + ' / ' + RETOS_TOTALES + ' retos';
+  document.getElementById('progresoBarra').style.width = (n / RETOS_TOTALES * 100) + '%';
+}
+function completarReto(id, msg){
+  if(!estado.retos.includes(id)) estado.retos.push(id);
+  guardarEstado();
+  actualizarProgreso();
+  actualizarCertificado();
+  if(msg) toast(msg);
+}
+let toastTimer;
+function toast(texto){
+  const t = document.getElementById('toast');
+  t.innerHTML = '🏅 ' + texto;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 3500);
+}
+
+/* ================================================================
+   3. LOGIN
+================================================================ */
+const overlay = document.getElementById('loginOverlay');
+const card = document.getElementById('loginCard');
+
+function mostrarLogin(){
+  if(estado.nombre){
+    card.innerHTML = `
+      <span class="login-emoji">🔬</span>
+      <h1>¡Hola de nuevo!</h1>
+      <p class="sub">Hemos guardado tu progreso en este navegador.</p>
+      <div class="welcome-back">
+        Continuar como <strong>${escaparHTML(estado.nombre)}</strong><br>
+        <span style="font-size:.82rem">Retos completados: ${estado.retos.length} / ${RETOS_TOTALES}</span>
+      </div>
+      <div class="login-btns">
+        <button class="btn btn-primary" id="btnContinuar">▶ Continuar</button>
+        <button class="btn btn-ghost" id="btnCambiar" style="background:#f1f5f9;color:#0f172a;border-color:#e2e8f0">👤 Cambiar nombre</button>
+      </div>
+    `;
+    document.getElementById('btnContinuar').addEventListener('click', iniciarApp);
+    document.getElementById('btnCambiar').addEventListener('click', ()=>{
+      if(confirm('¿Seguro que quieres cambiar de usuario? Se perderá todo el progreso guardado de este navegador.')){
+        localStorage.removeItem(LS_KEY);
+        location.reload();
+      }
+    });
+  } else {
+    renderLoginForm();
+  }
+}
+
+function renderLoginForm(){
+  card.innerHTML = `
+    <span class="login-emoji">🔬</span>
+    <h1>Bienvenido/a a Productos con Criterio</h1>
+    <p class="sub">Antes de empezar, dinos cómo te llamas. Tu progreso se guardará en este navegador para que puedas continuar cuando quieras.</p>
+    <input type="text" id="inputNombre" placeholder="Escribe tu nombre" maxlength="40" autocomplete="off">
+    <button class="btn btn-primary" id="btnEntrar">🚀 Comenzar la aventura</button>
+    <div class="login-error" id="loginError"></div>
+  `;
+  const inp = document.getElementById('inputNombre');
+  const btn = document.getElementById('btnEntrar');
+  const err = document.getElementById('loginError');
+  const submit = ()=>{
+    const v = inp.value.trim();
+    if(v.length < 2){ err.textContent = 'Por favor, introduce al menos 2 caracteres.'; inp.focus(); return; }
+    estado.nombre = v;
+    estado.iniciado = new Date().toISOString();
+    guardarEstado();
+    iniciarApp();
+  };
+  btn.addEventListener('click', submit);
+  inp.addEventListener('keydown', e=>{ if(e.key === 'Enter') submit(); });
+  setTimeout(()=>inp.focus(), 200);
+}
+
+function iniciarApp(){
+  overlay.classList.add('hidden');
+  document.body.classList.remove('locked');
+  document.getElementById('navUserName').textContent = estado.nombre;
+  document.getElementById('heroNombre').textContent = estado.nombre;
+  actualizarProgreso();
+  actualizarCertificado();
+}
+
+function escaparHTML(s){
+  return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ================================================================
+   4. REVEAL
+================================================================ */
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach((e,i)=>{
+    if(e.isIntersecting){
+      setTimeout(()=>e.target.classList.add('in'), i*70);
+      io.unobserve(e.target);
+    }
+  });
+},{threshold:.12, rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+/* ================================================================
+   5. NAV ACTIVO
+================================================================ */
+const secciones = [...document.querySelectorAll('section[id]')];
+const navLinks = [...document.querySelectorAll('.nav-links a')];
+window.addEventListener('scroll', ()=>{
+  let actual = '';
+  secciones.forEach(s=>{ if(window.scrollY >= s.offsetTop - 120) actual = s.id; });
+  navLinks.forEach(a=>a.classList.toggle('active', a.getAttribute('href') === '#'+actual));
+});
+
+/* ================================================================
+   6. RETO 1 · RADIOGRAFÍA DEL SMARTPHONE
+================================================================ */
+const componentesData = {
+  pantalla: {
+    nombre: 'Pantalla táctil',
+    ico: '📱',
+    tags: ['Vidrio', 'Indio', 'Tierras raras'],
+    desc: 'La pantalla es uno de los componentes más complejos del smartphone. Combina vidrio templado, capas de óxido de indio y estaño (ITO) para la conducción eléctrica, y materiales para el filtro de color.',
+    impacto: [
+      'El <strong>indio</strong> es un mineral crítico escaso y su extracción se concentra en pocos países.',
+      'El vidrio templado se fabrica con altas temperaturas, lo que consume mucha energía.',
+      'Una pantalla rota es una de las causas más frecuentes de sustitución prematura del móvil.'
+    ]
+  },
+  camara: {
+    nombre: 'Cámara',
+    ico: '📷',
+    tags: ['Óptica', 'Tierras raras', 'Oro'],
+    desc: 'Los módulos de cámara incluyen lentes de precisión, sensores CMOS y pequeños circuitos. Aunque ocupan poco espacio, utilizan materiales valiosos.',
+    impacto: [
+      'Contiene <strong>tierras raras</strong> como el neodimio, cuya extracción y refinado tiene un alto impacto ambiental.',
+      'Pequeñas cantidades de <strong>oro</strong> y otros metales preciosos se usan en los contactos.',
+      'Los sensores de imagen requieren fabricación en salas limpias de altísima precisión.'
+    ]
+  },
+  bateria: {
+    nombre: 'Batería de litio',
+    ico: '🔋',
+    tags: ['Litio', 'Cobalto', 'Níquel'],
+    desc: 'La batería de ion-litio es el componente que más condiciona la vida útil del smartphone. Contiene litio, cobalto, níquel y manganeso.',
+    impacto: [
+      'El <strong>cobalto</strong> se extrae mayoritariamente en la República Democrática del Congo, con graves problemas de derechos humanos.',
+      'El <strong>litio</strong> requiere grandes cantidades de agua para su extracción en salares.',
+      'Las baterías son el principal motivo por el que se cambia de móvil cada pocos años.'
+    ]
+  },
+  chip: {
+    nombre: 'Procesador y memoria',
+    ico: '🧠',
+    tags: ['Silicio', 'Oro', 'Tantalio'],
+    desc: 'El procesador (SoC) y los chips de memoria son el cerebro del smartphone. Se fabrican con silicio ultrapuro y decenas de materiales más.',
+    impacto: [
+      'El <strong>tantalio</strong> se usa en condensadores y es un mineral de conflicto en algunas regiones.',
+      'La fabricación de chips requiere agua ultrapura y energía intensiva.',
+      'Un solo chip puede contener más de 20 elementos químicos distintos.'
+    ]
+  },
+  altavoz: {
+    nombre: 'Altavoz y vibrador',
+    ico: '🔊',
+    tags: ['Imanes', 'Neodimio', 'Cobre'],
+    desc: 'Los altavoces y el motor de vibración usan pequeños imanes permanentes, bobinas de cobre y membranas flexibles.',
+    impacto: [
+      'Los imanes de <strong>neodimio</strong> (tierra rara) son potentes pero difíciles de reciclar.',
+      'El <strong>cobre</strong> de las bobinas es reciclable pero requiere minería intensiva.',
+      'Son componentes difíciles de separar al final de la vida útil del producto.'
+    ]
+  },
+  carcasa: {
+    nombre: 'Carcasa y estructura',
+    ico: '📦',
+    tags: ['Aluminio', 'Plásticos', 'Vidrio'],
+    desc: 'La carcasa da forma y protección al móvil. Puede ser de aluminio, plástico o vidrio, según el modelo.',
+    impacto: [
+      'El <strong>aluminio</strong> es muy reciclable, pero su producción primaria consume mucha electricidad.',
+      'Los <strong>plásticos</strong> provienen del petróleo y son difíciles de reciclar si están mezclados.',
+      'Las carcasas pegadas dificultan la reparación y el reciclaje.'
+    ]
+  }
+};
+
+function mostrarComponenteRadiografia(id) {
+  const datos = componentesData[id];
+  if(!datos) return;
+  const panel = document.getElementById('compDetalle');
+  panel.innerHTML = `
+    <h4><span style="font-size:1.5rem">${datos.ico}</span> ${datos.nombre}</h4>
+    <div>${datos.tags.map(t=>`<span class="cd-tag">${t}</span>`).join('')}</div>
+    <p>${datos.desc}</p>
+    <ul class="comp-info-list">
+      ${datos.impacto.map(i=>`<li>${i}</li>`).join('')}
+    </ul>
+  `;
+}
+
+function actualizarProgresoRadiografia() {
+  document.getElementById('radioProgreso').textContent =
+    `Componentes explorados: ${estado.detalles.radiografia.length} / 6`;
+}
+
+function initRadiografia(){
+  const hotspots = document.querySelectorAll('.hotspot');
+  hotspots.forEach(hs=>{
+    const id = hs.dataset.id;
+    if(estado.detalles.radiografia.includes(id)){
+      hs.querySelector('circle').classList.add('detectado');
+    }
+    hs.addEventListener('click', ()=>{
+      if(!componentesData[id]) return;
+      hs.querySelector('circle').classList.add('detectado');
+      if(!estado.detalles.radiografia.includes(id)){
+        estado.detalles.radiografia.push(id);
+        if(estado.detalles.radiografia.length > estado.scores.radiografia){
+          estado.scores.radiografia = estado.detalles.radiografia.length;
+        }
+        guardarEstado();
+        actualizarCertificado();
+      }
+      mostrarComponenteRadiografia(id);
+      actualizarProgresoRadiografia();
+      if(estado.detalles.radiografia.length === 6){
+        completarReto('radiografia', '¡Radiografía completada!');
+      }
+    });
+  });
+  // Restaurar
+  actualizarProgresoRadiografia();
+  if(estado.detalles.radiografia.length > 0){
+    mostrarComponenteRadiografia(estado.detalles.radiografia[estado.detalles.radiografia.length-1]);
+  }
+  if(estado.detalles.radiografia.length === 6){
+    completarReto('radiografia', null);
+  }
+}
+
+initRadiografia();
+
+/* ================================================================
+   7. RETO 2 · EVOLUCIÓN DEL PRODUCTO
+================================================================ */
+const timelineData = [
+  {año:'1983', titulo:'Primer teléfono móvil comercial',
+   desc:'El Motorola DynaTAC 8000X pesa casi 1 kg y cuesta 3.995 dólares. Solo sirve para llamar. La batería dura 30 minutos.',
+   ico:'📞'},
+  {año:'1992', titulo:'Primer SMS',
+   desc:'Se envía el primer mensaje de texto: "Merry Christmas". Los móviles empiezan a usarse para algo más que llamar.',
+   ico:'💬'},
+  {año:'1997', titulo:'Primer móvil con pantalla en color',
+   desc:'El Siemens S10 introduce la pantalla en color. Se empieza a pensar en el móvil como dispositivo visual.',
+   ico:'🎨'},
+  {año:'2007', titulo:'Nace el smartphone moderno',
+   desc:'Apple presenta el iPhone: pantalla táctil capacitiva, internet en el bolsillo, cámara y apps. Revoluciona la industria.',
+   ico:'📱'},
+  {año:'2010', titulo:'Explosión de las apps',
+   desc:'Android y iOS dominan el mercado. Millones de apps transforman el móvil en cámara, GPS, reproductor, agenda y mucho más.',
+   ico:'📲'},
+  {año:'2020s', titulo:'Móviles plegables y sostenibilidad',
+   desc:'Aparecen pantallas plegables, se generaliza el 5G y empieza a regularse la obligación de facilitar la reparación y las piezas de repuesto.',
+   ico:'🌱'}
+];
+
+function mostrarTimelineInfo(i) {
+  const h = timelineData[i];
+  document.querySelectorAll('.timeline-point').forEach((p, idx)=>{
+    p.classList.toggle('activo', idx === i);
+  });
+  const point = document.querySelector(`.timeline-point[data-id="${i}"]`);
+  if(point) point.classList.add('visto');
+  const info = document.getElementById('timelineInfo');
+  info.innerHTML = `
+    <span class="ti-año">${h.año}</span>
+    <h4>${h.ico} ${h.titulo}</h4>
+    <p>${h.desc}</p>
+  `;
+  document.getElementById('timelineProgreso').textContent =
+    `Hitos explorados: ${estado.detalles.evolucion.vistos.length} / 6`;
+}
+
+function initTimeline(){
+  const pointsCont = document.getElementById('timelinePoints');
+  if(!pointsCont) return;
+  pointsCont.innerHTML = '';
+  const vistos = estado.detalles.evolucion.vistos;
+  timelineData.forEach((h, i)=>{
+    const p = document.createElement('div');
+    p.className = 'timeline-point';
+    if(vistos.includes(i)) p.classList.add('visto');
+    p.dataset.id = i;
+    p.textContent = i+1;
+    p.title = h.año + ' - ' + h.titulo;
+    p.addEventListener('click', ()=>clickTimeline(i));
+    pointsCont.appendChild(p);
+  });
+  document.getElementById('timelineProgreso').textContent =
+    `Hitos explorados: ${vistos.length} / 6`;
+  if(vistos.length === 6){
+    document.getElementById('evolucionPreguntas').style.display = 'block';
+  }
+  if(vistos.length > 0){
+    mostrarTimelineInfo(vistos[vistos.length-1]);
+  }
+}
+
+function clickTimeline(i){
+  const vistos = estado.detalles.evolucion.vistos;
+  const eraNuevo = !vistos.includes(i);
+  if(eraNuevo){
+    vistos.push(i);
+    guardarEstado();
+  }
+  mostrarTimelineInfo(i);
+  if(vistos.length === 6){
+    document.getElementById('evolucionPreguntas').style.display = 'block';
+    if(eraNuevo){
+      toast('¡Ya has visto toda la evolución! Responde a las preguntas de abajo.');
+    }
+  }
+}
+
+initTimeline();
+
+const evolucionPreguntas = [
+  {q:'¿Cuál fue el principal cambio del primer iPhone (2007) respecto a los móviles anteriores?',
+   ops:['Que era más pequeño','Que introdujo la pantalla táctil capacitiva y el internet móvil en un solo dispositivo','Que tenía mejor batería','Que era más barato'],
+   c:1, e:'El iPhone de 2007 combinó pantalla táctil capacitiva, navegador web completo, cámara y apps, definiendo el smartphone moderno.'},
+  {q:'¿Qué innovación permitió que el móvil empezara a usarse para algo más que llamar?',
+   ops:['El SMS en 1992','La pantalla en color en 1997','Las apps en 2010','Los móviles plegables'],
+   c:0, e:'El SMS (1992) fue el primer uso masivo del móvil más allá de las llamadas. Abrió la puerta a los usos "digitales" del teléfono.'},
+  {q:'¿Qué tendencia se observa en la evolución reciente del smartphone?',
+   ops:['Menor precio y menor calidad','Mayor variedad de formatos (plegables) y presión regulatoria hacia la sostenibilidad y la reparación','Reducción drástica de funciones','Vuelta a los móviles sin pantalla'],
+   c:1, e:'La evolución reciente combina innovación (plegables, 5G) con regulación que obliga a facilitar la reparación y reducir residuos.'},
+  {q:'¿Por qué es importante analizar la evolución de un producto?',
+   ops:['Por curiosidad histórica','Porque permite entender por qué el producto actual es como es y anticipar hacia dónde irá','Porque los productos viejos eran mejores','Porque lo pide el mercado'],
+   c:1, e:'Analizar la evolución permite entender las decisiones de diseño actuales y prever tendencias futuras. Es parte del análisis científico del producto.'}
+];
+
+function aplicarEstadoPregunta(div, p, respuesta, colorBorde) {
+  const btns = div.querySelectorAll('.acv-op');
+  const fb = div.querySelector('.acv-fb');
+  btns.forEach(x=>x.disabled = true);
+  btns.forEach(x=>{
+    if(parseInt(x.dataset.j, 10) === p.c) x.classList.add('correct');
+  });
+  if(!respuesta.ok){
+    const wrongBtn = div.querySelector(`.acv-op[data-j="${respuesta.sel}"]`);
+    if(wrongBtn) wrongBtn.classList.add('wrong');
+  }
+  fb.innerHTML = (respuesta.ok ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>No exactamente.</strong> ') + p.e;
+  fb.classList.add('show');
+  if(colorBorde) fb.style.borderColor = colorBorde;
+}
+
+(function initEvolucionPreguntas(){
+  const cont = document.getElementById('evolucionPreguntas');
+  if(!cont) return;
+  cont.style.display = 'none';
+  const respuestas = estado.detalles.evolucion.respuestas;
+
+  evolucionPreguntas.forEach((p, i)=>{
+    const div = document.createElement('div');
+    div.className = 'acv-pregunta';
+    div.style.background = 'linear-gradient(150deg,#fffbeb,#fff)';
+    div.style.borderColor = '#fde68a';
+    div.innerHTML = `
+      <h5 style="color:var(--ambar-oscuro)">📈 Pregunta ${i+1}: ${p.q}</h5>
+      <div class="acv-opciones">
+        ${p.ops.map((o,j)=>`<button class="acv-op" data-i="${i}" data-j="${j}">${o}</button>`).join('')}
+      </div>
+      <div class="acv-fb"></div>
+    `;
+    cont.appendChild(div);
+    const btns = div.querySelectorAll('.acv-op');
+    const fb = div.querySelector('.acv-fb');
+
+    if(respuestas[i]){
+      aplicarEstadoPregunta(div, p, respuestas[i], 'var(--ambar)');
+    }
+
+    btns.forEach(b=>{
+      b.addEventListener('click', ()=>{
+        const j = parseInt(b.dataset.j, 10);
+        const acierto = j === p.c;
+        btns.forEach(x=>x.disabled = true);
+        btns.forEach(x=>{
+          if(parseInt(x.dataset.j, 10) === p.c) x.classList.add('correct');
+        });
+        if(!acierto) b.classList.add('wrong');
+        fb.innerHTML = (acierto ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>No exactamente.</strong> ') + p.e;
+        fb.classList.add('show');
+        fb.style.borderColor = 'var(--ambar)';
+
+        estado.detalles.evolucion.respuestas[i] = {sel: j, ok: acierto};
+        guardarEstado();
+
+        const respondidas = Object.keys(estado.detalles.evolucion.respuestas).length;
+        const aciertos = Object.values(estado.detalles.evolucion.respuestas).filter(r=>r.ok).length;
+
+        if(respondidas === evolucionPreguntas.length){
+          if(aciertos > estado.scores.evolucion){
+            estado.scores.evolucion = aciertos;
+            guardarEstado();
+            actualizarCertificado();
+          }
+          completarReto('evolucion', '¡Análisis de evolución completado!');
+        }
+      });
+    });
+  });
+
+  // Completar reto si ya estaba todo hecho
+  if(Object.keys(respuestas).length === evolucionPreguntas.length){
+    completarReto('evolucion', null);
+  }
+})();
+
+/* ================================================================
+   8. RETO 3 · ACV COMPARADO
+================================================================ */
+const acvProductos = [
+  {
+    id:'smartphone',
+    ico:'📱',
+    nombre:'Smartphone',
+    desc:'Vida útil media: 3 años.',
+    fases:[
+      {label:'Extracción', valor: 30, color:'#dc2626'},
+      {label:'Fabricación', valor: 45, color:'#dc2626'},
+      {label:'Uso', valor: 15, color:'#f59e0b'},
+      {label:'Fin de vida', valor: 10, color:'#059669'}
+    ],
+    total: 55,
+    unidad:'kg CO₂e',
+    analisis: 'La mayor parte del impacto está en la <strong>fabricación</strong> (chips, pantalla, batería) y en la <strong>extracción</strong> de minerales críticos. El uso tiene bajo impacto porque el móvil consume poca energía. Por eso, <strong>alargar la vida útil</strong> es la decisión más eficaz para reducir su huella.'
+  },
+  {
+    id:'nevera',
+    ico:'❄️',
+    nombre:'Nevera',
+    desc:'Vida útil media: 12 años.',
+    fases:[
+      {label:'Extracción', valor: 12, color:'#059669'},
+      {label:'Fabricación', valor: 20, color:'#f59e0b'},
+      {label:'Uso', valor: 60, color:'#dc2626'},
+      {label:'Fin de vida', valor: 8, color:'#059669'}
+    ],
+    total: 1800,
+    unidad:'kg CO₂e',
+    analisis: 'La <strong>fase de uso</strong> domina el impacto porque la nevera está enchufada 24/7 durante años. Elegir un modelo <strong>eficiente (etiqueta A)</strong> y mantenerlo bien tiene un impacto enorme. La extracción y fabricación pesan menos.'
+  },
+  {
+    id:'camiseta',
+    ico:'👕',
+    nombre:'Camiseta de algodón',
+    desc:'Vida útil media: 3 años.',
+    fases:[
+      {label:'Extracción', valor: 25, color:'#f59e0b'},
+      {label:'Fabricación', valor: 30, color:'#dc2626'},
+      {label:'Uso', valor: 35, color:'#f59e0b'},
+      {label:'Fin de vida', valor: 10, color:'#059669'}
+    ],
+    total: 8,
+    unidad:'kg CO₂e',
+    analisis: 'El impacto se reparte entre <strong>extracción</strong> (cultivo de algodón, agua), <strong>fabricación</strong> (tintes, energía) y <strong>uso</strong> (lavados frecuentes con agua caliente). Elegir fibras orgánicas, lavar en frío y usar la prenda muchos años reduce drásticamente su huella.'
+  }
+];
+
+function renderACV(){
+  const cont = document.getElementById('acvProductos');
+  if(!cont) return;
+  cont.innerHTML = '';
+  const vistos = estado.detalles.acv.vistos;
+  acvProductos.forEach(p=>{
+    const div = document.createElement('div');
+    div.className = 'acv-card';
+    if(vistos.includes(p.id)) div.classList.add('visto');
+    div.dataset.id = p.id;
+    div.innerHTML = `
+      <div class="acv-head">
+        <span class="acv-ico">${p.ico}</span>
+        <div>
+          <div class="acv-nombre">${p.nombre}</div>
+          <p class="acv-desc">${p.desc}</p>
+        </div>
+      </div>
+      <div class="acv-barras">
+        ${p.fases.map(f=>`
+          <div class="acv-barra">
+            <span class="ab-label">${f.label}</span>
+            <div class="ab-track"><div class="ab-fill" style="width:0%; background:${f.color}"></div></div>
+            <span class="ab-val">${f.valor}%</span>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    cont.appendChild(div);
+    div.addEventListener('click', ()=>seleccionarACV(p.id));
+
+    setTimeout(()=>{
+      const fills = div.querySelectorAll('.ab-fill');
+      p.fases.forEach((f, i)=>{
+        setTimeout(()=>{ if(fills[i]) fills[i].style.width = f.valor + '%'; }, i*100);
+      });
+    }, 100);
+  });
+
+  if(vistos.length === 3){
+    document.getElementById('acvPreguntas').style.display = 'block';
+  }
+  if(vistos.length > 0){
+    seleccionarACV(vistos[vistos.length-1], true);
+  }
+}
+
+function seleccionarACV(id, skipSave){
+  const p = acvProductos.find(x=>x.id === id);
+  if(!p) return;
+  document.querySelectorAll('.acv-card').forEach(c=>c.classList.remove('sel'));
+  const card = document.querySelector(`.acv-card[data-id="${id}"]`);
+  if(card){ card.classList.add('sel'); card.classList.add('visto'); }
+
+  const det = document.getElementById('acvDetalle');
+  det.innerHTML = `
+    <h4>${p.ico} ${p.nombre} · Análisis detallado</h4>
+    <p><strong>Impacto total a lo largo de su vida útil:</strong> ${p.total} ${p.unidad}</p>
+    <p>${p.analisis}</p>
+    <div class="acv-total">
+      <span class="at-lbl">Huella total estimada</span>
+      <span class="at-num">${p.total} ${p.unidad}</span>
+    </div>
+  `;
+  det.classList.add('show');
+
+  if(!skipSave && !estado.detalles.acv.vistos.includes(id)){
+    estado.detalles.acv.vistos.push(id);
+    guardarEstado();
+    if(estado.detalles.acv.vistos.length === 3){
+      document.getElementById('acvPreguntas').style.display = 'block';
+    }
+  }
+}
+
+renderACV();
+
+const acvPreguntas = [
+  {q:'¿Qué producto tiene la huella de carbono TOTAL más alta a lo largo de su vida útil?',
+   ops:['Smartphone','Nevera','Camiseta de algodón','Los tres igual'],
+   c:1, e:'La nevera tiene una huella total de 1.800 kg CO₂e porque consume electricidad 24/7 durante 12 años. Es el mayor impacto absoluto de los tres.'},
+  {q:'¿Por qué el impacto del smartphone se concentra en la FABRICACIÓN y no en el uso?',
+   ops:['Porque consume mucha electricidad','Porque sus componentes (chips, pantalla, batería) requieren procesos industriales muy intensivos','Porque se usa poco','Porque se recicla mal'],
+   c:1, e:'La fabricación de un smartphone es muy intensiva en energía y materiales críticos. En cambio, durante su uso consume muy poca electricidad.'},
+  {q:'En el caso de la nevera, ¿qué decisión del consumidor reduce MÁS su impacto total?',
+   ops:['Elegir el modelo más barato','Comprar un modelo eficiente (etiqueta A) y mantenerlo bien durante muchos años','Cambiarla cada 5 años','Usarla solo por la noche'],
+   c:1, e:'Como el uso representa el 60 % del impacto de una nevera, elegir un modelo eficiente y alargar su vida útil es la decisión más eficaz.'},
+  {q:'¿Cuál es una conclusión científica correcta al comparar los tres productos?',
+   ops:['Todos los productos tienen el mismo impacto','El impacto depende de qué fase domina en cada producto, y por eso las estrategias para reducirlo son distintas','Todos deben dejar de fabricarse','Los productos baratos son siempre peores'],
+   c:1, e:'Cada producto tiene un "punto caliente" distinto: fabricación en el smartphone, uso en la nevera, fases repartidas en la camiseta. La estrategia para reducir su impacto debe adaptarse a cada caso.'},
+  {q:'Para reducir el impacto total de un smartphone, ¿qué estrategia sería MENOS eficaz?',
+   ops:['Alargar su vida útil 2 años más','Comprar el modelo más barato y cambiarlo cada año','Comprar de segunda mano o reacondicionado','Reparar en lugar de sustituir'],
+   c:1, e:'Comprar modelos baratos y cambiarlos cada año multiplica el impacto, porque la mayor parte de la huella está en la fabricación.'}
+];
+
+(function initACVPreguntas(){
+  const cont = document.getElementById('acvPreguntas');
+  if(!cont) return;
+  cont.style.display = 'none';
+  const respuestas = estado.detalles.acv.respuestas;
+
+  acvPreguntas.forEach((p, i)=>{
+    const div = document.createElement('div');
+    div.className = 'acv-pregunta';
+    div.innerHTML = `
+      <h5>📊 Pregunta ${i+1}: ${p.q}</h5>
+      <div class="acv-opciones">
+        ${p.ops.map((o,j)=>`<button class="acv-op" data-i="${i}" data-j="${j}">${o}</button>`).join('')}
+      </div>
+      <div class="acv-fb"></div>
+    `;
+    cont.appendChild(div);
+    const btns = div.querySelectorAll('.acv-op');
+    const fb = div.querySelector('.acv-fb');
+
+    if(respuestas[i]){
+      aplicarEstadoPregunta(div, p, respuestas[i], 'var(--azul)');
+    }
+
+    btns.forEach(b=>{
+      b.addEventListener('click', ()=>{
+        const j = parseInt(b.dataset.j, 10);
+        const acierto = j === p.c;
+        btns.forEach(x=>x.disabled = true);
+        btns.forEach(x=>{
+          if(parseInt(x.dataset.j, 10) === p.c) x.classList.add('correct');
+        });
+        if(!acierto) b.classList.add('wrong');
+        fb.innerHTML = (acierto ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>No exactamente.</strong> ') + p.e;
+        fb.classList.add('show');
+
+        estado.detalles.acv.respuestas[i] = {sel: j, ok: acierto};
+        guardarEstado();
+
+        const respondidas = Object.keys(estado.detalles.acv.respuestas).length;
+        const aciertos = Object.values(estado.detalles.acv.respuestas).filter(r=>r.ok).length;
+
+        if(respondidas === acvPreguntas.length){
+          if(aciertos > estado.scores.acv){
+            estado.scores.acv = aciertos;
+            guardarEstado();
+            actualizarCertificado();
+          }
+          document.getElementById('acvMsg').innerHTML =
+            `Has acertado <strong>${aciertos} de ${acvPreguntas.length}</strong> preguntas de análisis. ` +
+            (aciertos >= 4 ? '¡Sabes interpretar datos de ciclo de vida!' : 'Repasa las preguntas usando los datos del comparador.');
+          completarReto('acv', '¡Análisis de ciclo de vida completado!');
+        }
+      });
+    });
+  });
+
+  if(Object.keys(respuestas).length === acvPreguntas.length){
+    completarReto('acv', null);
+  }
+})();
+
+/* ================================================================
+   9. RETO 4 · INSPECTOR DE DISEÑO
+================================================================ */
+const inspectorData = [
+  {id:'i1', ico:'🔧', titulo:'Batería reemplazable',
+   desc:'El fabricante diseña el móvil con una batería que el usuario puede cambiar fácilmente en casa con un destornillador básico.',
+   tipo:'responsable',
+   why:'Facilitar la reparación y sustitución de la batería alarga la vida útil del producto, reduce residuos y respeta el derecho a reparar.'},
+  {id:'i2', ico:'💸', titulo:'Obsolescencia programada',
+   desc:'El software del dispositivo está diseñado para ralentizarse tras 2 años, forzando al usuario a comprar el modelo nuevo.',
+   tipo:'problematica',
+   why:'La obsolescencia programada acorta deliberadamente la vida útil del producto. Es una práctica éticamente cuestionable y en algunos países está regulada.'},
+  {id:'i3', ico:'♿', titulo:'Diseño accesible',
+   desc:'El producto incluye lector de pantalla, contraste alto, subtítulos y controles adaptables. Se ha probado con personas con distintas capacidades.',
+   tipo:'responsable',
+   why:'Es un diseño inclusivo: personas con diversidad funcional pueden usar el producto sin adaptaciones especiales. Cumple el Diseño Universal.'},
+  {id:'i4', ico:'📦', titulo:'Embalaje excesivo',
+   desc:'El producto viene en una caja de cartón, con plástico interior, otra caja decorativa y 4 manuales impresos a color.',
+   tipo:'problematica',
+   why:'Embalajes múltiples generan residuos innecesarios. Un buen diseño reduce el material y usa opciones recicladas.'},
+  {id:'i5', ico:'🔩', titulo:'Piezas de repuesto disponibles',
+   desc:'El fabricante garantiza piezas de repuesto durante 10 años y publica manuales de reparación en abierto.',
+   tipo:'responsable',
+   why:'Garantizar repuestos y manuales facilita la reparación, alarga la vida útil y apoya la economía circular.'},
+  {id:'i6', ico:'🔒', titulo:'Piezas propietarias exclusivas',
+   desc:'El producto solo puede repararse con piezas originales del propio fabricante, que cuestan más que el producto nuevo.',
+   tipo:'problematica',
+   why:'Bloquear la reparación por precio o exclusividad dificulta la economía circular y perjudica al consumidor. Es una práctica muy criticada.'},
+  {id:'i7', ico:'🌱', titulo:'Materiales reciclados',
+   desc:'El 60% del aluminio y el 30% de los plásticos usados son reciclados. La empresa publica el informe de composición.',
+   tipo:'responsable',
+   why:'Usar materiales reciclados reduce la extracción de materias primas y la huella de carbono. Publicar la composición añade transparencia.'},
+  {id:'i8', ico:'⚠️', titulo:'Sustancias peligrosas',
+   desc:'El producto contiene sustancias tóxicas en su interior que no se informan al usuario, dificultando su gestión al final de la vida útil.',
+   tipo:'problematica',
+   why:'No informar sobre sustancias peligrosas dificulta el reciclaje seguro y pone en riesgo a quienes manipulan el producto al final de su vida.'}
+];
+
+function initInspector(){
+  const cont = document.getElementById('inspectorWrap');
+  if(!cont) return;
+  cont.innerHTML = '';
+  const respuestas = estado.detalles.inspector.respuestas;
+
+  inspectorData.forEach((d, i)=>{
+    const div = document.createElement('div');
+    div.className = 'insp-card';
+    div.innerHTML = `
+      <div class="insp-head">
+        <span class="insp-ico">${d.ico}</span>
+        <div>
+          <p class="insp-titulo">${d.titulo}</p>
+          <p class="insp-desc">${d.desc}</p>
+        </div>
+      </div>
+      <div class="insp-btns">
+        <button class="insp-btn" data-i="${i}" data-v="responsable">✅ Responsable</button>
+        <button class="insp-btn" data-i="${i}" data-v="problematica">⚠️ Problemática</button>
+      </div>
+      <div class="insp-fb"></div>
+    `;
+    cont.appendChild(div);
+    const btns = div.querySelectorAll('.insp-btn');
+    const fb = div.querySelector('.insp-fb');
+
+    if(respuestas[i]){
+      const r = respuestas[i];
+      btns.forEach(x=>x.disabled = true);
+      btns.forEach(x=>{
+        if(x.dataset.v === d.tipo) x.classList.add('correct');
+      });
+      if(!r.ok){
+        const wrongBtn = div.querySelector(`.insp-btn[data-v="${r.sel}"]`);
+        if(wrongBtn) wrongBtn.classList.add('wrong');
+      }
+      fb.innerHTML = (r.ok ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>No exactamente.</strong> ') + d.why;
+      fb.classList.add('show');
+      div.classList.add('done');
+    }
+
+    btns.forEach(b=>{
+      b.addEventListener('click', ()=>{
+        const elegido = b.dataset.v;
+        const acierto = elegido === d.tipo;
+        btns.forEach(x=>x.disabled = true);
+        btns.forEach(x=>{
+          if(x.dataset.v === d.tipo) x.classList.add('correct');
+        });
+        if(!acierto) b.classList.add('wrong');
+        fb.innerHTML = (acierto ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>No exactamente.</strong> ') + d.why;
+        fb.classList.add('show');
+        div.classList.add('done');
+
+        estado.detalles.inspector.respuestas[i] = {sel: elegido, ok: acierto};
+        guardarEstado();
+
+        const respondidas = Object.keys(estado.detalles.inspector.respuestas).length;
+        const aciertos = Object.values(estado.detalles.inspector.respuestas).filter(r=>r.ok).length;
+
+        if(respondidas === inspectorData.length){
+          if(aciertos > estado.scores.inspector){
+            estado.scores.inspector = aciertos;
+            guardarEstado();
+            actualizarCertificado();
+          }
+          document.getElementById('inspMsg').innerHTML =
+            `Has identificado correctamente <strong>${aciertos} de ${inspectorData.length}</strong> decisiones. ` +
+            (aciertos >= 6 ? '¡Tienes un criterio muy afinado para el diseño responsable!' : 'Repasa las decisiones falladas.');
+          completarReto('inspector', '¡Inspector de diseño completado!');
+        }
+      });
+    });
+  });
+
+  if(Object.keys(respuestas).length === inspectorData.length){
+    completarReto('inspector', null);
+  }
+}
+
+initInspector();
+
+/* ================================================================
+   10. RETO 5 · FIN DE VIDA
+================================================================ */
+const finVidaData = [
+  {
+    id:'f1', ico:'📱', nombre:'Smartphone antiguo',
+    estado:'Funciona pero va lento. Todavía sirve para llamar, mensajes y alguna app básica.',
+    opciones:[
+      {v:'reutilizar', t:'Regalarlo a alguien que lo necesite o usarlo como segundo teléfono', ok:true,
+       why:'Reutilizar alarga la vida útil sin gastar recursos. Es la opción más sostenible cuando el producto aún funciona.'},
+      {v:'tirar', t:'Tirarlo a la basura normal', ok:false,
+       why:'Los residuos electrónicos contienen metales pesados y sustancias tóxicas. Tirarlos a la basura contamina y pierde materiales valiosos.'},
+      {v:'reciclar', t:'Llevarlo a un punto limpio de RAEE', ok:false,
+       why:'Reciclar es buena opción, pero REUTILIZAR es mejor: alarga la vida útil y evita fabricar uno nuevo.'}
+    ]
+  },
+  {
+    id:'f2', ico:'👕', nombre:'Camiseta con un agujero pequeño',
+    estado:'Tiene un pequeño agujero en la manga. Por lo demás, está en buen estado.',
+    opciones:[
+      {v:'reparar', t:'Coser el agujero o llevarlo a un taller de arreglos', ok:true,
+       why:'Reparar es la mejor opción cuando es posible. Alarga la vida de la prenda sin gastar recursos en una nueva.'},
+      {v:'tirar', t:'Tirarla al contenedor de restos', ok:false,
+       why:'Tirar ropa en buen estado es un desperdicio enorme. La industria textil es muy contaminante.'},
+      {v:'reutilizar', t:'Usarla como trapo de limpieza', ok:false,
+       why:'Es una segunda vida válida, pero solo cuando ya no puede usarse como prenda. Antes hay que intentar reparar.'}
+    ]
+  },
+  {
+    id:'f3', ico:'💻', nombre:'Portátil roto',
+    estado:'La pantalla se ha roto y no se ve nada. El resto del portátil parece funcionar.',
+    opciones:[
+      {v:'tirar', t:'Tirarlo a la basura', ok:false,
+       why:'Los portátiles contienen metales valiosos y sustancias peligrosas. Nunca deben tirarse a la basura normal.'},
+      {v:'reparar', t:'Cambiar la pantalla y seguir usándolo', ok:true,
+       why:'Cambiar solo la pantalla rota es mucho más sostenible que comprar un portátil nuevo. La huella del portátil está sobre todo en la fabricación.'},
+      {v:'reciclar', t:'Llevarlo directamente a un punto limpio', ok:false,
+       why:'Reciclar es correcto cuando ya no se puede reparar, pero aquí la reparación es posible y preferible.'}
+    ]
+  },
+  {
+    id:'f4', ico:'🔋', nombre:'Batería de móvil agotada',
+    estado:'La batería no dura nada y el móvil se apaga solo. La batería está hinchada.',
+    opciones:[
+      {v:'tirar', t:'Tirarla al contenedor de pilas', ok:true,
+       why:'Las baterías hinchadas son peligrosas y deben llevarse a un punto de recogida específico. Nunca a la basura normal.'},
+      {v:'guardar', t:'Guardarla en un cajón por si acaso', ok:false,
+       why:'Las baterías hinchadas pueden inflamarse o explotar. Guardarlas es peligroso.'},
+      {v:'reciclar', t:'Intentar repararla yo mismo/a', ok:false,
+       why:'Manipular una batería de litio hinchada es muy peligroso. Debe gestionarse en un punto autorizado.'}
+    ]
+  },
+  {
+    id:'f5', ico:'🖨️', nombre:'Impresora que ya no enciende',
+    estado:'Tiene 8 años, ya no enciende y las reparaciones cuestan más que una impresora nueva.',
+    opciones:[
+      {v:'reciclar', t:'Llevarla al punto limpio para su reciclaje electrónico', ok:true,
+       why:'Cuando la reparación no es viable, el reciclaje correcto es la mejor opción. Se recuperan metales y se gestionan los tóxicos.'},
+      {v:'tirar', t:'Dejarla en la calle junto a un contenedor', ok:false,
+       why:'Abandonar residuos electrónicos en la calle es ilegal y contamina. Además dificulta su correcto reciclaje.'},
+      {v:'reutilizar', t:'Venderla como piezas en internet', ok:false,
+       why:'Solo sería válido si realmente alguien pudiera aprovecharla. Si no funciona, hay que reciclarla correctamente.'}
+    ]
+  },
+  {
+    id:'f6', ico:'🪑', nombre:'Silla de oficina rota',
+    estado:'El respaldo se ha roto. La estructura y las ruedas funcionan bien.',
+    opciones:[
+      {v:'reparar', t:'Sustituir solo el respaldo con una pieza de repuesto', ok:true,
+       why:'Reparar solo la parte rota es más sostenible que comprar una silla nueva. Aprovecha el resto del producto.'},
+      {v:'tirar', t:'Tirarla al contenedor de muebles sin más', ok:false,
+       why:'Tirar un mueble que puede repararse es un desperdicio. Además, los muebles voluminosos requieren gestión especial.'},
+      {v:'reciclar', t:'Llevarla directamente al punto limpio', ok:false,
+       why:'Reciclar es válido cuando no se puede reparar, pero aquí la reparación es la mejor opción.'}
+    ]
+  }
+];
+
+function initFinVida(){
+  const cont = document.getElementById('finvidaWrap');
+  if(!cont) return;
+  cont.innerHTML = '';
+  const respuestas = estado.detalles.finvida.respuestas;
+
+  finVidaData.forEach((p, i)=>{
+    const div = document.createElement('div');
+    div.className = 'fv-card';
+    div.innerHTML = `
+      <div class="fv-head">
+        <span class="fv-ico">${p.ico}</span>
+        <div>
+          <p class="fv-nombre">${p.nombre}</p>
+          <p class="fv-estado">${p.estado}</p>
+        </div>
+      </div>
+      <div class="fv-opciones">
+        ${p.opciones.map((o, j)=>`
+          <button class="fv-op" data-i="${i}" data-j="${j}">
+            <span class="fvo-ico">›</span>
+            <span>${o.t}</span>
+          </button>
+        `).join('')}
+      </div>
+      <div class="fv-fb"></div>
+    `;
+    cont.appendChild(div);
+    const btns = div.querySelectorAll('.fv-op');
+    const fb = div.querySelector('.fv-fb');
+
+    if(respuestas[i]){
+      const r = respuestas[i];
+      btns.forEach(x=>x.disabled = true);
+      btns.forEach(x=>{
+        const idx = parseInt(x.dataset.j, 10);
+        if(p.opciones[idx].ok) x.classList.add('correct');
+      });
+      if(!r.ok){
+        const wrongBtn = div.querySelector(`.fv-op[data-j="${r.sel}"]`);
+        if(wrongBtn) wrongBtn.classList.add('wrong');
+      }
+      fb.innerHTML = (r.ok ? '✅ <strong>¡Buena decisión!</strong> ' : '❌ <strong>Opción no recomendada.</strong> ') + p.opciones[r.sel].why;
+      fb.classList.add('show');
+      div.classList.add('done');
+    }
+
+    btns.forEach(b=>{
+      b.addEventListener('click', ()=>{
+        const j = parseInt(b.dataset.j, 10);
+        const op = p.opciones[j];
+        btns.forEach(x=>x.disabled = true);
+        btns.forEach(x=>{
+          const idx = parseInt(x.dataset.j, 10);
+          if(p.opciones[idx].ok) x.classList.add('correct');
+        });
+        if(!op.ok) b.classList.add('wrong');
+        fb.innerHTML = (op.ok ? '✅ <strong>¡Buena decisión!</strong> ' : '❌ <strong>Opción no recomendada.</strong> ') + op.why;
+        fb.classList.add('show');
+        div.classList.add('done');
+
+        estado.detalles.finvida.respuestas[i] = {sel: j, ok: op.ok};
+        guardarEstado();
+
+        const respondidas = Object.keys(estado.detalles.finvida.respuestas).length;
+        const aciertos = Object.values(estado.detalles.finvida.respuestas).filter(r=>r.ok).length;
+
+        if(respondidas === finVidaData.length){
+          if(aciertos > estado.scores.finvida){
+            estado.scores.finvida = aciertos;
+            guardarEstado();
+            actualizarCertificado();
+          }
+          document.getElementById('fvMsg').innerHTML =
+            `Has tomado la mejor decisión en <strong>${aciertos} de ${finVidaData.length}</strong> casos. ` +
+            (aciertos >= 5 ? '¡Dominas la jerarquía de residuos!' : 'Repasa los casos fallados.');
+          completarReto('finvida', '¡Fin de vida completado!');
+        }
+      });
+    });
+  });
+
+  if(Object.keys(respuestas).length === finVidaData.length){
+    completarReto('finvida', null);
+  }
+}
+
+initFinVida();
+
+/* ================================================================
+   11. VOCABULARIO
+================================================================ */
+const vocabulario = [
+  {ico:'🔬', t:'Análisis de producto', d:'Estudio sistemático de un producto para entender su composición, su funcionamiento, su ciclo de vida, sus impactos y su adecuación a una necesidad. Se apoya en pensamiento científico y fuentes fiables.'},
+  {ico:'📈', t:'Demanda', d:'Cantidad de un producto que las personas están dispuestas a comprar en un momento dado. Analizarla permite entender si el producto tiene sentido y para quién.'},
+  {ico:'🕰️', t:'Evolución del producto', d:'Cambios que experimenta un producto a lo largo del tiempo en sus materiales, funciones, formato y precio. Refleja avances técnicos y cambios en las necesidades.'},
+  {ico:'♻️', t:'Análisis del Ciclo de Vida (ACV)', d:'Metodología científica normalizada (ISO 14040/14044) que evalúa el impacto ambiental de un producto en todas sus fases: extracción, fabricación, distribución, uso y fin de vida.'},
+  {ico:'🌱', t:'Huella de carbono', d:'Cantidad total de gases de efecto invernadero emitidos por un producto a lo largo de su ciclo de vida, medida en kg de CO₂ equivalente.'},
+  {ico:'⛏️', t:'Materias primas críticas', d:'Materiales esenciales para la tecnología cuya disponibilidad es limitada o cuya extracción se concentra en pocos países, generando riesgo de suministro. Ejemplos: litio, cobalto, tierras raras.'},
+  {ico:'💣', t:'Minerales de conflicto', d:'Minerales (estaño, tantalio, tungsteno, oro) cuya extracción en algunas zonas financia grupos armados y viola los derechos humanos.'},
+  {ico:'🎯', t:'Diseño responsable', d:'Enfoque que considera el impacto del producto en las personas y el planeta desde la fase de diseño, priorizando durabilidad, reparabilidad y sostenibilidad.'},
+  {ico:'🧩', t:'Diseño inclusivo', d:'Diseño que tiene en cuenta la diversidad de capacidades, edades y contextos para que el producto pueda ser usado por el mayor número de personas posible, sin adaptaciones especiales.'},
+  {ico:'🔧', t:'Reparabilidad', d:'Facilidad con la que un producto puede ser reparado por el usuario o por un servicio técnico. Depende del diseño, de la disponibilidad de piezas y de los manuales.'},
+  {ico:'⏳', t:'Obsolescencia programada', d:'Diseño deliberado de un producto para que dure menos de lo técnicamente posible, forzando su sustitución.'},
+  {ico:'📱', t:'Obsolescencia percibida', d:'Situación en la que un producto sigue funcionando pero se sustituye por moda o marketing, aunque no sea necesario.'},
+  {ico:'🌍', t:'Fin de vida útil', d:'Momento en el que un producto deja de cumplir su función. Puede gestionarse mediante reutilización, reparación, reciclaje o eliminación.'},
+  {ico:'♻️', t:'Jerarquía de residuos', d:'Orden de preferencia para gestionar un producto al final de su vida: prevenir > reutilizar > reparar > reciclar > valorizar > eliminar. Cuanto más arriba, mejor.'},
+  {ico:'🔩', t:'Economía circular', d:'Modelo económico que busca mantener los recursos en uso el mayor tiempo posible mediante la reutilización, reparación, remanufactura y reciclaje.'},
+  {ico:'📊', t:'Fuentes fiables', d:'Información verificable con autoría clara y datos contrastables. En análisis de producto: informes de ACV, documentación oficial del fabricante, estudios científicos revisados.'},
+  {ico:'🎯', t:'Necesidad real', d:'Problema o carencia concreta que un producto pretende resolver. Analizar si un producto responde a una necesidad real es el primer paso del análisis crítico.'},
+  {ico:'⚖️', t:'Pensamiento científico', d:'Forma de razonar basada en la observación, la medición, la comparación y la formulación de conclusiones a partir de datos verificables.'},
+  {ico:'🔧', t:'DfX (Diseño para X)', d:'Familia de metodologías de diseño que optimizan el producto para un objetivo concreto: reparabilidad (DfR), desmontaje (DfD), medioambiente (DfE), accesibilidad (DfA), fabricación (DfM) o sostenibilidad (DfS).'},
+  {ico:'🔄', t:'Unidad funcional', d:'Referencia sobre la que se mide el impacto en un ACV. Debe describir la función del producto, no solo su cantidad. Sin ella, comparar productos no es válido.'},
+  {ico:'📊', t:'Punto caliente ambiental', d:'Fase del ciclo de vida donde se concentra la mayor parte del impacto ambiental de un producto. Varía según el producto: fabricación en smartphones, uso en neveras.'},
+  {ico:'🗑️', t:'RAEE', d:'Residuos de Aparatos Eléctricos y Electrónicos. Contienen materiales valiosos y sustancias peligrosas. Deben gestionarse en puntos limpios autorizados, nunca en la basura normal.'},
+  {ico:'🛠️', t:'Derecho a reparar', d:'Movimiento internacional que defiende que las personas puedan arreglar sus productos sin depender del fabricante. Incluye piezas, manuales, repuestos y diseño desmontable.'}
+];
+
+(function initVoc(){
+  const grid = document.getElementById('vocGrid');
+  const defBox = document.getElementById('vocDef');
+  if(!grid) return;
+  vocabulario.forEach((v)=>{
+    const b = document.createElement('button');
+    b.className = 'voc-term';
+    b.innerHTML = `<span style="font-size:1.1rem">${v.ico}</span><span>${v.t}</span>`;
+    b.addEventListener('click', ()=>{
+      const yaActivo = b.classList.contains('active');
+      grid.querySelectorAll('.voc-term').forEach(x=>x.classList.remove('active'));
+      if(yaActivo){
+        defBox.classList.remove('show');
+        setTimeout(()=>{ defBox.innerHTML=''; }, 500);
+        return;
+      }
+      b.classList.add('active');
+      defBox.innerHTML = `<h4>${v.ico} ${v.t}</h4><p>${v.d}</p>`;
+      defBox.classList.add('show');
+    });
+    grid.appendChild(b);
+  });
+})();
+
+/* ================================================================
+   12. QUIZ FINAL
+================================================================ */
+const preguntasQuiz = [
+  {q:'¿Por qué es importante analizar la composición de un producto?',
+   o:['Para saber cuánto pesa.',
+      'Para conocer su precio de venta en las tiendas.',
+      'Para entender qué materiales usa y su impacto.',
+      'Para saber si es moderno y está de moda entre los jóvenes.'],
+   c:2, e:'Conocer la composición permite entender qué materias primas se han usado, si son críticas o de conflicto, y qué impacto ambiental y social tienen.'},
+  {q:'¿Qué fase del ciclo de vida tiene mayor impacto en un smartphone?',
+   o:['El uso diario del teléfono durante todos los años que lo tenemos.',
+      'La fabricación y la extracción de materias primas.',
+      'El transporte desde la fábrica hasta la tienda.',
+      'El reciclaje final que se hace en el punto limpio de la ciudad.'],
+   c:1, e:'En un smartphone, hasta el 75-80 % de su huella se genera antes de encenderlo: en la extracción de minerales y la fabricación de sus componentes.'},
+  {q:'En una nevera, ¿qué fase del ciclo de vida tiene MAYOR impacto?',
+   o:['La fabricación de todos sus componentes en la fábrica y su transporte.',
+      'La extracción de los metales que se necesitan para construirla.',
+      'El reciclaje final cuando ya no funciona y se lleva al punto limpio.',
+      'El uso, porque está enchufada 24 horas al día durante muchos años.'],
+   c:3, e:'La nevera consume electricidad 24 horas al día durante más de 10 años. El uso representa en torno al 60 % de su huella total.'},
+  {q:'¿Qué es la obsolescencia programada?',
+   o:['Diseñar un producto para que dure menos de lo posible.',
+      'Un programa informático que se instala en el móvil para hacerlo más rápido.',
+      'Un tipo de garantía que ofrece el fabricante al comprar el producto.',
+      'Programar el reciclaje del producto al final de su vida útil en el punto limpio.'],
+   c:0, e:'Es una práctica cuestionable: acortar deliberadamente la vida útil de un producto para forzar su sustitución y aumentar las ventas.'},
+  {q:'¿Qué significa "diseño inclusivo"?',
+   o:['Diseñar productos más caros y con mejores materiales para gente con dinero.',
+      'Diseñar productos con muchos colores y formas llamativas para vender más.',
+      'Diseñar productos que puedan usar el mayor número de personas posible.',
+      'Diseñar productos solo para expertos que sepan usarlos sin ayuda.'],
+   c:2, e:'El diseño inclusivo (o Diseño Universal) considera la diversidad de capacidades, edades y contextos para que el producto pueda ser usado por todas las personas.'},
+  {q:'¿Cuál es la opción MÁS sostenible en la jerarquía de residuos?',
+   o:['Reciclar el producto en el contenedor adecuado.',
+      'Prevenir, reutilizar o reparar antes que reciclar.',
+      'Tirarlo al contenedor correcto para que lo gestionen los servicios municipales.',
+      'Incinerarlo para obtener energía y no ocupar espacio en los vertederos.'],
+   c:1, e:'La jerarquía de residuos prioriza prevenir, reutilizar y reparar antes que reciclar. Reciclar es bueno, pero reutilizar es mejor.'},
+  {q:'Si un portátil tiene la pantalla rota pero funciona, ¿qué es lo más sostenible?',
+   o:['Comprar un portátil nuevo.',
+      'Guardarlo en un cajón.',
+      'Tirarlo al punto limpio para que lo reciclen bien.',
+      'Reparar solo la pantalla rota y seguir usándolo.'],
+   c:3, e:'Reparar solo la parte rota alarga la vida útil del producto. La mayor parte de la huella del portátil está en la fabricación, no en el uso.'},
+  {q:'¿Qué información es NECESARIA para hacer un buen análisis de producto?',
+   o:['Datos verificables sobre composición y ciclo de vida.',
+      'El precio en las tiendas.',
+      'El color y lo bonito que es.',
+      'Las opiniones de los usuarios en las redes sociales.'],
+   c:0, e:'Un análisis científico requiere datos verificables. Las opiniones subjetivas o el precio no son suficientes para valorar el impacto real del producto.'},
+  {q:'¿Por qué es importante alargar la vida útil de un producto?',
+   o:['Porque cuesta menos dinero comprarlo y usarlo más tiempo.',
+      'Porque el mayor impacto ambiental está en fabricarlo.',
+      'Porque ocupa menos espacio en casa y en el armario.',
+      'Porque es lo que hace todo el mundo hoy en día.'],
+   c:1, e:'En la mayoría de productos tecnológicos, la fabricación es la fase de mayor impacto. Alargar la vida útil reparte ese impacto entre más años de uso.'},
+  {q:'¿Qué demuestra tener pensamiento científico al analizar un producto?',
+   o:['Confiar en la publicidad del fabricante y en lo que dice la tele.',
+      'Elegir el producto más popular entre los amigos.',
+      'Basarse en datos verificables de fuentes fiables y comparar.',
+      'Seguir la moda del momento sin pensarlo mucho.'],
+   c:2, e:'El pensamiento científico se basa en datos verificables, comparación y razonamiento. Las fuentes deben ser fiables y los datos contrastables.'}
+];
+
+function mostrarResultadoQuiz(){
+  const aciertos = Object.values(estado.detalles.quiz.respuestas).filter(r=>r.ok).length;
+  const res = document.getElementById('quizResult');
+  document.getElementById('quizScore').textContent = aciertos + '/' + preguntasQuiz.length;
+  const pct = Math.round(aciertos / preguntasQuiz.length * 100);
+  let titulo, msg;
+  if(pct === 100){ titulo = '🏆 ¡Perfecto!'; msg = 'Dominas el análisis de producto, ciclo de vida y diseño responsable.'; }
+  else if(pct >= 75){ titulo = '🌟 ¡Muy bien!'; msg = 'Tienes una comprensión sólida. Repasa las preguntas falladas para afinar los detalles.'; }
+  else if(pct >= 50){ titulo = '👍 Buen intento'; msg = 'Vas por el camino correcto. Vuelve a las secciones de radiografía, evolución, ACV y fin de vida.'; }
+  else { titulo = '📚 A seguir aprendiendo'; msg = 'Revisa con calma cada sección y vuelve a intentarlo.'; }
+  document.getElementById('quizTitle').textContent = titulo;
+  document.getElementById('quizMsg').textContent = msg;
+  res.style.display = 'block';
+  res.scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+(function initQuiz(){
+  const cont = document.getElementById('quizContainer');
+  if(!cont) return;
+  const respuestas = estado.detalles.quiz.respuestas;
+
+  preguntasQuiz.forEach((p, i)=>{
+    const div = document.createElement('div');
+    div.className = 'q reveal';
+    div.innerHTML = `
+      <span class="q-num">PREGUNTA ${i+1}</span>
+      <h4>${p.q}</h4>
+      <div class="opts">
+        ${p.o.map((o,j)=>`
+          <button class="opt" data-i="${i}" data-j="${j}">
+            <span class="letter">${String.fromCharCode(65+j)}</span>
+            <span>${o}</span>
+          </button>`).join('')}
+      </div>
+      <div class="expl"></div>
+    `;
+    cont.appendChild(div);
+    io.observe(div);
+    const btns = div.querySelectorAll('.opt');
+    const expl = div.querySelector('.expl');
+
+    if(respuestas[i]){
+      const r = respuestas[i];
+      btns.forEach(x=>x.disabled = true);
+      btns.forEach(x=>{
+        if(parseInt(x.dataset.j, 10) === p.c) x.classList.add('correct');
+      });
+      if(!r.ok){
+        const wrongBtn = div.querySelector(`.opt[data-j="${r.sel}"]`);
+        if(wrongBtn) wrongBtn.classList.add('wrong');
+      }
+      expl.innerHTML = (r.ok ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>Respuesta incorrecta.</strong> ') + p.e;
+      expl.classList.add('show');
+    }
+
+    btns.forEach(b=>{
+      b.addEventListener('click', ()=>{
+        const j = parseInt(b.dataset.j, 10);
+        const acierto = j === p.c;
+        btns.forEach(x=>x.disabled = true);
+        btns.forEach(x=>{
+          if(parseInt(x.dataset.j, 10) === p.c) x.classList.add('correct');
+        });
+        if(!acierto) b.classList.add('wrong');
+        expl.innerHTML = (acierto ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>Respuesta incorrecta.</strong> ') + p.e;
+        expl.classList.add('show');
+
+        estado.detalles.quiz.respuestas[i] = {sel: j, ok: acierto};
+        guardarEstado();
+
+        const respondidas = Object.keys(estado.detalles.quiz.respuestas).length;
+        if(respondidas === preguntasQuiz.length){
+          const aciertos = Object.values(estado.detalles.quiz.respuestas).filter(r=>r.ok).length;
+          if(aciertos > estado.scores.quiz){
+            estado.scores.quiz = aciertos;
+            guardarEstado();
+            actualizarCertificado();
+          }
+          mostrarResultadoQuiz();
+          completarReto('quiz', '¡Cuestionario final completado! ' + aciertos + '/' + preguntasQuiz.length);
+        }
+      });
+    });
+  });
+
+  // Restaurar resultado si ya estaba completo
+  if(Object.keys(respuestas).length === preguntasQuiz.length){
+    mostrarResultadoQuiz();
+    completarReto('quiz', null);
+  }
+})();
+
+/* ================================================================
+   13. CERTIFICADO Y PDF RASTERIZADO
+================================================================ */
+function actualizarCertificado(){
+  const stats = document.getElementById('certStats');
+  const nombreEl = document.getElementById('certNombre');
+  const warn = document.getElementById('certWarn');
+  const btn = document.getElementById('btnCertificado');
+
+  nombreEl.textContent = estado.nombre || '—';
+
+  const s = estado.scores;
+  const nRetos = estado.retos.length;
+
+  const items = [
+    {num: (s.radiografia>0 ? s.radiografia + '/6' : '—'), lbl:'Radiografía'},
+    {num: (s.evolucion>0 ? s.evolucion + '/4' : '—'), lbl:'Evolución'},
+    {num: (s.acv>0 ? s.acv + '/5' : '—'), lbl:'Ciclo de vida'},
+    {num: (s.inspector>0 ? s.inspector + '/8' : '—'), lbl:'Inspector'},
+    {num: (s.finvida>0 ? s.finvida + '/6' : '—'), lbl:'Fin de vida'},
+    {num: (s.quiz>0 ? s.quiz + '/10' : '—'), lbl:'Cuestionario'},
+    {num: nRetos + '/' + RETOS_TOTALES, lbl:'Retos totales'}
+  ];
+
+  stats.innerHTML = items.map(it=>`
+    <div class="cert-stat">
+      <div class="num">${it.num}</div>
+      <div class="lbl">${it.lbl}</div>
+    </div>
+  `).join('');
+
+  if(nRetos === 0){
+    warn.style.display = 'block';
+    btn.disabled = true;
+    btn.style.opacity = .55;
+    btn.style.cursor = 'not-allowed';
+  } else {
+    warn.style.display = 'none';
+    btn.disabled = false;
+    btn.style.opacity = 1;
+    btn.style.cursor = 'pointer';
+  }
+}
+
+document.getElementById('btnCertificado').addEventListener('click', ()=>{
+  if(!estado.nombre){ toast('Introduce tu nombre primero'); return; }
+  if(estado.retos.length === 0){ toast('Completa al menos un reto para obtener el certificado'); return; }
+  generarPDFRasterizado();
+});
+
+function generarPDFRasterizado(){
+  if(!(window.jspdf && window.jspdf.jsPDF)){
+    toast('No se ha podido cargar la librería PDF. Inténtalo de nuevo.');
+    return;
+  }
+  try{
+    const DPI = 300;
+    const W_MM = 297, H_MM = 210;
+    const W = Math.round(W_MM / 25.4 * DPI);
+    const H = Math.round(H_MM / 25.4 * DPI);
+    const mm = v => v / 25.4 * DPI;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = '#ecfdf5';
+    ctx.fillRect(0,0,W,H);
+
+    ctx.strokeStyle = '#065f46';
+    ctx.lineWidth = mm(2);
+    ctx.strokeRect(mm(10), mm(10), W-mm(20), H-mm(20));
+    ctx.lineWidth = mm(0.5);
+    ctx.strokeRect(mm(14), mm(14), W-mm(28), H-mm(28));
+
+    ctx.fillStyle = '#065f46';
+    ctx.fillRect(mm(14), mm(14), mm(20), mm(3));
+    ctx.fillRect(mm(14), mm(14), mm(3), mm(20));
+    ctx.fillRect(W-mm(34), mm(14), mm(20), mm(3));
+    ctx.fillRect(W-mm(17), mm(14), mm(3), mm(20));
+    ctx.fillRect(mm(14), H-mm(17), mm(20), mm(3));
+    ctx.fillRect(mm(14), H-mm(34), mm(3), mm(20));
+    ctx.fillRect(W-mm(34), H-mm(17), mm(20), mm(3));
+    ctx.fillRect(W-mm(17), H-mm(34), mm(3), mm(20));
+
+    ctx.fillStyle = '#065f46';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = `bold ${mm(9)}px Arial, sans-serif`;
+    ctx.fillText('CERTIFICADO DE APROVECHAMIENTO', W/2, mm(38));
+
+    ctx.fillStyle = '#64748b';
+    ctx.font = `${mm(4)}px Arial, sans-serif`;
+    ctx.fillText('Productos con Criterio · Análisis de diseño, ciclo de vida y sostenibilidad', W/2, mm(48));
+
+    ctx.strokeStyle = '#a16207';
+    ctx.lineWidth = mm(0.8);
+    ctx.beginPath();
+    ctx.moveTo(W/2 - mm(60), mm(53));
+    ctx.lineTo(W/2 + mm(60), mm(53));
+    ctx.stroke();
+
+    ctx.fillStyle = '#475569';
+    ctx.font = `${mm(4.5)}px Arial, sans-serif`;
+    ctx.fillText('Se certifica que', W/2, mm(68));
+
+    ctx.fillStyle = '#0f172a';
+    ctx.font = `bold ${mm(14)}px Arial, sans-serif`;
+    ctx.fillText(estado.nombre, W/2, mm(85));
+
+    ctx.fillStyle = '#334155';
+    ctx.font = `${mm(4)}px Arial, sans-serif`;
+    ctx.fillText('ha completado las actividades interactivas de la aplicación educativa sobre análisis del', W/2, mm(97));
+    ctx.fillText('diseño de productos, ciclo de vida y sostenibilidad, obteniendo:', W/2, mm(104));
+
+    const s = estado.scores;
+    const resultados = [
+      ['Radiografía del smartphone', s.radiografia>0 ? s.radiografia + ' / 6 componentes' : 'No realizado'],
+      ['Evolución del producto', s.evolucion>0 ? s.evolucion + ' / 4 aciertos' : 'No realizado'],
+      ['Análisis de Ciclo de Vida (ACV)', s.acv>0 ? s.acv + ' / 5 aciertos' : 'No realizado'],
+      ['Inspector de decisiones de diseño', s.inspector>0 ? s.inspector + ' / 8 decisiones' : 'No realizado'],
+      ['Fin de vida de productos', s.finvida>0 ? s.finvida + ' / 6 decisiones' : 'No realizado'],
+      ['Cuestionario final', s.quiz>0 ? s.quiz + ' / 10' : 'No realizado'],
+      ['Retos completados', estado.retos.length + ' / ' + RETOS_TOTALES]
+    ];
+
+    const tableX = mm(60);
+    const tableY = mm(116);
+    const rowH = mm(9);
+    const colW1 = mm(110), colW2 = mm(70);
+    const totalW = colW1 + colW2;
+
+    ctx.fillStyle = '#065f46';
+    ctx.fillRect(tableX, tableY, totalW, mm(9));
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `bold ${mm(3.6)}px Arial, sans-serif`;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('ACTIVIDAD', tableX + mm(4), tableY + mm(4.5));
+    ctx.fillText('RESULTADO', tableX + colW1 + mm(4), tableY + mm(4.5));
+
+    resultados.forEach((row, i)=>{
+      const y = tableY + mm(9) + i * rowH;
+      if(i % 2 === 0){
+        ctx.fillStyle = '#d1fae5';
+        ctx.fillRect(tableX, y, totalW, rowH);
+      }
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = mm(0.2);
+      ctx.strokeRect(tableX, y, totalW, rowH);
+      ctx.fillStyle = '#1e293b';
+      ctx.font = `${mm(3.6)}px Arial, sans-serif`;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(row[0], tableX + mm(4), y + rowH/2);
+      ctx.font = `bold ${mm(3.6)}px Arial, sans-serif`;
+      ctx.fillText(row[1], tableX + colW1 + mm(4), y + rowH/2);
+    });
+
+    const fecha = new Date().toLocaleDateString('es-ES', {day:'numeric', month:'long', year:'numeric'});
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#64748b';
+    ctx.font = `${mm(3.5)}px Arial, sans-serif`;
+    ctx.fillText('Fecha de emisión: ' + fecha, W/2, H - mm(24));
+    ctx.font = `${mm(3)}px Arial, sans-serif`;
+    ctx.fillText('Este certificado acredita la realización de las actividades interactivas de la aplicación educativa.', W/2, H - mm(17));
+
+    const imgData = canvas.toDataURL('image/png');
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
+    doc.addImage(imgData, 'PNG', 0, 0, W_MM, H_MM, undefined, 'FAST');
+    doc.save('Certificado_ProductosCriterio_' + estado.nombre.replace(/[^a-zA-Z0-9]/g,'_') + '.pdf');
+    toast('¡Certificado descargado!');
+  } catch(err){
+    console.error(err);
+    toast('No se pudo generar el PDF.');
+  }
+}
+
+/* ================================================================
+   14. INICIALIZACIÓN
+================================================================ */
+mostrarLogin();
+actualizarProgreso();
+</script>
+</body>
+</html>
