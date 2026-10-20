@@ -1,0 +1,2979 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proyectos con Calidad · Gestión, fiabilidad y herramientas digitales</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --azul:#1d4ed8; --azul-claro:#dbeafe; --azul-oscuro:#1e3a8a;
+  --esmeralda:#10b981; --esmeralda-claro:#d1fae5; --esmeralda-oscuro:#047857;
+  --dorado:#eab308; --dorado-claro:#fef9c3; --dorado-oscuro:#a16207;
+  --coral:#f97316; --coral-claro:#ffedd5; --coral-oscuro:#9a3412;
+  --rojo:#dc2626; --rojo-claro:#fee2e2;
+  --gris:#64748b; --gris-claro:#f1f5f9; --gris-oscuro:#1e293b;
+  --blanco:#fff; --negro:#0f172a;
+  --sombra:0 10px 30px rgba(15,23,42,.08);
+  --sombra-lg:0 20px 50px rgba(15,23,42,.14);
+  --radio:20px;
+  --fuente:'Segoe UI',system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+  --mono:'Consolas','Monaco','Courier New',monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0; font-family:var(--fuente); background:var(--gris-claro); color:var(--negro); line-height:1.7; -webkit-font-smoothing:antialiased;}
+body.locked{overflow:hidden}
+h1,h2,h3,h4{line-height:1.2; margin:0 0 .5rem}
+p{margin:0 0 1rem}
+
+/* LOGIN */
+#loginOverlay{
+  position:fixed; inset:0; z-index:2000;
+  background:radial-gradient(1000px 600px at 20% 10%,#1e3a8a 0%,transparent 60%),
+             radial-gradient(900px 500px at 85% 90%,#a16207 0%,transparent 55%),
+             linear-gradient(160deg,#0c1445,#0f172a);
+  display:grid; place-items:center; padding:1.2rem;
+  transition:opacity .6s, visibility .6s;
+}
+#loginOverlay.hidden{opacity:0; visibility:hidden; pointer-events:none}
+.login-card{
+  background:#fff; border-radius:26px; padding:2.2rem 2rem;
+  max-width:500px; width:100%; box-shadow:0 30px 70px rgba(0,0,0,.4);
+  text-align:center; position:relative; overflow:hidden;
+  animation:aparecer .6s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes aparecer{from{opacity:0;transform:translateY(24px) scale(.96)}to{opacity:1;transform:none}}
+.login-card::before{content:""; position:absolute; top:0; left:0; right:0; height:6px;
+  background:linear-gradient(90deg,var(--azul),var(--esmeralda),var(--dorado));}
+.login-emoji{font-size:3.4rem; line-height:1; margin-bottom:.5rem; display:block}
+.login-card h1{font-size:1.55rem; color:var(--azul-oscuro); letter-spacing:-.4px}
+.login-card p.sub{font-size:.94rem; color:var(--gris); margin-bottom:1.5rem}
+.login-card input{width:100%; font-family:inherit; font-size:1.02rem; padding:.95rem 1.1rem;
+  border-radius:14px; border:2px solid #e2e8f0; background:#f8fafc; color:var(--negro);
+  transition:.2s; text-align:center; font-weight:600; margin-bottom:1rem;}
+.login-card input:focus{outline:none; border-color:var(--azul); background:#fff; box-shadow:0 0 0 5px rgba(29,78,216,.14);}
+.login-card .btn{width:100%; justify-content:center}
+.login-error{font-size:.82rem; color:var(--rojo); margin-top:.7rem; min-height:1.2em; font-weight:700}
+.welcome-back{background:var(--azul-claro); border:1.5px solid #bfdbfe; border-radius:14px;
+  padding:1rem; margin-bottom:1.2rem; font-size:.92rem; color:var(--azul-oscuro);}
+.welcome-back strong{font-size:1.05rem}
+.login-btns{display:flex; gap:.6rem; flex-wrap:wrap; justify-content:center}
+.login-btns .btn{flex:1; min-width:130px; justify-content:center}
+
+/* PROGRESO */
+#progresoGlobal{position:fixed; top:0; left:0; right:0; height:5px; background:rgba(255,255,255,.2); z-index:1000;}
+#progresoBarra{height:100%; width:0%; transition:width .6s cubic-bezier(.2,.8,.2,1);
+  background:linear-gradient(90deg,var(--azul),var(--esmeralda),var(--dorado));
+  box-shadow:0 0 12px rgba(29,78,216,.6);}
+
+/* NAV */
+nav{position:sticky; top:0; z-index:900; background:rgba(255,255,255,.9); backdrop-filter:blur(14px);
+  border-bottom:1px solid #e2e8f0; padding:.55rem .8rem;}
+.nav-inner{max-width:1200px; margin:0 auto; display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;}
+.nav-brand{font-weight:800; font-size:.92rem; letter-spacing:.5px; color:var(--azul-oscuro);
+  display:flex; align-items:center; gap:.45rem; margin-right:auto;}
+.nav-brand .dot{width:11px;height:11px;border-radius:50%;background:linear-gradient(135deg,var(--azul),var(--dorado));}
+.nav-user{font-size:.8rem; font-weight:800; color:var(--azul-oscuro);
+  background:var(--azul-claro); padding:.3rem .8rem; border-radius:999px;
+  display:flex; align-items:center; gap:.35rem;}
+.nav-links{display:flex; gap:.3rem; flex-wrap:wrap}
+.nav-links a{font-size:.8rem; font-weight:600; text-decoration:none; color:var(--gris-oscuro);
+  padding:.35rem .7rem; border-radius:999px; transition:.25s; white-space:nowrap;}
+.nav-links a:hover{background:var(--azul-claro); color:var(--azul-oscuro)}
+.nav-links a.active{background:var(--azul-oscuro); color:#fff}
+#progresoPill{font-size:.72rem; font-weight:800; color:var(--azul-oscuro); background:var(--azul-claro);
+  padding:.3rem .7rem; border-radius:999px; white-space:nowrap;}
+
+/* HERO */
+header.hero{position:relative; overflow:hidden; color:#fff;
+  background:radial-gradient(1200px 600px at 15% -10%,#1e3a8a 0%,transparent 60%),
+             radial-gradient(900px 500px at 90% 10%,#a16207 0%,transparent 55%),
+             linear-gradient(160deg,#0c1445,#0f172a);
+  padding:4.5rem 1.2rem 4rem;}
+.blob{position:absolute; border-radius:50%; filter:blur(70px); opacity:.4; animation:flotar 14s ease-in-out infinite}
+.blob.b1{width:340px;height:340px;background:#1d4ed8;top:-90px;left:-60px}
+.blob.b2{width:280px;height:280px;background:#10b981;bottom:-110px;right:-40px;animation-delay:-5s}
+.blob.b3{width:220px;height:220px;background:#eab308;top:40%;right:25%;animation-delay:-9s}
+@keyframes flotar{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(28px,-32px) scale(1.12)}}
+.hero-inner{position:relative; max-width:1000px; margin:0 auto; text-align:center}
+.badge-top{display:inline-flex; align-items:center; gap:.5rem; font-size:.76rem; font-weight:800;
+  letter-spacing:1.4px; text-transform:uppercase; color:#93c5fd;
+  background:rgba(29,78,216,.18); border:1px solid rgba(147,197,253,.4);
+  padding:.42rem 1rem; border-radius:999px; margin-bottom:1.2rem;}
+header.hero h1{font-size:clamp(1.85rem,5.2vw,3.3rem); font-weight:900; letter-spacing:-1px; margin-bottom:.7rem;}
+header.hero h1 span{background:linear-gradient(90deg,#93c5fd,#6ee7b7,#fde047);
+  -webkit-background-clip:text; background-clip:text; color:transparent;}
+.hero-sub{max-width:800px; margin:0 auto 1.6rem; color:#cbd5e1; font-size:clamp(.95rem,2.2vw,1.1rem)}
+.hero-sub strong{color:#93c5fd}
+.hero-chips{display:flex; gap:.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:2rem}
+.chip{font-size:.74rem; font-weight:800; letter-spacing:.6px; padding:.34rem .8rem; border-radius:999px;
+  background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.22); color:#e2e8f0;}
+.hero-cta{display:flex; gap:.7rem; justify-content:center; flex-wrap:wrap}
+.btn{display:inline-flex; align-items:center; gap:.45rem; cursor:pointer; border:none;
+  font-family:inherit; font-size:.92rem; font-weight:800; padding:.8rem 1.5rem; border-radius:999px;
+  text-decoration:none; transition:transform .2s, box-shadow .2s, background .2s;}
+.btn-primary{background:linear-gradient(135deg,var(--azul),var(--azul-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(29,78,216,.4)}
+.btn-primary:hover{transform:translateY(-3px); box-shadow:0 16px 34px rgba(29,78,216,.5)}
+.btn-ghost{background:rgba(255,255,255,.1); color:#fff; border:1.5px solid rgba(255,255,255,.3)}
+.btn-ghost:hover{background:rgba(255,255,255,.2); transform:translateY(-3px)}
+.btn-dorado{background:linear-gradient(135deg,var(--dorado),var(--dorado-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(234,179,8,.4)}
+.btn-dorado:hover{transform:translateY(-3px)}
+.btn-esmeralda{background:linear-gradient(135deg,var(--esmeralda),var(--esmeralda-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(16,185,129,.4)}
+.btn-esmeralda:hover{transform:translateY(-3px)}
+.btn-coral{background:linear-gradient(135deg,var(--coral),var(--coral-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(249,115,22,.4)}
+.btn-coral:hover{transform:translateY(-3px)}
+
+/* LAYOUT */
+main{max-width:1200px; margin:0 auto; padding:0 1.1rem 5rem}
+section{padding:3.2rem 0 1rem; scroll-margin-top:70px}
+.sec-head{margin-bottom:1.8rem}
+.kicker{display:inline-block; font-size:.72rem; font-weight:900; letter-spacing:1.6px; text-transform:uppercase;
+  color:var(--azul-oscuro); background:var(--azul-claro); padding:.3rem .75rem; border-radius:999px; margin-bottom:.7rem;}
+.kicker.esmeralda{color:var(--esmeralda-oscuro); background:var(--esmeralda-claro)}
+.kicker.dorado{color:var(--dorado-oscuro); background:var(--dorado-claro)}
+.kicker.coral{color:var(--coral-oscuro); background:var(--coral-claro)}
+.sec-head h2{font-size:clamp(1.5rem,3.6vw,2.15rem); font-weight:900; letter-spacing:-.6px}
+.sec-head p.lead{color:var(--gris); max-width:900px; font-size:1rem}
+.card{background:var(--blanco); border-radius:var(--radio); padding:1.6rem; box-shadow:var(--sombra); border:1px solid #e2e8f0;}
+.grid{display:grid; gap:1.1rem}
+.g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.reveal{opacity:0; transform:translateY(26px); transition:opacity .7s cubic-bezier(.2,.8,.2,1), transform .7s cubic-bezier(.2,.8,.2,1)}
+.reveal.in{opacity:1; transform:none}
+
+/* PILARES */
+.pilar{background:#fff; border-radius:16px; padding:1.3rem; border:1px solid #e2e8f0;
+  border-top:5px solid var(--azul); box-shadow:var(--sombra); transition:.3s;}
+.pilar:hover{transform:translateY(-6px); box-shadow:var(--sombra-lg)}
+.pilar .ico{font-size:2rem; display:block; margin-bottom:.5rem}
+.pilar h4{font-size:1.05rem; color:var(--azul-oscuro)}
+.pilar p{font-size:.9rem; color:var(--gris); margin:0}
+
+/* ========== TEORÍA EXPANDIDA ========== */
+.teoria{
+  background:#fff; border-radius:var(--radio); padding:1.6rem; box-shadow:var(--sombra);
+  border:1px solid #e2e8f0; margin-bottom:1.4rem;
+}
+.teoria h3{
+  color:var(--azul-oscuro); font-size:1.15rem; margin-bottom:.8rem;
+  display:flex; align-items:center; gap:.5rem;
+}
+.teoria h3 .th-ico{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:34px; height:34px; border-radius:10px;
+  background:var(--azul-claro); color:var(--azul-oscuro);
+  font-size:1rem;
+}
+.teoria h4{
+  color:var(--azul-oscuro); font-size:1rem; margin-top:1.2rem; margin-bottom:.5rem;
+  padding-left:.6rem; border-left:4px solid var(--azul);
+}
+.teoria p{font-size:.94rem; color:var(--gris-oscuro); margin-bottom:.8rem}
+.teoria ul, .teoria ol{font-size:.92rem; color:var(--gris-oscuro); margin:0 0 1rem; padding-left:1.3rem}
+.teoria li{margin-bottom:.35rem}
+.teoria li strong{color:var(--azul-oscuro)}
+.teoria .destacado{
+  background:linear-gradient(150deg,var(--azul-claro),#fff);
+  border-left:4px solid var(--azul); border-radius:0 12px 12px 0;
+  padding:.9rem 1.1rem; margin:1rem 0; font-size:.92rem;
+  color:var(--azul-oscuro);
+}
+.teoria .destacado strong{color:var(--azul-oscuro); font-weight:900}
+.teoria.esmeralda .th-ico{background:var(--esmeralda-claro); color:var(--esmeralda-oscuro)}
+.teoria.esmeralda h3{color:var(--esmeralda-oscuro)}
+.teoria.esmeralda h4{color:var(--esmeralda-oscuro); border-color:var(--esmeralda)}
+.teoria.esmeralda li strong{color:var(--esmeralda-oscuro)}
+.teoria.esmeralda .destacado{background:linear-gradient(150deg,var(--esmeralda-claro),#fff); border-color:var(--esmeralda); color:var(--esmeralda-oscuro)}
+.teoria.dorado .th-ico{background:var(--dorado-claro); color:var(--dorado-oscuro)}
+.teoria.dorado h3{color:var(--dorado-oscuro)}
+.teoria.dorado h4{color:var(--dorado-oscuro); border-color:var(--dorado)}
+.teoria.dorado li strong{color:var(--dorado-oscuro)}
+.teoria.dorado .destacado{background:linear-gradient(150deg,var(--dorado-claro),#fff); border-color:var(--dorado); color:var(--dorado-oscuro)}
+.teoria.coral .th-ico{background:var(--coral-claro); color:var(--coral-oscuro)}
+.teoria.coral h3{color:var(--coral-oscuro)}
+.teoria.coral h4{color:var(--coral-oscuro); border-color:var(--coral)}
+.teoria.coral li strong{color:var(--coral-oscuro)}
+.teoria.coral .destacado{background:linear-gradient(150deg,var(--coral-claro),#fff); border-color:var(--coral); color:var(--coral-oscuro)}
+.teoria .ejemplo{
+  background:#f8fafc; border-radius:10px; padding:.7rem .9rem;
+  font-size:.85rem; color:var(--gris-oscuro); margin:.5rem 0;
+  border-left:3px solid var(--gris);
+}
+.teoria .ejemplo strong{color:var(--gris-oscuro)}
+.teoria .tabla-tipos{
+  width:100%; border-collapse:collapse; margin:.8rem 0 1rem;
+  font-size:.86rem;
+}
+.teoria .tabla-tipos th, .teoria .tabla-tipos td{
+  padding:.6rem .7rem; text-align:left;
+  border-bottom:1px solid #e2e8f0;
+}
+.teoria .tabla-tipos th{
+  background:var(--azul-claro); color:var(--azul-oscuro);
+  font-weight:900; font-size:.78rem; text-transform:uppercase; letter-spacing:.4px;
+}
+.teoria .tabla-tipos tr:nth-child(even) td{background:#f8fafc}
+.teoria .grid-teoria{
+  display:grid; gap:.8rem; grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  margin:1rem 0;
+}
+.teoria .bloque-teoria{
+  background:#f8fafc; border-radius:12px; padding:.9rem 1rem;
+  border-top:3px solid var(--azul);
+}
+.teoria.esmeralda .bloque-teoria{border-color:var(--esmeralda)}
+.teoria.dorado .bloque-teoria{border-color:var(--dorado)}
+.teoria.coral .bloque-teoria{border-color:var(--coral)}
+.teoria .bloque-teoria h5{
+  font-size:.88rem; font-weight:900; color:var(--azul-oscuro);
+  margin:0 0 .4rem;
+}
+.teoria.esmeralda .bloque-teoria h5{color:var(--esmeralda-oscuro)}
+.teoria.dorado .bloque-teoria h5{color:var(--dorado-oscuro)}
+.teoria.coral .bloque-teoria h5{color:var(--coral-oscuro)}
+.teoria .bloque-teoria p{font-size:.85rem; margin:0; color:var(--gris)}
+.teoria .fases{
+  display:grid; gap:.6rem; grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  margin:1rem 0;
+}
+.teoria .fase{
+  background:#fff; border:2px solid var(--azul-claro); border-radius:12px;
+  padding:.75rem; text-align:center; position:relative;
+}
+.teoria .fase .fase-num{
+  display:inline-block; font-size:.72rem; font-weight:900; background:var(--azul);
+  color:#fff; padding:.15rem .55rem; border-radius:999px; margin-bottom:.35rem;
+}
+.teoria .fase h6{font-size:.85rem; font-weight:900; color:var(--azul-oscuro); margin:.2rem 0}
+.teoria .fase p{font-size:.75rem; color:var(--gris); margin:0; line-height:1.35}
+
+/* ACTIVIDADES */
+.actividad{background:#fff; border-radius:var(--radio); padding:1.6rem; box-shadow:var(--sombra);
+  border:1px solid #e2e8f0; margin-top:1.6rem;}
+.actividad h3{color:var(--azul-oscuro); font-size:1.15rem; margin-bottom:.3rem}
+.actividad .intro{font-size:.93rem; color:var(--gris); margin-bottom:1rem}
+
+/* ========== RETO 1: GANTT ========== */
+.gantt-leyenda{
+  display:flex; gap:1rem; flex-wrap:wrap; font-size:.78rem; color:var(--gris);
+  margin-bottom:1rem; padding:.6rem .8rem; background:#f8fafc; border-radius:10px;
+}
+.gantt-leyenda span{display:flex; align-items:center; gap:.35rem}
+.gantt-leyenda i{width:14px; height:12px; border-radius:3px; display:inline-block}
+#ganttContainer{display:flex; flex-direction:column; gap:.6rem;}
+.gantt-header-semanas{
+  display:grid; grid-template-columns:repeat(14, 1fr); gap:2px;
+  font-size:.68rem; font-weight:800; color:var(--gris); text-align:center;
+  padding:0 0 .3rem;
+}
+.gantt-header-semanas div{background:#f8fafc; padding:.3rem 0; border-radius:4px;}
+.gantt-fila{
+  background:#f8fafc; border-radius:12px; padding:.6rem .8rem;
+  border:1px solid #e2e8f0; transition:.3s;
+}
+.gantt-fila.ok{border-color:var(--esmeralda); background:#f0fdf4}
+.gantt-fila.error{border-color:var(--rojo); background:#fef2f2}
+.gantt-fila-info{
+  display:flex; justify-content:space-between; align-items:center; gap:.8rem;
+  margin-bottom:.4rem; flex-wrap:wrap;
+}
+.gantt-fila-info .gf-nombre{font-size:.9rem; font-weight:800; color:var(--azul-oscuro)}
+.gantt-fila.ok .gf-nombre{color:var(--esmeralda-oscuro)}
+.gantt-fila.error .gf-nombre{color:#991b1b}
+.gantt-fila-info .gf-dep{font-size:.72rem; color:var(--gris); font-weight:600}
+.gantt-control{display:flex; align-items:center; gap:.5rem; font-size:.78rem; font-weight:700}
+.gantt-control input[type=range]{width:110px; accent-color:var(--azul)}
+.gantt-fila.error .gantt-control input[type=range]{accent-color:var(--rojo)}
+.gantt-control .gf-sem{
+  min-width:60px; text-align:center; background:#fff; border-radius:8px;
+  padding:.2rem .5rem; color:var(--azul-oscuro); border:1px solid #e2e8f0;
+}
+.gantt-fila.error .gf-sem{color:#991b1b; border-color:#fecaca}
+.gantt-track{
+  position:relative; height:18px; background:#e2e8f0; border-radius:6px; overflow:hidden;
+  display:grid; grid-template-columns:repeat(14, 1fr); gap:0;
+}
+.gantt-track .gt-cell{
+  border-right:1px dashed rgba(255,255,255,.6);
+}
+.gantt-track .gt-cell:last-child{border-right:none}
+.gantt-bar{
+  position:absolute; top:0; height:100%; border-radius:6px;
+  transition:.3s; display:flex; align-items:center; justify-content:center;
+  font-size:.65rem; font-weight:800; color:#fff; overflow:hidden; white-space:nowrap;
+}
+.gantt-bar.ok{background:linear-gradient(90deg,var(--esmeralda),var(--esmeralda-oscuro))}
+.gantt-bar.error{background:linear-gradient(90deg,var(--rojo),#991b1b)}
+.gantt-bar.critico{background:linear-gradient(90deg,var(--dorado),var(--dorado-oscuro))}
+#ganttMensajes{margin-top:1rem;}
+.gantt-msg{
+  padding:.6rem .8rem; border-radius:10px; font-size:.85rem; margin-bottom:.4rem;
+  border-left:4px solid;
+}
+.gantt-msg.err{background:#fef2f2; color:#991b1b; border-color:var(--rojo)}
+.gantt-msg.ok{background:#f0fdf4; color:var(--esmeralda-oscuro); border-color:var(--esmeralda)}
+.gantt-info-total{
+  text-align:center; margin-top:1rem; padding:1rem; border-radius:14px;
+  background:linear-gradient(150deg,#1e3a8a,#0c1445); color:#fff;
+}
+.gantt-info-total .total-num{font-size:2rem; font-weight:900; color:#fde047; line-height:1}
+.gantt-info-total .total-lbl{font-size:.72rem; letter-spacing:1.2px; text-transform:uppercase; color:#bfdbfe; font-weight:800; margin-top:.3rem}
+.gantt-info-total .total-msg{font-size:.86rem; color:#dbeafe; margin-top:.6rem; min-height:2.4em}
+
+/* ========== RETO 2: AUDITORÍA ========== */
+.auditoria-grid{
+  display:grid; gap:.7rem; grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+}
+.audit-card{
+  background:#fff; border:2px solid #e2e8f0; border-radius:14px; padding:.9rem 1rem;
+  display:flex; flex-direction:column; gap:.6rem; transition:.3s;
+}
+.audit-card .ac-titulo{font-size:.9rem; font-weight:900; color:var(--azul-oscuro)}
+.audit-card .ac-desc{font-size:.82rem; color:var(--gris-oscuro); margin:0; line-height:1.5}
+.audit-btns{display:flex; gap:.5rem;}
+.audit-btns button{
+  flex:1; font-family:inherit; font-size:.8rem; font-weight:800; cursor:pointer;
+  padding:.5rem .4rem; border-radius:10px; border:2px solid #e2e8f0; background:#f8fafc; color:var(--gris-oscuro);
+  transition:.2s;
+}
+.audit-btns button:hover:not(:disabled){border-color:var(--azul); background:var(--azul-claro); color:var(--azul-oscuro)}
+.audit-btns button:disabled{cursor:default; opacity:.55}
+.audit-btns button.correct{background:#dcfce7; border-color:#16a34a; color:#15803d; opacity:1}
+.audit-btns button.wrong{background:#fee2e2; border-color:#dc2626; color:#b91c1c; opacity:1}
+.audit-fb{
+  font-size:.8rem; border-radius:10px; padding:0; max-height:0; overflow:hidden; transition:.35s; color:var(--gris-oscuro);
+}
+.audit-fb.show{max-height:220px; padding:.55rem .7rem; background:#f8fafc; border-left:3px solid var(--azul)}
+.audit-card.done{border-color:var(--azul); background:#f8fafc}
+#auditMsg{text-align:center; margin-top:1.2rem; font-weight:800; color:var(--azul-oscuro); min-height:1.4em}
+
+/* ========== RETO 3: MÉTODOS INVESTIGACIÓN ========== */
+.metodo-card{
+  background:linear-gradient(150deg,#dbeafe,#fff); border-left:5px solid var(--azul);
+  border-radius:0 14px 14px 0; padding:1rem 1.2rem; margin-bottom:1.1rem;
+}
+.metodo-card h4{font-size:.92rem; color:var(--azul-oscuro); margin-bottom:.3rem}
+.metodo-card p{font-size:.85rem; color:var(--gris-oscuro); margin:0}
+.metodo-opciones{display:grid; gap:.55rem; grid-template-columns:repeat(auto-fit,minmax(220px,1fr));}
+.metodo-op{
+  text-align:left; font-family:inherit; font-size:.85rem; font-weight:600; cursor:pointer;
+  padding:.7rem .9rem; border-radius:12px; border:2px solid #e2e8f0; background:#fff; color:var(--gris-oscuro);
+  transition:.2s; display:flex; gap:.5rem; align-items:center;
+}
+.metodo-op:hover:not(:disabled){border-color:var(--azul); background:var(--azul-claro); color:var(--azul-oscuro); transform:translateY(-2px)}
+.metodo-op:disabled{cursor:default}
+.metodo-op.correct{background:#dcfce7; border-color:#16a34a; color:#14532d}
+.metodo-op.wrong{background:#fee2e2; border-color:#dc2626; color:#7f1d1d}
+.metodo-op .mo-ico{font-size:1.2rem}
+.metodo-fb{
+  margin-top:.6rem; font-size:.84rem; background:#f8fafc; border-left:4px solid var(--azul);
+  padding:.6rem .85rem; border-radius:0 10px 10px 0; display:none; color:var(--gris-oscuro);
+}
+.metodo-fb.show{display:block}
+#metodosMsg{text-align:center; margin-top:1.2rem; font-weight:800; color:var(--azul-oscuro); min-height:1.4em}
+
+/* ========== RETO 4: RIESGOS ========== */
+.riesgo-card{
+  background:linear-gradient(150deg,#fff7ed,#fff); border-radius:16px; padding:1.1rem 1.2rem;
+  border-left:5px solid var(--coral); margin-bottom:1.1rem;
+  box-shadow:var(--sombra);
+}
+.riesgo-card .rc-head{
+  display:flex; gap:.7rem; align-items:flex-start; margin-bottom:.7rem;
+}
+.riesgo-card .rc-ico{font-size:1.6rem; flex-shrink:0}
+.riesgo-card .rc-titulo{
+  font-size:.85rem; font-weight:900; letter-spacing:.5px; text-transform:uppercase;
+  color:var(--coral-oscuro); margin:0 0 .2rem;
+}
+.riesgo-card .rc-desc{font-size:.9rem; color:var(--gris-oscuro); margin:0}
+.riesgo-opciones{display:grid; gap:.5rem;}
+.riesgo-op{
+  text-align:left; font-family:inherit; font-size:.86rem; font-weight:600; cursor:pointer;
+  padding:.7rem .9rem; border-radius:11px; border:2px solid #e2e8f0; background:#fff; color:var(--gris-oscuro);
+  transition:.2s; display:flex; gap:.6rem; align-items:flex-start;
+}
+.riesgo-op:hover:not(:disabled){border-color:var(--coral); background:var(--coral-claro); color:var(--coral-oscuro); transform:translateX(4px)}
+.riesgo-op:disabled{cursor:default}
+.riesgo-op.correct{background:#dcfce7; border-color:#16a34a; color:#14532d}
+.riesgo-op.wrong{background:#fee2e2; border-color:#dc2626; color:#7f1d1d}
+.riesgo-op .ro-letra{
+  flex:0 0 24px; height:24px; border-radius:7px; background:#e2e8f0; color:var(--gris-oscuro);
+  display:grid; place-items:center; font-size:.75rem; font-weight:900;
+}
+.riesgo-op.correct .ro-letra{background:#16a34a; color:#fff}
+.riesgo-op.wrong .ro-letra{background:#dc2626; color:#fff}
+.riesgo-fb{
+  margin-top:.7rem; font-size:.84rem; background:#f8fafc; border-left:4px solid var(--coral);
+  padding:.6rem .85rem; border-radius:0 10px 10px 0; display:none; color:var(--gris-oscuro);
+}
+.riesgo-fb.show{display:block}
+#riesgosMsg{text-align:center; margin-top:1.2rem; font-weight:800; color:var(--coral-oscuro); min-height:1.4em}
+
+/* ========== RETO 5: RÚBRICA ========== */
+.rubrica-proyecto{
+  background:linear-gradient(150deg,#ecfccb,#fff); border-left:6px solid var(--esmeralda);
+  border-radius:0 14px 14px 0; padding:1rem 1.2rem; margin-bottom:1.2rem;
+}
+.rubrica-proyecto h4{color:var(--esmeralda-oscuro); font-size:.95rem; margin-bottom:.3rem}
+.rubrica-proyecto p{font-size:.88rem; color:var(--gris-oscuro); margin:0}
+.rubrica-criterios{display:grid; gap:.9rem;}
+.rubrica-item{
+  background:#f8fafc; border-radius:14px; padding:1rem 1.1rem; border:2px solid #e2e8f0; transition:.3s;
+}
+.rubrica-item.completada{border-color:var(--esmeralda); background:linear-gradient(150deg,#f0fdf4,#fff)}
+.rubrica-item .ri-titulo{font-size:.95rem; font-weight:900; color:var(--azul-oscuro); margin-bottom:.4rem; display:flex; gap:.5rem; align-items:center}
+.rubrica-item .ri-evidencia{
+  font-size:.85rem; color:var(--gris-oscuro); background:#fff; border-radius:10px;
+  padding:.6rem .8rem; margin-bottom:.7rem; border-left:3px solid var(--azul);
+}
+.rubrica-item .ri-evidencia strong{color:var(--azul-oscuro)}
+.rubrica-niveles{display:grid; gap:.4rem; grid-template-columns:repeat(4,1fr)}
+@media(max-width:600px){.rubrica-niveles{grid-template-columns:repeat(2,1fr)}}
+.rubrica-nivel{
+  text-align:center; font-family:inherit; font-size:.78rem; font-weight:700; cursor:pointer;
+  padding:.55rem .3rem; border-radius:10px; border:2px solid #e2e8f0; background:#fff; color:var(--gris-oscuro);
+  transition:.2s; display:flex; flex-direction:column; gap:.15rem; align-items:center;
+}
+.rubrica-nivel:hover:not(:disabled){border-color:var(--esmeralda); background:var(--esmeralda-claro); color:var(--esmeralda-oscuro)}
+.rubrica-nivel:disabled{cursor:default}
+.rubrica-nivel .rn-num{font-size:1.1rem; font-weight:900}
+.rubrica-nivel .rn-txt{font-size:.68rem; letter-spacing:.5px; text-transform:uppercase}
+.rubrica-nivel.correct{background:#dcfce7; border-color:#16a34a; color:#15803d}
+.rubrica-nivel.wrong{background:#fee2e2; border-color:#dc2626; color:#b91c1c}
+.rubrica-fb{
+  font-size:.82rem; border-radius:10px; padding:0; max-height:0; overflow:hidden; transition:.35s;
+  color:var(--gris-oscuro); margin-top:0;
+}
+.rubrica-fb.show{max-height:240px; padding:.6rem .8rem; background:#fff; border-left:3px solid var(--esmeralda); margin-top:.6rem}
+#rubricaMsg{text-align:center; margin-top:1.2rem; font-weight:800; color:var(--esmeralda-oscuro); min-height:1.4em}
+
+/* QUIZ */
+.q{background:#fff; border-radius:16px; padding:1.3rem 1.4rem; box-shadow:var(--sombra);
+  border:1px solid #e2e8f0; margin-bottom:1rem;}
+.q-num{display:inline-block; font-size:.72rem; font-weight:900; letter-spacing:1px; color:#fff;
+  background:var(--azul-oscuro); padding:.2rem .6rem; border-radius:8px; margin-bottom:.6rem;}
+.q h4{font-size:1rem; margin-bottom:.9rem}
+.opts{display:grid; gap:.5rem}
+.opt{text-align:left; font-family:inherit; font-size:.9rem; font-weight:600; cursor:pointer;
+  padding:.7rem .9rem; border-radius:12px; border:2px solid #e2e8f0; background:#f8fafc; color:var(--gris-oscuro);
+  transition:.2s; display:flex; gap:.6rem; align-items:flex-start;}
+.opt:hover:not(:disabled){border-color:var(--azul); background:var(--azul-claro); color:var(--azul-oscuro); transform:translateX(4px)}
+.opt:disabled{cursor:default}
+.opt .letter{flex:0 0 24px; height:24px; border-radius:7px; background:#e2e8f0; color:var(--gris-oscuro);
+  display:grid; place-items:center; font-size:.75rem; font-weight:900;}
+.opt.correct{background:#dcfce7; border-color:#16a34a; color:#14532d}
+.opt.correct .letter{background:#16a34a; color:#fff}
+.opt.wrong{background:#fee2e2; border-color:#dc2626; color:#7f1d1d}
+.opt.wrong .letter{background:#dc2626; color:#fff}
+.expl{margin-top:.85rem; font-size:.86rem; background:#eff6ff; border-left:4px solid var(--azul);
+  padding:.7rem .9rem; border-radius:0 10px 10px 0; color:var(--gris-oscuro); display:none;}
+.expl.show{display:block}
+
+/* VOCABULARIO */
+.voc-grid{display:grid; gap:.6rem; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); margin-bottom:1rem}
+.voc-term{text-align:left; font-family:inherit; font-size:.88rem; font-weight:800; cursor:pointer;
+  padding:.85rem 1rem; border-radius:14px; border:2px solid #e2e8f0; background:#fff;
+  color:var(--gris-oscuro); transition:.25s; display:flex; align-items:center; gap:.5rem;}
+.voc-term:hover{border-color:var(--azul); background:var(--azul-claro); color:var(--azul-oscuro); transform:translateY(-3px)}
+.voc-term.active{background:var(--azul-oscuro); color:#fff; border-color:var(--azul-oscuro)}
+#vocDef{max-height:0; overflow:hidden; transition:max-height .5s cubic-bezier(.2,.8,.2,1), padding .3s;
+  background:linear-gradient(150deg,#1e3a8a,#0c1445); color:#fff; border-radius:16px; padding:0 1.4rem;}
+#vocDef.show{max-height:440px; padding:1.3rem 1.4rem}
+#vocDef h4{color:#93c5fd; font-size:1.05rem; margin-bottom:.5rem}
+#vocDef p{color:#bfdbfe; font-size:.92rem; margin:0}
+
+/* CERTIFICADO */
+#certificado{background:linear-gradient(150deg,#1e3a8a,#0c1445); color:#fff; border-radius:26px;
+  padding:2.4rem 1.8rem; box-shadow:var(--sombra-lg); text-align:center; position:relative; overflow:hidden;}
+#certificado::before{content:""; position:absolute; inset:14px; border:2px solid rgba(147,197,253,.35);
+  border-radius:18px; pointer-events:none;}
+#certificado h2{color:#93c5fd; font-size:1.5rem; margin-bottom:.3rem}
+#certificado p.sub{color:#bfdbfe; font-size:.95rem; max-width:560px; margin:0 auto 1.4rem}
+.cert-name{font-size:clamp(1.6rem,5vw,2.4rem); font-weight:900; letter-spacing:-.5px; margin:.6rem 0 1rem;
+  background:linear-gradient(90deg,#93c5fd,#6ee7b7,#fde047); -webkit-background-clip:text; background-clip:text; color:transparent;}
+.cert-stats{display:grid; gap:.7rem; grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  max-width:820px; margin:0 auto 1.6rem;}
+.cert-stat{background:rgba(255,255,255,.09); border:1px solid rgba(147,197,253,.3);
+  border-radius:14px; padding:.8rem .6rem; text-align:center;}
+.cert-stat .num{font-size:1.35rem; font-weight:900; color:#fde047; line-height:1}
+.cert-stat .lbl{font-size:.7rem; color:#bfdbfe; text-transform:uppercase; letter-spacing:.9px; font-weight:800; margin-top:.3rem}
+.cert-warn{background:rgba(253,224,71,.14); border:1px solid rgba(253,224,71,.4);
+  color:#fef3c7; font-size:.86rem; padding:.7rem 1rem; border-radius:12px;
+  max-width:600px; margin:0 auto 1.2rem;}
+.cert-note{font-size:.78rem; color:#94a3b8; margin-top:1rem; max-width:560px; margin-left:auto; margin-right:auto;}
+
+/* Toast */
+#toast{position:fixed; bottom:1.4rem; left:50%; transform:translate(-50%,140%); z-index:1200;
+  background:var(--negro); color:#fff; font-weight:700; font-size:.88rem; padding:.85rem 1.4rem;
+  border-radius:999px; box-shadow:var(--sombra-lg); transition:transform .45s cubic-bezier(.2,.8,.2,1);
+  display:flex; align-items:center; gap:.55rem; max-width:92vw; text-align:center;}
+#toast.show{transform:translate(-50%,0)}
+
+footer{background:var(--negro); color:#94a3b8; text-align:center; padding:2.6rem 1.2rem; font-size:.85rem;}
+footer strong{color:#93c5fd}
+
+@media(max-width:640px){
+  .card{padding:1.2rem}
+  .nav-brand span.txt{display:none}
+  .gantt-control input[type=range]{width:70px}
+  .gantt-header-semanas{font-size:.6rem}
+}
+</style>
+</head>
+<body class="locked">
+
+<div id="loginOverlay">
+  <div class="login-card" id="loginCard"></div>
+</div>
+
+<div id="progresoGlobal"><div id="progresoBarra"></div></div>
+
+<nav>
+  <div class="nav-inner">
+    <div class="nav-brand"><span class="dot"></span><span class="txt">Proyectos con Calidad</span></div>
+    <div class="nav-user">👤 <span id="navUserName">—</span></div>
+    <div class="nav-links">
+      <a href="#intro">Inicio</a>
+      <a href="#planificacion">Planificación</a>
+      <a href="#calidad">Calidad</a>
+      <a href="#investigacion">Investigación</a>
+      <a href="#riesgos">Riesgos</a>
+      <a href="#evaluacion">Evaluación</a>
+      <a href="#quiz">Quiz</a>
+      <a href="#certificado">Certificado</a>
+    </div>
+    <div id="progresoPill">0 / 6 retos</div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+  <div class="hero-inner">
+    <div class="badge-top">⚙️ Gestión de proyectos</div>
+    <h1>Proyectos con <span>calidad</span> y <span>fiabilidad</span></h1>
+    <p class="hero-sub">
+      Hola, <strong id="heroNombre">amigo/a</strong>. Aprende a <strong>planificar</strong> un proyecto,
+      aplicar <strong>criterios de calidad</strong>, elegir <strong>métodos de investigación</strong> adecuados,
+      <strong>gestionar riesgos</strong>, <strong>evaluar</strong> con rúbricas y usar
+      <strong>herramientas digitales</strong> apropiadas en cada fase.
+    </p>
+    <div class="hero-chips">
+      <span class="chip">📅 Planificación</span>
+      <span class="chip">✅ Calidad</span>
+      <span class="chip">🔬 Investigación</span>
+      <span class="chip">⚠️ Riesgos</span>
+      <span class="chip">📊 Evaluación</span>
+    </div>
+    <div class="hero-cta">
+      <a href="#intro" class="btn btn-primary">🚀 Empezar</a>
+      <a href="#certificado" class="btn btn-ghost">🏆 Mi certificado</a>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============ INTRO ============ -->
+  <section id="intro">
+    <div class="sec-head reveal">
+      <span class="kicker">Punto de partida</span>
+      <h2>Gestionar un proyecto es mucho más que empezar y ver qué pasa</h2>
+      <p class="lead">
+        Un proyecto tecnológico bien gestionado tiene un <strong>cronograma</strong>, unos
+        <strong>criterios de calidad</strong>, una <strong>investigación rigurosa</strong>, un
+        <strong>plan de riesgos</strong> y una <strong>evaluación</strong> continua. Sin esas piezas,
+        cualquier proyecto acaba fallando o entregándose por debajo de lo posible.
+      </p>
+    </div>
+
+    <!-- TEORÍA AMPLIADA: INTRO -->
+    <div class="teoria reveal">
+      <h3><span class="th-ico">📘</span> ¿Qué es la gestión de proyectos tecnológicos?</h3>
+      <p>
+        La <strong>gestión de proyectos</strong> es el conjunto de conocimientos, técnicas y
+        herramientas que permiten planificar, ejecutar y controlar un proyecto para alcanzar sus
+        objetivos en plazo, con la calidad esperada y con los recursos disponibles. En proyectos
+        tecnológicos, la gestión es tan importante como la propia técnica: un gran producto mal
+        gestionado fracasa; un producto modesto bien gestionado tiene éxito.
+      </p>
+
+      <h4>Las 5 fases de un proyecto tecnológico</h4>
+      <p>
+        Todo proyecto, independientemente de su tamaño, pasa por cinco fases interrelacionadas:
+      </p>
+      <div class="fases">
+        <div class="fase">
+          <span class="fase-num">FASE 1</span>
+          <h6>🎯 Inicio</h6>
+          <p>Definir el objetivo, el alcance y los stakeholders.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">FASE 2</span>
+          <h6>📅 Planificación</h6>
+          <p>Estimar tareas, plazos, recursos y riesgos.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">FASE 3</span>
+          <h6>🔧 Ejecución</h6>
+          <p>Realizar el trabajo según el plan.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">FASE 4</span>
+          <h6>👀 Seguimiento</h6>
+          <p>Controlar avance, calidad y desviaciones.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">FASE 5</span>
+          <h6>🏁 Cierre</h6>
+          <p>Entregar, evaluar y documentar aprendizajes.</p>
+        </div>
+      </div>
+
+      <h4>Las 3 restricciones clásicas: el "triángulo de hierro"</h4>
+      <p>
+        Todo proyecto está limitado por tres restricciones que están interconectadas:
+      </p>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>⏱️ Tiempo</h5>
+          <p>¿Cuánto tiempo tenemos? Los plazos condicionan lo que se puede hacer.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>💰 Coste</h5>
+          <p>¿Cuánto dinero y recursos tenemos disponibles? No se puede hacer un proyecto ilimitado.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🎯 Alcance</h5>
+          <p>¿Qué se quiere conseguir exactamente? A más alcance, más tiempo y coste.</p>
+        </div>
+      </div>
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> las tres restricciones forman un triángulo: si cambias una,
+        afecta a las otras. Si te piden "entregar antes" sin ampliar recursos, hay que reducir el
+        alcance. Si piden "más funciones", hay que añadir tiempo o recursos. No hay magia: alguien
+        paga el cambio.
+      </div>
+
+      <h4>Las 9 áreas de conocimiento de la gestión de proyectos (PMBOK)</h4>
+      <p>
+        El <strong>PMBOK</strong> (Project Management Body of Knowledge) es el estándar de
+        referencia internacional. Identifica 9 áreas de conocimiento que todo gestor de proyectos
+        debe dominar:
+      </p>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Área</th>
+          <th>¿Qué cubre?</th>
+        </tr>
+        <tr><td><strong>1. Integración</strong></td><td>Coordinar todas las partes del proyecto.</td></tr>
+        <tr><td><strong>2. Alcance</strong></td><td>Definir y controlar qué incluye y qué no incluye el proyecto.</td></tr>
+        <tr><td><strong>3. Tiempo</strong></td><td>Planificar, secuenciar y controlar los plazos.</td></tr>
+        <tr><td><strong>4. Coste</strong></td><td>Estimar, presupuestar y controlar el gasto.</td></tr>
+        <tr><td><strong>5. Calidad</strong></td><td>Asegurar que se cumplen los criterios de calidad.</td></tr>
+        <tr><td><strong>6. Recursos Humanos</strong></td><td>Gestionar el equipo: roles, motivación, conflictos.</td></tr>
+        <tr><td><strong>7. Comunicaciones</strong></td><td>Gestionar la información entre todos los implicados.</td></tr>
+        <tr><td><strong>8. Riesgos</strong></td><td>Identificar, analizar y responder a los riesgos.</td></tr>
+        <tr><td><strong>9. Adquisiciones</strong></td><td>Gestionar compras, proveedores y contratos.</td></tr>
+      </table>
+
+      <h4>¿Qué hace que un proyecto tecnológico tenga éxito?</h4>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>🎯 Objetivos claros</h5>
+          <p>Todo el equipo sabe qué se quiere conseguir y por qué es importante.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>📅 Plan realista</h5>
+          <p>Se ha pensado en tareas, plazos, recursos y dependencias, no se ha improvisado.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>👥 Equipo comprometido</h5>
+          <p>Cada persona sabe su rol y está motivada con el objetivo común.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>📊 Control continuo</h5>
+          <p>Se revisa el avance periódicamente y se corrigen las desviaciones a tiempo.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>⚠️ Riesgos anticipados</h5>
+          <p>Se han identificado los posibles imprevistos y se ha preparado respuesta.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>📚 Aprendizaje continuo</h5>
+          <p>Se reflexiona sobre lo que funciona y lo que no, y se mejora en la siguiente iteración.</p>
+        </div>
+      </div>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> en tecnología, la diferencia entre un proyecto que triunfa
+        y otro que fracasa no suele ser el talento técnico, sino la <strong>gestión</strong>.
+        Saber planificar, controlar, comunicar y anticipar riesgos multiplica las probabilidades
+        de éxito. Y esto se entrena.
+      </div>
+    </div>
+
+    <div class="grid g4">
+      <div class="pilar reveal" style="border-top-color:var(--azul)">
+        <span class="ico">📅</span>
+        <h4>Planificación</h4>
+        <p>Definir tareas, duraciones, dependencias y fechas. Un cronograma claro evita caos y retrasos.</p>
+      </div>
+      <div class="pilar reveal" style="border-top-color:var(--esmeralda)">
+        <span class="ico">✅</span>
+        <h4>Calidad y fiabilidad</h4>
+        <p>Criterios verificables: documentación, pruebas, accesibilidad, sostenibilidad, rigor en las fuentes.</p>
+      </div>
+      <div class="pilar reveal" style="border-top-color:var(--dorado)">
+        <span class="ico">🔬</span>
+        <h4>Investigación</h4>
+        <p>Elegir el método adecuado: encuesta, entrevista, observación, prototipado, test de usuario.</p>
+      </div>
+      <div class="pilar reveal" style="border-top-color:var(--coral)">
+        <span class="ico">⚠️</span>
+        <h4>Riesgos</h4>
+        <p>Anticipar qué puede ir mal y planificar cómo responder. Los imprevistos se gestionan, no se improvisan.</p>
+      </div>
+    </div>
+
+    <div class="card reveal" style="margin-top:1.5rem; border-left:6px solid var(--azul)">
+      <h3 style="color:var(--azul-oscuro)">🎯 Soluciones accesibles, sostenibles, eficientes e innovadoras</h3>
+      <p style="font-size:.95rem; color:var(--gris-oscuro)">
+        El objetivo final de todo el proceso es <strong>idear, desarrollar y difundir</strong> soluciones
+        que cumplan cuatro condiciones: <strong>accesibles</strong> (para todas las personas),
+        <strong>sostenibles</strong> (sin agotar recursos ni generar impactos negativos),
+        <strong>eficientes</strong> (buena relación entre recursos empleados y resultados obtenidos)
+        e <strong>innovadoras</strong> (que aporten algo nuevo o mejor). A lo largo de esta aplicación
+        trabajarás cada una de las piezas que hacen posible ese objetivo.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ PLANIFICACIÓN ============ -->
+  <section id="planificacion">
+    <div class="sec-head reveal">
+      <span class="kicker">Bloque 1</span>
+      <h2>📅 Planificación: el cronograma del proyecto</h2>
+      <p class="lead">
+        Un cronograma (o diagrama de Gantt) muestra qué tareas hay que hacer, cuánto duran, cuándo
+        empiezan y de qué otras tareas dependen. Una planificación realista distingue entre tareas
+        <strong>secuenciales</strong> (una después de otra) y <strong>paralelas</strong> (que pueden
+        ocurrir al mismo tiempo).
+      </p>
+    </div>
+
+    <!-- TEORÍA EXPANDIDA: PLANIFICACIÓN -->
+    <div class="teoria reveal">
+      <h3><span class="th-ico">📅</span> Planificación temporal de proyectos</h3>
+      <p>
+        La <strong>planificación</strong> es la fase más crítica de la gestión de proyectos:
+        determina qué hay que hacer, quién lo hace, cuándo y en qué orden. Un plan realista
+        identifica tareas, estima duraciones, detecta dependencias y calcula la fecha final.
+      </p>
+
+      <h4>Los 5 pasos de la planificación temporal</h4>
+      <div class="fases">
+        <div class="fase">
+          <span class="fase-num">1</span>
+          <h6>Listar tareas</h6>
+          <p>Descomponer el proyecto en tareas concretas y manejables.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">2</span>
+          <h6>Estimar duración</h6>
+          <p>Calcular cuánto tiempo requiere cada tarea.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">3</span>
+          <h6>Identificar dependencias</h6>
+          <p>Ver qué tareas necesitan que otras estén terminadas.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">4</span>
+          <h6>Asignar recursos</h6>
+          <p>Decidir quién hace cada cosa y con qué medios.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">5</span>
+          <h6>Calcular cronograma</h6>
+          <p>Ordenar en el tiempo y obtener la duración total.</p>
+        </div>
+      </div>
+
+      <h4>El diagrama de Gantt</h4>
+      <p>
+        El <strong>diagrama de Gantt</strong>, creado por Henry Gantt a principios del siglo XX,
+        es la herramienta más utilizada para representar cronogramas. En él:
+      </p>
+      <ul>
+        <li>Cada <strong>fila</strong> representa una tarea.</li>
+        <li>Cada <strong>columna</strong> representa un periodo (día, semana, mes).</li>
+        <li>Cada <strong>barra horizontal</strong> indica la duración de la tarea.</li>
+        <li>Las <strong>flechas o alineaciones</strong> muestran las dependencias.</li>
+      </ul>
+
+      <h4>Tipos de dependencias entre tareas</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Tipo</th>
+          <th>Significado</th>
+          <th>Ejemplo</th>
+        </tr>
+        <tr>
+          <td><strong>Fin → Inicio (FS)</strong></td>
+          <td>La tarea B empieza cuando termina la A.</td>
+          <td>Pintar después de enmasillar.</td>
+        </tr>
+        <tr>
+          <td><strong>Inicio → Inicio (SS)</strong></td>
+          <td>B empieza cuando empieza A (paralelas).</td>
+          <td>Instalar cables y tubos a la vez.</td>
+        </tr>
+        <tr>
+          <td><strong>Fin → Fin (FF)</strong></td>
+          <td>B termina cuando termina A.</td>
+          <td>Documentar mientras se desarrolla.</td>
+        </tr>
+        <tr>
+          <td><strong>Inicio → Fin (SF)</strong></td>
+          <td>B termina cuando empieza A. (Poco frecuente).</td>
+          <td>Turno de noche antes de cerrar el turno de día.</td>
+        </tr>
+      </table>
+
+      <h4>Camino crítico</h4>
+      <p>
+        El <strong>camino crítico</strong> es la secuencia de tareas dependientes que determina la
+        duración total mínima del proyecto. Si cualquier tarea del camino crítico se retrasa, el
+        proyecto entero se retrasa. Por eso hay que vigilarlo especialmente.
+      </p>
+      <ul>
+        <li><strong>Holgura:</strong> tiempo que una tarea puede retrasarse sin afectar al proyecto.</li>
+        <li><strong>Tareas críticas:</strong> las que tienen holgura cero. No pueden retrasarse.</li>
+        <li><strong>Tareas no críticas:</strong> pueden tener algo de retraso sin afectar al total.</li>
+      </ul>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> en un cronograma, lo más importante no es que todas las
+        tareas empiecen cuanto antes, sino que se <strong>respeten las dependencias</strong> y se
+        aproveche el <strong>paralelismo</strong>. A veces retrasar una tarea no crítica permite
+        empezar antes otra crítica y acortar el proyecto.
+      </div>
+
+      <h4>Herramientas digitales para planificar</h4>
+      <ul>
+        <li><strong>GanttProject, Microsoft Project:</strong> diagramas de Gantt profesionales.</li>
+        <li><strong>Trello, Asana, Notion:</strong> tableros Kanban con fechas y responsables.</li>
+        <li><strong>Monday, ClickUp:</strong> planificación colaborativa con vistas múltiples.</li>
+        <li><strong>Hojas de cálculo:</strong> para proyectos pequeños, con fórmulas y colores.</li>
+      </ul>
+
+      <h4>Técnicas de estimación de duración</h4>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>Estimación por analogía</h5>
+          <p>Basarse en proyectos similares anteriores. Rápida pero poco precisa.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>Estimación por expertos</h5>
+          <p>Consultar a personas con experiencia. Fiable si los expertos lo son.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>PERT (3 puntos)</h5>
+          <p>Calcular (optimista + 4×probable + pesimista) / 6. Reduce el sesgo.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>Estimación por descomposición</h5>
+          <p>Dividir cada tarea en subtareas y sumar. Muy precisa pero lenta.</p>
+        </div>
+      </div>
+
+      <h4>Errores frecuentes al planificar</h4>
+      <ul>
+        <li><strong>Síndrome del estudiante:</strong> estimar según el tiempo disponible, no según lo que realmente se tarda.</li>
+        <li><strong>Olvidar tareas:</strong> no incluir reuniones, revisiones, documentación, imprevistos.</li>
+        <li><strong>Optimismo excesivo:</strong> estimar "en el mejor de los casos" sin margen para problemas.</li>
+        <li><strong>Ignorar dependencias:</strong> planificar tareas en paralelo cuando no lo son.</li>
+        <li><strong>No revisar el plan:</strong> hacer el cronograma y no actualizarlo con la realidad.</li>
+      </ul>
+    </div>
+
+    <!-- RETO 1: GANTT -->
+    <div class="actividad reveal" style="border-top:6px solid var(--azul)">
+      <span class="kicker">🎮 Reto 1 · Planifica el cronograma</span>
+      <h3>Coloca cada tarea en la semana correcta</h3>
+      <p class="intro">
+        Cada tarea tiene una duración y depende de otras anteriores. Ajusta la semana de inicio con
+        el deslizador para que <strong>ninguna tarea empiece antes de que terminen sus dependencias</strong>.
+        Objetivo: <strong>todas las tareas válidas</strong> y proyecto terminado <strong>en 11 semanas</strong>
+        (el mínimo posible).
+      </p>
+
+      <div class="gantt-leyenda">
+        <span><i style="background:#10b981"></i> Tarea válida</span>
+        <span><i style="background:#dc2626"></i> Conflicto con dependencias</span>
+        <span><i style="background:#eab308"></i> En el camino crítico</span>
+      </div>
+
+      <div class="gantt-header-semanas" id="ganttHeaderSemanas"></div>
+      <div id="ganttContainer"></div>
+
+      <div id="ganttMensajes"></div>
+
+      <div class="gantt-info-total">
+        <div class="total-num" id="ganttTotalNum">—</div>
+        <div class="total-lbl">Duración total del proyecto (semanas)</div>
+        <div class="total-msg" id="ganttTotalMsg">Ajusta las tareas para empezar a planificar.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CALIDAD ============ -->
+  <section id="calidad">
+    <div class="sec-head reveal">
+      <span class="kicker esmeralda">Bloque 2</span>
+      <h2>✅ Calidad y fiabilidad del proyecto</h2>
+      <p class="lead">
+        Un proyecto de calidad cumple con los objetivos, tiene documentación clara, respeta la
+        accesibilidad y la sostenibilidad, es seguro, y se apoya en fuentes fiables. Detectar a
+        tiempo un problema de calidad evita tener que rehacerlo todo al final.
+      </p>
+    </div>
+
+    <!-- TEORÍA EXPANDIDA: CALIDAD -->
+    <div class="teoria esmeralda reveal">
+      <h3><span class="th-ico">✅</span> Gestión de la calidad y fiabilidad</h3>
+      <p>
+        La <strong>calidad</strong> en un proyecto tecnológico es el grado en que el producto
+        cumple con los requisitos y expectativas de las personas que lo van a usar. No es una
+        característica única, sino un conjunto de dimensiones que se pueden medir y mejorar.
+      </p>
+
+      <h4>Las 8 dimensiones de la calidad (Garvin)</h4>
+      <p>
+        David Garvin, profesor de Harvard, identificó 8 dimensiones que definen la calidad de un
+        producto. Conocerlas ayuda a evaluar cualquier solución tecnológica:
+      </p>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>1. Rendimiento</h5>
+          <p>¿Funciona como se espera? ¿Cumple sus funciones principales?</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>2. Características</h5>
+          <p>¿Tiene funcionalidades adicionales útiles?</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>3. Fiabilidad</h5>
+          <p>¿Funciona de forma consistente en el tiempo? ¿Falla poco?</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>4. Conformidad</h5>
+          <p>¿Cumple las normas y estándares aplicables?</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>5. Durabilidad</h5>
+          <p>¿Cuánto dura antes de deteriorarse o quedar obsoleto?</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>6. Servicio</h5>
+          <p>¿Es fácil de reparar, actualizar y mantener?</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>7. Estética</h5>
+          <p>¿Es agradable visual, táctil y sensorialmente?</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>8. Percepción</h5>
+          <p>¿Qué imagen tiene la gente del producto?</p>
+        </div>
+      </div>
+
+      <h4>Los 3 procesos de gestión de la calidad</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Proceso</th>
+          <th>¿Qué hace?</th>
+          <th>Cuándo se aplica</th>
+        </tr>
+        <tr>
+          <td><strong>Planificación de la calidad</strong></td>
+          <td>Definir qué criterios de calidad se van a exigir y cómo se van a medir.</td>
+          <td>Antes de empezar a producir.</td>
+        </tr>
+        <tr>
+          <td><strong>Aseguramiento de la calidad</strong></td>
+          <td>Establecer procesos que garanticen que se cumple la calidad.</td>
+          <td>Durante todo el proyecto.</td>
+        </tr>
+        <tr>
+          <td><strong>Control de la calidad</strong></td>
+          <td>Medir resultados y corregir desviaciones.</td>
+          <td>Al entregar cada fase.</td>
+        </tr>
+      </table>
+
+      <h4>Herramientas clásicas de la calidad</h4>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>📋 Lista de verificación (checklist)</h5>
+          <p>Lista de puntos a comprobar antes de entregar. Evita olvidos.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>📊 Diagrama de Pareto</h5>
+          <p>Identifica el 20 % de causas que producen el 80 % de problemas.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🐟 Diagrama de Ishikawa (espina de pez)</h5>
+          <p>Analiza las causas de un problema desde 6 perspectivas (personas, métodos, materiales, máquinas, medición, entorno).</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🔄 Ciclo PDCA</h5>
+          <p>Planificar-Hacer-Verificar-Actuar: mejora continua aplicada a la calidad.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>📈 Gráficos de control</h5>
+          <p>Monitorizan si un proceso se mantiene dentro de límites aceptables.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🎯 Los 5 porqués</h5>
+          <p>Técnica de análisis: preguntar "¿por qué?" 5 veces hasta encontrar la causa raíz.</p>
+        </div>
+      </div>
+
+      <h4>Documentación técnica mínima de un proyecto</h4>
+      <ul>
+        <li><strong>README:</strong> qué es el proyecto, cómo se instala y cómo se usa.</li>
+        <li><strong>Memoria técnica:</strong> objetivo, decisiones, resultados, aprendizajes.</li>
+        <li><strong>Manual de usuario:</strong> para que cualquiera pueda usar la solución.</li>
+        <li><strong>Registro de cambios (changelog):</strong> qué se ha modificado y cuándo.</li>
+        <li><strong>Registro de pruebas:</strong> qué se ha probado y con qué resultados.</li>
+        <li><strong>Licencia y créditos:</strong> qué licencia tiene y qué fuentes se han usado.</li>
+      </ul>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> la calidad no se "añade al final": se <strong>construye
+        desde el principio</strong>. Un producto sin documentación, sin pruebas, sin accesibilidad
+        o sin seguridad no es un producto de calidad, aunque funcione. Detectar un problema a tiempo
+        cuesta minutos; corregirlo al final cuesta días.
+      </div>
+
+      <h4>Fiabilidad y disponibilidad</h4>
+      <p>
+        En productos tecnológicos, la <strong>fiabilidad</strong> es la probabilidad de que un
+        sistema funcione sin fallos durante un tiempo determinado. Métricas habituales:
+      </p>
+      <ul>
+        <li><strong>MTBF (Mean Time Between Failures):</strong> tiempo medio entre fallos.</li>
+        <li><strong>MTTR (Mean Time To Repair):</strong> tiempo medio de reparación.</li>
+        <li><strong>Disponibilidad:</strong> porcentaje del tiempo que el sistema está operativo.</li>
+        <li><strong>Tasa de error:</strong> porcentaje de operaciones que fallan.</li>
+      </ul>
+    </div>
+
+    <!-- RETO 2: AUDITORÍA -->
+    <div class="actividad reveal" style="border-top:6px solid var(--esmeralda)">
+      <span class="kicker esmeralda">🎮 Reto 2 · Auditoría de calidad</span>
+      <h3>Detecta los problemas antes de la entrega</h3>
+      <p class="intro">
+        Un equipo acaba de entregar su proyecto. Revisa cada uno de los 8 elementos y decide si
+        está <strong>correcto (OK)</strong> o si tiene un <strong>problema de calidad</strong>. Recibirás
+        feedback inmediato.
+      </p>
+
+      <div class="auditoria-grid" id="auditoriaGrid"></div>
+      <div id="auditMsg"></div>
+    </div>
+  </section>
+
+  <!-- ============ INVESTIGACIÓN ============ -->
+  <section id="investigacion">
+    <div class="sec-head reveal">
+      <span class="kicker dorado">Bloque 3</span>
+      <h2>🔬 Métodos de investigación: cada situación pide uno</h2>
+      <p class="lead">
+        No existe un único método de investigación válido para todo. Según lo que quieras averiguar,
+        conviene usar una <strong>encuesta</strong> (datos masivos), una <strong>entrevista</strong>
+        (información en profundidad), la <strong>observación directa</strong> (comportamiento real),
+        el <strong>análisis documental</strong> (fuentes escritas), el <strong>prototipado</strong>
+        (para explorar soluciones) o un <strong>test de usuario</strong> (para validar la usabilidad).
+      </p>
+    </div>
+
+    <!-- TEORÍA EXPANDIDA: INVESTIGACIÓN -->
+    <div class="teoria dorado reveal">
+      <h3><span class="th-ico">🔬</span> Métodos de investigación aplicados a proyectos</h3>
+      <p>
+        En proyectos tecnológicos, la <strong>investigación</strong> no es solo buscar información
+        en internet: es aplicar <strong>métodos sistemáticos</strong> para obtener datos fiables
+        sobre el problema, las necesidades de los usuarios y la eficacia de las soluciones.
+      </p>
+
+      <h4>Investigación cuantitativa vs. cualitativa</h4>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>📊 Cuantitativa</h5>
+          <p>Mide y cuantifica. Responde a "¿cuántos?", "¿con qué frecuencia?". Usa números y estadísticas. Ejemplos: encuestas, análisis de datos, pruebas A/B.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>💬 Cualitativa</h5>
+          <p>Explora y comprende. Responde a "¿por qué?", "¿cómo?". Usa palabras y observaciones. Ejemplos: entrevistas, focus groups, observación.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🔀 Mixta</h5>
+          <p>Combina ambas: primero cualitativa para explorar, después cuantitativa para medir. La más completa para proyectos serios.</p>
+        </div>
+      </div>
+
+      <h4>Los 6 métodos más usados en proyectos tecnológicos</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Método</th>
+          <th>Sirve para...</th>
+          <th>Ventajas</th>
+          <th>Limitaciones</th>
+        </tr>
+        <tr>
+          <td><strong>📝 Encuesta</strong></td>
+          <td>Obtener datos de muchas personas.</td>
+          <td>Rápida, barata, cuantificable.</td>
+          <td>Poco profunda, respuestas superficiales.</td>
+        </tr>
+        <tr>
+          <td><strong>🎤 Entrevista</strong></td>
+          <td>Comprender motivaciones y experiencias.</td>
+          <td>Profunda, matices, ejemplos reales.</td>
+          <td>Lenta, pocas personas, riesgo de sesgo.</td>
+        </tr>
+        <tr>
+          <td><strong>👁️ Observación</strong></td>
+          <td>Ver comportamiento real en contexto.</td>
+          <td>Datos objetivos, sin autoengaño.</td>
+          <td>Consume tiempo, reactividad.</td>
+        </tr>
+        <tr>
+          <td><strong>📚 Análisis documental</strong></td>
+          <td>Conocer lo que ya se ha hecho.</td>
+          <td>Rápida, base amplia, sin molestar a nadie.</td>
+          <td>Limitada a lo publicado, puede estar desactualizada.</td>
+        </tr>
+        <tr>
+          <td><strong>🛠️ Prototipado</strong></td>
+          <td>Explorar soluciones antes de fabricarlas.</td>
+          <td>Barata, permite iterar rápido, tangible.</td>
+          <td>No es la solución real, puede confundir.</td>
+        </tr>
+        <tr>
+          <td><strong>🧪 Test de usuario</strong></td>
+          <td>Validar que la solución es usable.</td>
+          <td>Detecta problemas reales, datos concretos.</td>
+          <td>Requiere usuarios reales y tiempo.</td>
+        </tr>
+      </table>
+
+      <h4>¿Cómo elegir el método adecuado?</h4>
+      <p>
+        La elección del método depende de tres factores:
+      </p>
+      <div class="fases">
+        <div class="fase">
+          <span class="fase-num">PREGUNTA</span>
+          <h6>¿Qué quiero saber?</h6>
+          <p>¿Cuántos? ¿Por qué? ¿Cómo lo hacen? ¿Qué prefieren?</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">CONTEXTO</span>
+          <h6>¿A quién y dónde?</h6>
+          <p>¿Cuántas personas? ¿Accesibles? ¿En qué situación?</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">RECURSOS</span>
+          <h6>¿Con qué cuento?</h6>
+          <p>¿Tiempo? ¿Presupuesto? ¿Herramientas? ¿Permisos?</p>
+        </div>
+      </div>
+
+      <h4>Errores frecuentes al investigar</h4>
+      <ul>
+        <li><strong>Sesgo de confirmación:</strong> buscar solo lo que confirma nuestras ideas previas.</li>
+        <li><strong>Preguntas dirigidas:</strong> formular preguntas que sugieren la respuesta deseada.</li>
+        <li><strong>Muestra no representativa:</strong> preguntar solo a amigos, que seguramente piensan como nosotros.</li>
+        <li><strong>Confundir opinión con dato:</strong> lo que "la gente dice" no es lo mismo que lo que se mide.</li>
+        <li><strong>No registrar los resultados:</strong> hacer entrevistas y luego no documentarlas.</li>
+      </ul>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> elegir mal el método lleva a conclusiones erróneas. Una
+        encuesta no sirve para entender por qué alguien hace algo; una entrevista a 3 personas no
+        sirve para saber qué opina todo un barrio. <strong>El método se adapta a la pregunta</strong>,
+        no al revés.
+      </div>
+
+      <h4>La investigación en las fases del proyecto</h4>
+      <ul>
+        <li><strong>Antes de idear:</strong> investigación exploratoria (observación, entrevistas, análisis documental) para detectar necesidades.</li>
+        <li><strong>Durante el diseño:</strong> investigación sobre soluciones existentes (análisis documental, benchmarking).</li>
+        <li><strong>Antes de fabricar:</strong> prototipado y pruebas con usuarios.</li>
+        <li><strong>Después de entregar:</strong> encuestas de satisfacción, análisis de uso, métricas.</li>
+      </ul>
+    </div>
+
+    <!-- RETO 3: MÉTODOS -->
+    <div class="actividad reveal" style="border-top:6px solid var(--dorado)">
+      <span class="kicker dorado">🎮 Reto 3 · Elige el método</span>
+      <h3>¿Qué método usarías en cada caso?</h3>
+      <p class="intro">
+        Lee cada situación y elige el método de investigación más adecuado. Recibirás feedback
+        explicando por qué.
+      </p>
+
+      <div id="metodosContainer"></div>
+      <div id="metodosMsg"></div>
+    </div>
+  </section>
+
+  <!-- ============ RIESGOS ============ -->
+  <section id="riesgos">
+    <div class="sec-head reveal">
+      <span class="kicker coral">Bloque 4</span>
+      <h2>⚠️ Gestión de riesgos: anticipar para no improvisar</h2>
+      <p class="lead">
+        Todo proyecto se enfrenta a imprevistos: retrasos, fallos técnicos, falta de recursos,
+        conflictos en el equipo, cambios de alcance… Un buen gestor identifica los riesgos y decide
+        <strong>cómo prevenirlos o mitigarlos</strong> antes de que ocurran.
+      </p>
+    </div>
+
+    <!-- TEORÍA EXPANDIDA: RIESGOS -->
+    <div class="teoria coral reveal">
+      <h3><span class="th-ico">⚠️</span> Gestión de riesgos en proyectos</h3>
+      <p>
+        Un <strong>riesgo</strong> es un evento incierto que, si ocurre, puede afectar
+        negativamente al proyecto. La gestión de riesgos no consiste en eliminar todos los riesgos
+        (es imposible), sino en <strong>identificarlos, analizarlos y preparar respuestas</strong>
+        antes de que ocurran.
+      </p>
+
+      <h4>Los 4 pasos de la gestión de riesgos</h4>
+      <div class="fases">
+        <div class="fase">
+          <span class="fase-num">1</span>
+          <h6>Identificar</h6>
+          <p>Detectar todos los riesgos posibles que podrían afectar al proyecto.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">2</span>
+          <h6>Analizar</h6>
+          <p>Valorar probabilidad e impacto de cada uno.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">3</span>
+          <h6>Planificar respuesta</h6>
+          <p>Decidir qué hacer si ocurre.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">4</span>
+          <h6>Monitorizar</h6>
+          <p>Vigilar los riesgos y actualizar el plan.</p>
+        </div>
+      </div>
+
+      <h4>La matriz de riesgos: probabilidad × impacto</h4>
+      <p>
+        Una vez identificados los riesgos, se clasifican según su <strong>probabilidad</strong>
+        (de que ocurran) y su <strong>impacto</strong> (si ocurren). Los riesgos con alta
+        probabilidad y alto impacto son <strong>críticos</strong> y requieren respuesta urgente.
+      </p>
+      <table class="tabla-tipos">
+        <tr>
+          <th></th>
+          <th>Impacto bajo</th>
+          <th>Impacto medio</th>
+          <th>Impacto alto</th>
+        </tr>
+        <tr>
+          <td><strong>Prob. alta</strong></td>
+          <td>Riesgo moderado</td>
+          <td>Riesgo importante</td>
+          <td>🚨 Riesgo crítico</td>
+        </tr>
+        <tr>
+          <td><strong>Prob. media</strong></td>
+          <td>Riesgo menor</td>
+          <td>Riesgo moderado</td>
+          <td>⚠️ Riesgo importante</td>
+        </tr>
+        <tr>
+          <td><strong>Prob. baja</strong></td>
+          <td>Riesgo despreciable</td>
+          <td>Riesgo menor</td>
+          <td>Riesgo moderado</td>
+        </tr>
+      </table>
+
+      <h4>Las 5 estrategias de respuesta al riesgo</h4>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>🚫 Evitar</h5>
+          <p>Cambiar el plan para eliminar el riesgo. Ejemplo: usar una tecnología conocida en vez de arriesgar con una nueva.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>⬇️ Mitigar</h5>
+          <p>Reducir la probabilidad o el impacto. Ejemplo: hacer copias de seguridad periódicas.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🔄 Transferir</h5>
+          <p>Pasar el riesgo a otra parte. Ejemplo: contratar un seguro o subcontratar una tarea crítica.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🙋 Aceptar</h5>
+          <p>Asumirlo si el coste de la respuesta es mayor que el impacto. Se planifica qué hacer si ocurre.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>📈 Explotar (positivos)</h5>
+          <p>Si el riesgo es positivo (oportunidad), potenciarlo. Ejemplo: aprovechar una subvención inesperada.</p>
+        </div>
+      </div>
+
+      <h4>Riesgos más frecuentes en proyectos tecnológicos</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Tipo</th>
+          <th>Ejemplo</th>
+          <th>Respuesta típica</th>
+        </tr>
+        <tr>
+          <td><strong>Técnicos</strong></td>
+          <td>La tecnología no funciona como esperábamos.</td>
+          <td>Prototipo previo, plan B tecnológico.</td>
+        </tr>
+        <tr>
+          <td><strong>De plazo</strong></td>
+          <td>Una tarea tarda más de lo estimado.</td>
+          <td>Margen de holgura, priorizar funcionalidades esenciales.</td>
+        </tr>
+        <tr>
+          <td><strong>De recursos</strong></td>
+          <td>Falta un componente o material.</td>
+          <td>Proveedor alternativo, materiales sustitutivos.</td>
+        </tr>
+        <tr>
+          <td><strong>Humanos</strong></td>
+          <td>Un miembro del equipo enferma o abandona.</td>
+          <td>Documentar el trabajo, repartir responsabilidades.</td>
+        </tr>
+        <tr>
+          <td><strong>De alcance</strong></td>
+          <td>Se piden cambios a mitad del proyecto.</td>
+          <td>Gestionar cambios formalmente, replanificar.</td>
+        </tr>
+        <tr>
+          <td><strong>De comunicación</strong></td>
+          <td>Alguien no recibe información importante.</td>
+          <td>Canales claros, reuniones periódicas, acta escrita.</td>
+        </tr>
+      </table>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> un riesgo no gestionado es un problema garantizado. La
+        diferencia entre un proyecto que se hunde ante un imprevisto y otro que lo supera está en
+        si <strong>había un plan preparado</strong>. Anticipar 15 minutos puede ahorrar días.
+      </div>
+
+      <h4>Documentos clave para gestionar riesgos</h4>
+      <ul>
+        <li><strong>Registro de riesgos:</strong> lista de riesgos identificados con probabilidad, impacto y respuesta planificada.</li>
+        <li><strong>Plan de contingencia:</strong> qué hacer si el riesgo ocurre.</li>
+        <li><strong>Plan de reserva:</strong> colchón de tiempo o presupuesto para imprevistos.</li>
+        <li><strong>Lecciones aprendidas:</strong> qué riesgos ocurrieron y cómo se gestionaron.</li>
+      </ul>
+
+      <h4>El síndrome del "no va a pasar"</h4>
+      <p>
+        Muchos equipos no gestionan riesgos porque piensan "eso no nos va a pasar a nosotros".
+        Es un sesgo cognitivo muy común: el <strong>optimismo irreal</strong>. Para combatirlo:
+      </p>
+      <ul>
+        <li>Hacer una lluvia de ideas específica sobre "¿qué puede salir mal?".</li>
+        <li>Consultar a personas con experiencia en proyectos similares.</li>
+        <li>Revisar las lecciones aprendidas de proyectos anteriores.</li>
+        <li>Asumir que algo saldrá mal: prepararse para responder es parte del trabajo.</li>
+      </ul>
+    </div>
+
+    <!-- RETO 4: RIESGOS -->
+    <div class="actividad reveal" style="border-top:6px solid var(--coral)">
+      <span class="kicker coral">🎮 Reto 4 · Simulador de riesgos</span>
+      <h3>¿Cómo responderías ante cada imprevisto?</h3>
+      <p class="intro">
+        Cinco situaciones problemáticas aparecen durante tu proyecto. Elige la respuesta más
+        adecuada en cada caso. Recibirás feedback inmediato.
+      </p>
+
+      <div id="riesgosContainer"></div>
+      <div id="riesgosMsg"></div>
+    </div>
+  </section>
+
+  <!-- ============ EVALUACIÓN ============ -->
+  <section id="evaluacion">
+    <div class="sec-head reveal">
+      <span class="kicker">Bloque 5</span>
+      <h2>📊 Evaluación: la rúbrica como herramienta</h2>
+      <p class="lead">
+        Una <strong>rúbrica de evaluación</strong> es una tabla que describe distintos niveles de
+        calidad para cada criterio. Sirve tanto para <strong>evaluar el trabajo del equipo</strong>
+        como para <strong>autoevaluarse</strong> antes de la entrega. A continuación vas a aplicar
+        una rúbrica a un proyecto realista.
+      </p>
+    </div>
+
+    <!-- TEORÍA EXPANDIDA: EVALUACIÓN -->
+    <div class="teoria reveal">
+      <h3><span class="th-ico">📊</span> Evaluación, rúbricas y autoevaluación</h3>
+      <p>
+        La <strong>evaluación</strong> es el proceso de recoger información sobre el trabajo
+        realizado, compararlo con unos criterios y tomar decisiones para mejorar. En proyectos
+        tecnológicos, evaluar no es solo poner una nota: es una herramienta de aprendizaje.
+      </p>
+
+      <h4>Tipos de evaluación según el momento</h4>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>📝 Evaluación diagnóstica (inicial)</h5>
+          <p>Al principio, para saber de dónde partimos. ¿Qué sabemos? ¿Qué necesitamos aprender?</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🔍 Evaluación formativa (continua)</h5>
+          <p>Durante el proceso, para ajustar y mejorar. Es la más importante para aprender.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🎯 Evaluación sumativa (final)</h5>
+          <p>Al terminar, para valorar el resultado global. Determina si se han alcanzado los objetivos.</p>
+        </div>
+      </div>
+
+      <h4>¿Quién evalúa?</h4>
+      <ul>
+        <li><strong>Heteroevaluación:</strong> el profesorado evalúa al alumnado.</li>
+        <li><strong>Autoevaluación:</strong> cada persona se evalúa a sí misma. Fomenta la reflexión y la responsabilidad.</li>
+        <li><strong>Coevaluación:</strong> los compañeros se evalúan entre sí. Fomenta el análisis crítico y el aprendizaje entre iguales.</li>
+      </ul>
+
+      <h4>¿Qué es una rúbrica?</h4>
+      <p>
+        Una <strong>rúbrica</strong> es una tabla de doble entrada que describe distintos
+        <strong>niveles de desempeño</strong> (por ejemplo: excelente, bien, regular, insuficiente)
+        para cada <strong>criterio de evaluación</strong>. Ventajas:
+      </p>
+      <ul>
+        <li><strong>Objetividad:</strong> reduce la subjetividad al evaluar.</li>
+        <li><strong>Claridad:</strong> el alumnado sabe de antemano qué se le va a pedir.</li>
+        <li><strong>Transparencia:</strong> cualquiera puede entender la nota.</li>
+        <li><strong>Aprendizaje:</strong> ayuda a identificar qué mejorar.</li>
+        <li><strong>Autorregulación:</strong> permite autoevaluarse antes de entregar.</li>
+      </ul>
+
+      <h4>Anatomía de una rúbrica</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Elemento</th>
+          <th>Descripción</th>
+          <th>Ejemplo</th>
+        </tr>
+        <tr>
+          <td><strong>Criterio</strong></td>
+          <td>Aspecto a evaluar.</td>
+          <td>"Funcionalidad de la app".</td>
+        </tr>
+        <tr>
+          <td><strong>Niveles</strong></td>
+          <td>Grados de calidad posibles.</td>
+          <td>Excelente / Bien / Mejorable / Deficiente.</td>
+        </tr>
+        <tr>
+          <td><strong>Descriptores</strong></td>
+          <td>Qué debe cumplir cada nivel.</td>
+          <td>"Funciona todo y sin errores" para excelente.</td>
+        </tr>
+        <tr>
+          <td><strong>Puntuación</strong></td>
+          <td>Valor numérico de cada nivel.</td>
+          <td>4, 3, 2, 1.</td>
+        </tr>
+      </table>
+
+      <h4>Cómo diseñar una buena rúbrica</h4>
+      <ol>
+        <li><strong>Definir los criterios:</strong> ¿qué aspectos son importantes?</li>
+        <li><strong>Decidir los niveles:</strong> normalmente 3-5 niveles.</li>
+        <li><strong>Escribir descriptores claros:</strong> observables y sin ambigüedad.</li>
+        <li><strong>Asignar puntuaciones:</strong> coherentes y proporcionales.</li>
+        <li><strong>Validar con ejemplos:</strong> probarla con trabajos reales antes de usarla.</li>
+      </ol>
+
+      <h4>Errores frecuentes al evaluar</h4>
+      <ul>
+        <li><strong>Efecto halo:</strong> dejarse influir por una impresión general.</li>
+        <li><strong>Efecto de tendencia central:</strong> puntuar todo en la media sin discriminar.</li>
+        <li><strong>Efecto de contraste:</strong> comparar con el trabajo anterior en lugar de con los criterios.</li>
+        <li><strong>Sesgo de género o de origen:</strong> evaluar distinto según quién sea la persona.</li>
+        <li><strong>Evaluar solo el resultado:</strong> olvidar el proceso y el esfuerzo.</li>
+      </ul>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> la evaluación no es el final del aprendizaje: es
+        <strong>parte del aprendizaje</strong>. Una buena rúbrica ayuda a saber qué se espera,
+        a autoevaluarse durante el proceso y a mejorar antes de la entrega final. Evaluar es
+        aprender dos veces.
+      </div>
+
+      <h4>El portfolio como herramienta de evaluación</h4>
+      <p>
+        El <strong>portfolio</strong> es una recopilación organizada de los trabajos realizados
+        durante el proyecto, junto con reflexiones sobre el proceso. Permite evaluar la evolución,
+        no solo el resultado final. Elementos típicos:
+      </p>
+      <ul>
+        <li>Documentos del proceso: bocetos, versiones, pruebas.</li>
+        <li>Reflexiones escritas: qué he aprendido, qué mejoraría.</li>
+        <li>Evidencias del resultado: fotos, capturas, vídeos.</li>
+        <li>Evaluaciones intermedias: autoevaluación, coevaluación.</li>
+      </ul>
+    </div>
+
+    <!-- RETO 5: RÚBRICA -->
+    <div class="actividad reveal" style="border-top:6px solid var(--azul-oscuro)">
+      <span class="kicker">🎮 Reto 5 · Aplica la rúbrica</span>
+      <h3>Evalúa este proyecto con criterios de calidad</h3>
+      <p class="intro">
+        Lee la evidencia de cada criterio y asigna el nivel que creas que corresponde según la
+        rúbrica. Después podrás ver la evaluación del profesor con su justificación.
+      </p>
+
+      <div class="rubrica-proyecto">
+        <h4>📋 Proyecto evaluado: «App para reservar espacios del centro»</h4>
+        <p>
+          El alumnado de 4.º de ESO ha desarrollado una app móvil para reservar aulas, patio
+          cubierto y sala de ordenadores. Se ha trabajado durante 12 semanas en equipo. A
+          continuación se recogen evidencias del resultado final.
+        </p>
+      </div>
+
+      <div class="rubrica-criterios" id="rubricaContainer"></div>
+      <div id="rubricaMsg"></div>
+    </div>
+
+    <!-- VOCABULARIO -->
+    <div class="actividad reveal" style="border-top:6px solid var(--azul-oscuro)">
+      <span class="kicker">📚 Vocabulario clave</span>
+      <h3>Diccionario interactivo</h3>
+      <p class="intro">Pulsa sobre cualquier término para ver su explicación detallada.</p>
+      <div class="voc-grid" id="vocGrid"></div>
+      <div id="vocDef"></div>
+    </div>
+  </section>
+
+  <!-- ========== QUIZ ========== -->
+  <section id="quiz">
+    <div class="sec-head reveal">
+      <span class="kicker coral">🎯 Reto 6 · Cuestionario final</span>
+      <h2>Comprueba lo que has aprendido</h2>
+      <p class="lead">10 preguntas sobre gestión de proyectos, calidad, investigación, riesgos y evaluación.</p>
+    </div>
+    <div id="quizContainer"></div>
+    <div id="quizResult" style="display:none;text-align:center;padding:1.8rem;border-radius:var(--radio);color:#fff;background:linear-gradient(135deg,#1e3a8a,#0c1445);box-shadow:var(--sombra-lg)">
+      <div id="quizScore" style="font-size:3rem;font-weight:900;line-height:1;margin-bottom:.4rem">0/10</div>
+      <h3 id="quizTitle" style="color:#fff">¡Buen trabajo!</h3>
+      <p id="quizMsg" style="color:#bfdbfe;max-width:560px;margin:0 auto"></p>
+    </div>
+  </section>
+
+  <!-- ========== CERTIFICADO ========== -->
+  <section id="certificado">
+    <div id="certificado">
+      <h2>🏆 Tu certificado de aprovechamiento</h2>
+      <p class="sub">Al completar las actividades obtendrás un certificado personalizado con tus resultados, que podrás descargar en PDF.</p>
+
+      <div class="cert-name" id="certNombre">—</div>
+
+      <div class="cert-stats" id="certStats"></div>
+
+      <div class="cert-warn" id="certWarn" style="display:none">
+        ⚠️ Aún no has completado ninguna actividad. Termina al menos una para generar tu certificado.
+      </div>
+
+      <button class="btn btn-dorado" id="btnCertificado" style="font-size:1rem;padding:.95rem 2rem">
+        📄 Descargar certificado en PDF
+      </button>
+      <p class="cert-note">El PDF se genera como imagen rasterizada: el texto no es editable ni seleccionable, garantizando su integridad.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p style="margin-bottom:.4rem"><strong>Proyectos con Calidad</strong> · Gestión, fiabilidad, investigación y herramientas digitales</p>
+  <p style="margin:0;font-size:.8rem">Aplicación educativa interactiva · Tu progreso se guarda en este navegador</p>
+</footer>
+
+<div id="toast"></div>
+
+<script>
+/* ================================================================
+   1. ESTADO PERSISTENTE (con respuestas detalladas)
+================================================================ */
+const LS_KEY = 'proyectosCalidad_v3';
+const LS_VERSION = 3;
+const RETOS_TOTALES = 6;
+
+let restaurando = false;   // true mientras se repueblan las actividades desde el estado guardado
+
+let estado = {
+  version: LS_VERSION,
+  nombre: '',
+  retos: [],
+  scores: {
+    gantt: 0,
+    auditoria: 0,
+    metodos: 0,
+    riesgos: 0,
+    rubrica: 0,
+    quiz: 0
+  },
+  respuestas: {
+    gantt: {},       // taskId -> semana de inicio
+    auditoria: {},   // index -> { elegido: bool }
+    metodos: {},     // index -> { j: number }
+    riesgos: {},     // index -> { j: number }
+    rubrica: {},     // index -> { v: number }
+    quiz: {}         // index -> { j: number }
+  },
+  iniciado: null
+};
+
+function guardarEstado(){
+  try{
+    estado.version = LS_VERSION;
+    localStorage.setItem(LS_KEY, JSON.stringify(estado));
+  }catch(e){}
+}
+
+function cargarEstado(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(raw){
+      const d = JSON.parse(raw);
+      if(d && typeof d === 'object' && d.version === LS_VERSION){
+        estado = Object.assign(estado, d);
+        estado.scores = Object.assign({gantt:0,auditoria:0,metodos:0,riesgos:0,rubrica:0,quiz:0}, d.scores || {});
+        estado.retos = Array.isArray(d.retos) ? d.retos : [];
+        const defaultResp = {gantt:{},auditoria:{},metodos:{},riesgos:{},rubrica:{},quiz:{}};
+        estado.respuestas = { ...defaultResp };
+        if(d.respuestas && typeof d.respuestas === 'object'){
+          Object.keys(defaultResp).forEach(k=>{
+            if(d.respuestas[k] && typeof d.respuestas[k] === 'object'){
+              estado.respuestas[k] = d.respuestas[k];
+            }
+          });
+        }
+      }
+    }
+  }catch(e){}
+}
+
+/* ================================================================
+   2. PROGRESO
+================================================================ */
+function actualizarProgreso(){
+  const n = estado.retos.length;
+  document.getElementById('progresoPill').textContent = n + ' / ' + RETOS_TOTALES + ' retos';
+  document.getElementById('progresoBarra').style.width = (n / RETOS_TOTALES * 100) + '%';
+}
+
+function completarReto(id, msg){
+  let changed = false;
+  if(!estado.retos.includes(id)){ estado.retos.push(id); changed = true; }
+  guardarEstado();
+  actualizarProgreso();
+  actualizarCertificado();
+  if(msg && changed && !restaurando) toast(msg);
+}
+
+let toastTimer;
+function toast(texto){
+  const t = document.getElementById('toast');
+  t.innerHTML = '🏅 ' + texto;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 3500);
+}
+
+/* ================================================================
+   3. LOGIN
+================================================================ */
+const overlay = document.getElementById('loginOverlay');
+const card = document.getElementById('loginCard');
+
+function mostrarLogin(){
+  if(estado.nombre){
+    card.innerHTML = `
+      <span class="login-emoji">⚙️</span>
+      <h1>¡Hola de nuevo!</h1>
+      <p class="sub">Hemos guardado tu progreso en este navegador.</p>
+      <div class="welcome-back">
+        Continuar como <strong>${escaparHTML(estado.nombre)}</strong><br>
+        <span style="font-size:.82rem">Retos completados: ${estado.retos.length} / ${RETOS_TOTALES}</span>
+      </div>
+      <div class="login-btns">
+        <button class="btn btn-primary" id="btnContinuar">▶ Continuar</button>
+        <button class="btn btn-ghost" id="btnCambiar" style="background:#f1f5f9;color:#0f172a;border-color:#e2e8f0">👤 Cambiar nombre</button>
+      </div>
+    `;
+    document.getElementById('btnContinuar').addEventListener('click', iniciarApp);
+    document.getElementById('btnCambiar').addEventListener('click', resetearTodo);
+  } else {
+    renderLoginForm();
+  }
+}
+
+function renderLoginForm(){
+  card.innerHTML = `
+    <span class="login-emoji">⚙️</span>
+    <h1>Bienvenido/a a Proyectos con Calidad</h1>
+    <p class="sub">Antes de empezar, dinos cómo te llamas. Tu progreso se guardará en este navegador para que puedas continuar cuando quieras.</p>
+    <input type="text" id="inputNombre" placeholder="Escribe tu nombre" maxlength="40" autocomplete="off">
+    <button class="btn btn-primary" id="btnEntrar">🚀 Comenzar la aventura</button>
+    <div class="login-error" id="loginError"></div>
+  `;
+  const inp = document.getElementById('inputNombre');
+  const btn = document.getElementById('btnEntrar');
+  const err = document.getElementById('loginError');
+  const submit = ()=>{
+    const v = inp.value.trim();
+    if(v.length < 2){ err.textContent = 'Por favor, introduce al menos 2 caracteres.'; inp.focus(); return; }
+    estado.nombre = v;
+    estado.iniciado = new Date().toISOString();
+    guardarEstado();
+    iniciarApp();
+  };
+  btn.addEventListener('click', submit);
+  inp.addEventListener('keydown', e=>{ if(e.key === 'Enter') submit(); });
+  setTimeout(()=>inp.focus(), 200);
+}
+
+function iniciarApp(){
+  overlay.classList.add('hidden');
+  document.body.classList.remove('locked');
+  document.getElementById('navUserName').textContent = estado.nombre;
+  document.getElementById('heroNombre').textContent = estado.nombre;
+  actualizarProgreso();
+  actualizarCertificado();
+}
+
+function escaparHTML(s){
+  return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ================================================================
+   4. REVEAL
+================================================================ */
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach((e,i)=>{
+    if(e.isIntersecting){
+      setTimeout(()=>e.target.classList.add('in'), i*70);
+      io.unobserve(e.target);
+    }
+  });
+},{threshold:.12, rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+/* ================================================================
+   5. NAV ACTIVO
+================================================================ */
+const secciones = [...document.querySelectorAll('section[id]')];
+const navLinks = [...document.querySelectorAll('.nav-links a')];
+window.addEventListener('scroll', ()=>{
+  let actual = '';
+  secciones.forEach(s=>{ if(window.scrollY >= s.offsetTop - 120) actual = s.id; });
+  navLinks.forEach(a=>a.classList.toggle('active', a.getAttribute('href') === '#'+actual));
+});
+
+/* ================================================================
+   6. RETO 1 · GANTT INTERACTIVO
+================================================================ */
+const ganttTasks = [
+  {id:'t1', nombre:'Análisis de necesidades', dur:2, deps:[],                                    critico:true},
+  {id:'t2', nombre:'Definición de requisitos', dur:1, deps:['t1'],                               critico:true},
+  {id:'t3', nombre:'Diseño de la solución', dur:2, deps:['t2'],                                  critico:true},
+  {id:'t4', nombre:'Desarrollo del prototipo', dur:3, deps:['t3'],                               critico:true},
+  {id:'t5', nombre:'Pruebas de calidad', dur:1, deps:['t4'],                                     critico:true},
+  {id:'t6', nombre:'Corrección de errores', dur:1, deps:['t5'],                                  critico:true},
+  {id:'t7', nombre:'Documentación', dur:2, deps:['t4'],                                          critico:false},
+  {id:'t8', nombre:'Difusión y presentación', dur:1, deps:['t6','t7'],                           critico:true}
+];
+
+const GANTT_MAX_SEM = 14;
+let ganttStarts = {};
+
+function initGantt(){
+  const header = document.getElementById('ganttHeaderSemanas');
+  header.innerHTML = '';
+  for(let i = 1; i <= GANTT_MAX_SEM; i++){
+    const d = document.createElement('div');
+    d.textContent = 'S' + i;
+    header.appendChild(d);
+  }
+  // Restaurar posiciones guardadas (o por defecto 1)
+  ganttTasks.forEach(t => {
+    const saved = estado.respuestas.gantt && estado.respuestas.gantt[t.id];
+    ganttStarts[t.id] = (typeof saved === 'number' && saved >= 1 && saved <= GANTT_MAX_SEM) ? saved : 1;
+  });
+  renderGanttRows();
+  updateGantt();
+}
+
+function renderGanttRows(){
+  const cont = document.getElementById('ganttContainer');
+  cont.innerHTML = '';
+  ganttTasks.forEach(t=>{
+    const fila = document.createElement('div');
+    fila.className = 'gantt-fila';
+    fila.dataset.id = t.id;
+
+    const depTxt = t.deps.length === 0 ? 'Sin dependencias' : 'Depende de: ' + t.deps.map(d=>{
+      const dt = ganttTasks.find(x=>x.id === d);
+      return dt ? dt.nombre : d;
+    }).join(', ');
+
+    let cells = '';
+    for(let i = 0; i < GANTT_MAX_SEM; i++) cells += '<div class="gt-cell"></div>';
+
+    fila.innerHTML = `
+      <div class="gantt-fila-info">
+        <div>
+          <div class="gf-nombre">${t.nombre} <span style="color:var(--gris);font-weight:600;font-size:.82rem">(${t.dur} sem.)</span></div>
+          <div class="gf-dep">${depTxt}</div>
+        </div>
+        <div class="gantt-control">
+          <span>Inicio: </span>
+          <input type="range" min="1" max="${GANTT_MAX_SEM}" value="${ganttStarts[t.id]}" data-task="${t.id}">
+          <span class="gf-sem">Sem. <strong class="sem-val">${ganttStarts[t.id]}</strong></span>
+        </div>
+      </div>
+      <div class="gantt-track" data-track="${t.id}">
+        ${cells}
+        <div class="gantt-bar" data-bar="${t.id}"></div>
+      </div>
+    `;
+    cont.appendChild(fila);
+
+    const slider = fila.querySelector('input[type=range]');
+    const semVal = fila.querySelector('.sem-val');
+    slider.addEventListener('input', ()=>{
+      ganttStarts[t.id] = parseInt(slider.value, 10);
+      estado.respuestas.gantt[t.id] = ganttStarts[t.id];
+      guardarEstado();
+      semVal.textContent = ganttStarts[t.id];
+      updateGantt();
+    });
+  });
+}
+
+function validateGantt(){
+  const errors = [];
+  ganttTasks.forEach(t=>{
+    const start = ganttStarts[t.id];
+    t.deps.forEach(depId=>{
+      const dep = ganttTasks.find(x => x.id === depId);
+      if(!dep) return;
+      const depEnd = ganttStarts[depId] + dep.dur;
+      if(start < depEnd){
+        errors.push({
+          task: t.id,
+          msg: `"${t.nombre}" empieza en semana ${start}, pero depende de "${dep.nombre}" que termina en semana ${depEnd - 1}. Debería empezar en semana ${depEnd} o después.`
+        });
+      }
+    });
+  });
+  return errors;
+}
+
+function updateGantt(){
+  const errors = validateGantt();
+  const errorTaskIds = new Set(errors.map(e => e.task));
+
+  let total = 0;
+  ganttTasks.forEach(t=>{
+    const end = ganttStarts[t.id] + t.dur - 1;
+    if(end > total) total = end;
+  });
+
+  ganttTasks.forEach(t=>{
+    const fila = document.querySelector(`.gantt-fila[data-id="${t.id}"]`);
+    const bar = document.querySelector(`.gantt-bar[data-bar="${t.id}"]`);
+    if(!fila || !bar) return;
+
+    const start = ganttStarts[t.id];
+    const dur = t.dur;
+    const isError = errorTaskIds.has(t.id);
+
+    fila.classList.toggle('ok', !isError);
+    fila.classList.toggle('error', isError);
+
+    const leftPct = ((start - 1) / GANTT_MAX_SEM) * 100;
+    const widthPct = (dur / GANTT_MAX_SEM) * 100;
+    bar.style.left = leftPct + '%';
+    bar.style.width = widthPct + '%';
+
+    bar.className = 'gantt-bar';
+    if(isError) bar.classList.add('error');
+    else if(t.critico) bar.classList.add('critico');
+    else bar.classList.add('ok');
+
+    bar.textContent = '';
+  });
+
+  const msgBox = document.getElementById('ganttMensajes');
+  msgBox.innerHTML = '';
+  if(errors.length > 0){
+    errors.forEach(e=>{
+      const d = document.createElement('div');
+      d.className = 'gantt-msg err';
+      d.textContent = '❌ ' + e.msg;
+      msgBox.appendChild(d);
+    });
+  } else {
+    const d = document.createElement('div');
+    d.className = 'gantt-msg ok';
+    d.textContent = '✅ ¡Todas las dependencias están respetadas!';
+    msgBox.appendChild(d);
+  }
+
+  document.getElementById('ganttTotalNum').textContent = total + ' semanas';
+  const totalMsg = document.getElementById('ganttTotalMsg');
+  if(errors.length > 0){
+    totalMsg.textContent = 'Aún hay conflictos de dependencias. Corrígelos para avanzar.';
+  } else if(total > 11){
+    totalMsg.textContent = `Bien, no hay errores, pero el proyecto dura ${total} semanas. ¿Puedes reducirlo a 11 aprovechando el paralelismo? (Pista: la documentación puede hacerse en paralelo con las pruebas y correcciones).`;
+  } else if(total === 11){
+    totalMsg.textContent = '🏆 ¡Planificación óptima! Has respetado todas las dependencias y minimizado la duración.';
+  } else {
+    totalMsg.textContent = 'Algo no cuadra: revisa las dependencias.';
+  }
+
+  if(errors.length === 0 && total === 11){
+    if(estado.scores.gantt === 0){
+      estado.scores.gantt = 1;
+      guardarEstado();
+      actualizarCertificado();
+    }
+    completarReto('gantt', '¡Planificación óptima!');
+  }
+}
+
+/* ================================================================
+   7. RETO 2 · AUDITORÍA DE CALIDAD
+================================================================ */
+const auditoriaElementos = [
+  {t:'Documentación del proyecto', d:'El equipo ha entregado un README extenso con instrucciones de instalación, uso, autores, licencia y créditos a las fuentes utilizadas.', correcto:true,
+   why:'Documentación completa, con licencia abierta, autores y créditos: excelente calidad y fiabilidad.'},
+  {t:'Código fuente del proyecto', d:'El código funciona pero no tiene comentarios, no hay README ni instrucciones para que otra persona pueda entenderlo o modificarlo.', correcto:false,
+   why:'Falta documentación técnica básica. Un código sin comentarios ni instrucciones es difícil de mantener y reduce la fiabilidad del proyecto.'},
+  {t:'Diseño de interfaz', d:'La app se ha probado en distintos tamaños de pantalla y navegadores, y funciona correctamente en todos ellos.', correcto:true,
+   why:'Comprobar la compatibilidad multiplataforma es parte esencial de la calidad. El proyecto es robusto.'},
+  {t:'Validación con usuarios', d:'El equipo ha decidido no hacer pruebas con usuarios reales por falta de tiempo. Asumen que "funcionará bien porque a ellos les funciona".', correcto:false,
+   why:'Sin test con usuarios no hay validación real. Es uno de los fallos de calidad más frecuentes y más graves.'},
+  {t:'Gestión del tiempo', d:'El proyecto se ha entregado en la fecha comprometida y con todos los objetivos iniciales cumplidos.', correcto:true,
+   why:'Cumplir plazos y objetivos es un indicador directo de buena gestión y fiabilidad.'},
+  {t:'Accesibilidad', d:'Las imágenes de la app no tienen texto alternativo y los colores tienen poco contraste. No se ha revisado con criterios de accesibilidad.', correcto:false,
+   why:'La accesibilidad es un criterio de calidad obligatorio. Sin texto alternativo ni contraste suficiente, muchas personas no podrán usar la solución.'},
+  {t:'Control de versiones', d:'El equipo mantiene un historial de cambios en GitHub, con commits descriptivos y versiones etiquetadas (v1.0, v1.1, etc.).', correcto:true,
+   why:'El control de versiones permite rastrear cambios, revertir errores y coordinar al equipo. Es una práctica de calidad esencial.'},
+  {t:'Evaluación del impacto', d:'No se han recogido datos ni métricas que demuestren el impacto real del proyecto. Solo hay impresiones subjetivas del equipo.', correcto:false,
+   why:'Sin datos ni métricas, no se puede demostrar el impacto. Un proyecto de calidad debe poder justificar sus resultados con evidencias.'}
+];
+
+let auditoriaRespondidas = 0, auditoriaAciertos = 0;
+
+function renderAuditoria(){
+  const cont = document.getElementById('auditoriaGrid');
+  if(!cont) return;
+  cont.innerHTML = '';
+  auditoriaElementos.forEach((el, i)=>{
+    const div = document.createElement('div');
+    div.className = 'audit-card';
+    div.innerHTML = `
+      <div class="ac-titulo">${i + 1}. ${el.t}</div>
+      <p class="ac-desc">${el.d}</p>
+      <div class="audit-btns">
+        <button data-i="${i}" data-v="1">✔ Correcto</button>
+        <button data-i="${i}" data-v="0">✘ Problema</button>
+      </div>
+      <div class="audit-fb"></div>
+    `;
+    cont.appendChild(div);
+    const btns = div.querySelectorAll('button');
+    btns.forEach(b=>{
+      b.addEventListener('click', ()=>{
+        responderAuditoria(i, b.dataset.v === '1');
+      });
+    });
+  });
+}
+
+function responderAuditoria(i, elegido){
+  const el = auditoriaElementos[i];
+  const div = document.querySelectorAll('.audit-card')[i];
+  if(!div) return;
+  const btns = div.querySelectorAll('button');
+  const fb = div.querySelector('.audit-fb');
+  const acierto = elegido === el.correcto;
+
+  btns.forEach(x=>{
+    x.disabled = true;
+    if((x.dataset.v === '1') === el.correcto) x.classList.add('correct');
+  });
+  if(!acierto){
+    btns.forEach(x=>{
+      if((x.dataset.v === '1') === elegido) x.classList.add('wrong');
+    });
+  }
+  fb.innerHTML = (acierto ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>No exactamente.</strong> ') + el.why;
+  fb.classList.add('show');
+  div.classList.add('done');
+
+  if(!restaurando){
+    estado.respuestas.auditoria[i] = { elegido };
+    guardarEstado();
+  }
+
+  auditoriaRespondidas++;
+  if(acierto) auditoriaAciertos++;
+
+  if(auditoriaRespondidas === auditoriaElementos.length){
+    if(auditoriaAciertos > estado.scores.auditoria){
+      estado.scores.auditoria = auditoriaAciertos;
+      guardarEstado();
+      actualizarCertificado();
+    }
+    document.getElementById('auditMsg').innerHTML =
+      `Has identificado correctamente <strong>${auditoriaAciertos} de ${auditoriaElementos.length}</strong> problemas/elementos de calidad. ` +
+      (auditoriaAciertos >= 6 ? '¡Tienes un gran ojo para la calidad!' : 'Repasa los elementos fallados: es una habilidad fundamental en cualquier proyecto.');
+    completarReto('auditoria', '¡Auditoría completada!');
+  }
+}
+
+function restaurarAuditoria(){
+  auditoriaRespondidas = 0;
+  auditoriaAciertos = 0;
+  const saved = estado.respuestas.auditoria || {};
+  Object.keys(saved).forEach(k=>{
+    const i = parseInt(k, 10);
+    if(saved[i] && typeof saved[i].elegido === 'boolean'){
+      responderAuditoria(i, saved[i].elegido);
+    }
+  });
+}
+
+/* ================================================================
+   8. RETO 3 · MÉTODOS DE INVESTIGACIÓN
+================================================================ */
+const metodosSituaciones = [
+  {
+    sit:'Quieres saber cuántos alumnos del centro usarían una app para compartir apuntes y con qué frecuencia.',
+    opciones:[
+      {ico:'📝', t:'Encuesta anónima a todo el alumnado', ok:true},
+      {ico:'🎤', t:'Entrevista personal a 3 compañeros', ok:false},
+      {ico:'📚', t:'Análisis de la bibliografía existente', ok:false},
+      {ico:'🔬', t:'Observación directa en el aula', ok:false}
+    ],
+    exp:'La encuesta permite llegar a muchas personas y obtener datos cuantitativos sobre intención y frecuencia de uso.'
+  },
+  {
+    sit:'Necesitas entender en profundidad por qué algunos compañeros abandonan el uso de una app educativa.',
+    opciones:[
+      {ico:'📝', t:'Encuesta rápida por WhatsApp', ok:false},
+      {ico:'🎤', t:'Entrevista semiestructurada con usuarios reales', ok:true},
+      {ico:'🔬', t:'Prototipado rápido', ok:false},
+      {ico:'📚', t:'Análisis de documentación oficial', ok:false}
+    ],
+    exp:'La entrevista permite explorar motivaciones, frustraciones y experiencias en profundidad, algo que una encuesta no capta bien.'
+  },
+  {
+    sit:'Quieres comprobar si el nuevo diseño de la interfaz de tu app es realmente fácil de usar por personas que no la conocen.',
+    opciones:[
+      {ico:'📝', t:'Encuesta sobre el color preferido', ok:false},
+      {ico:'🧪', t:'Test de usuario con personas que no la han visto antes', ok:true},
+      {ico:'📚', t:'Análisis del manual oficial de diseño', ok:false},
+      {ico:'🔬', t:'Observación en el aula sin interacción', ok:false}
+    ],
+    exp:'El test de usuario con personas nuevas revela problemas de usabilidad reales que el equipo no detecta por estar acostumbrado.'
+  },
+  {
+    sit:'Quieres documentar qué soluciones similares existen ya en otros centros o países y qué resultados han tenido.',
+    opciones:[
+      {ico:'🎤', t:'Entrevistas con tus compañeros de clase', ok:false},
+      {ico:'📚', t:'Análisis documental de artículos, informes y proyectos similares', ok:true},
+      {ico:'📝', t:'Encuesta interna al equipo', ok:false},
+      {ico:'🔬', t:'Prototipado sin investigación previa', ok:false}
+    ],
+    exp:'El análisis documental es el método adecuado para revisar lo que ya se ha hecho, aprender de experiencias previas y no reinventar la rueda.'
+  },
+  {
+    sit:'Quieres medir cuántos compañeros usan el móvil durante el recreo y qué apps abren más.',
+    opciones:[
+      {ico:'📝', t:'Preguntar solo a tus amigos', ok:false},
+      {ico:'🔬', t:'Observación sistemática y registro de datos durante varios recreos', ok:true},
+      {ico:'🎤', t:'Entrevista a un profesor', ok:false},
+      {ico:'🧪', t:'Prototipar una nueva app sin datos', ok:false}
+    ],
+    exp:'La observación sistemática con registro de datos es el método más directo para medir comportamientos reales en su contexto natural.'
+  },
+  {
+    sit:'Estás diseñando un nuevo soporte para el móvil. Quieres explorar varias formas y ver cuál funciona mejor antes de fabricarlo definitivamente.',
+    opciones:[
+      {ico:'📚', t:'Buscar tutoriales en YouTube y copiar el primero', ok:false},
+      {ico:'🛠️', t:'Prototipado rápido con cartón, plastilina o impresión 3D de baja calidad', ok:true},
+      {ico:'📝', t:'Encuesta a tus compañeros sobre qué forma prefieren sin verla', ok:false},
+      {ico:'🎤', t:'Entrevista a un ingeniero famoso', ok:false}
+    ],
+    exp:'El prototipado rápido permite materializar varias ideas, compararlas y aprender antes de invertir tiempo y recursos en la versión final.'
+  }
+];
+
+let metodosRespondidas = 0, metodosAciertos = 0;
+
+function renderMetodos(){
+  const cont = document.getElementById('metodosContainer');
+  if(!cont) return;
+  cont.innerHTML = '';
+  metodosSituaciones.forEach((m, i)=>{
+    const div = document.createElement('div');
+    div.className = 'metodo-card';
+    div.innerHTML = `
+      <h4>📌 Situación ${i+1}</h4>
+      <p>${m.sit}</p>
+      <div class="metodo-opciones" style="margin-top:.7rem">
+        ${m.opciones.map((o,j)=>`
+          <button class="metodo-op" data-i="${i}" data-j="${j}">
+            <span class="mo-ico">${o.ico}</span>
+            <span>${o.t}</span>
+          </button>
+        `).join('')}
+      </div>
+      <div class="metodo-fb"></div>
+    `;
+    cont.appendChild(div);
+    const btns = div.querySelectorAll('.metodo-op');
+    btns.forEach(b=>{
+      b.addEventListener('click', ()=>{
+        responderMetodo(i, parseInt(b.dataset.j, 10));
+      });
+    });
+  });
+}
+
+function responderMetodo(i, j){
+  const m = metodosSituaciones[i];
+  const div = document.querySelectorAll('.metodo-card')[i];
+  if(!div) return;
+  const btns = div.querySelectorAll('.metodo-op');
+  const fb = div.querySelector('.metodo-fb');
+  const op = m.opciones[j];
+
+  btns.forEach(x=>x.disabled = true);
+  btns.forEach(x=>{
+    const idx = parseInt(x.dataset.j, 10);
+    if(m.opciones[idx].ok) x.classList.add('correct');
+  });
+  if(!op.ok){
+    btns.forEach(x=>{
+      if(parseInt(x.dataset.j, 10) === j) x.classList.add('wrong');
+    });
+  }
+  fb.innerHTML = (op.ok ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>Método no adecuado.</strong> ') + m.exp;
+  fb.classList.add('show');
+
+  if(!restaurando){
+    estado.respuestas.metodos[i] = { j };
+    guardarEstado();
+  }
+
+  metodosRespondidas++;
+  if(op.ok) metodosAciertos++;
+
+  if(metodosRespondidas === metodosSituaciones.length){
+    if(metodosAciertos > estado.scores.metodos){
+      estado.scores.metodos = metodosAciertos;
+      guardarEstado();
+      actualizarCertificado();
+    }
+    document.getElementById('metodosMsg').innerHTML =
+      `Has acertado <strong>${metodosAciertos} de ${metodosSituaciones.length}</strong> situaciones. ` +
+      (metodosAciertos >= 5 ? '¡Sabes elegir el método adecuado!' : 'Repasa las situaciones falladas.');
+    completarReto('metodos', '¡Métodos de investigación completados!');
+  }
+}
+
+function restaurarMetodos(){
+  metodosRespondidas = 0;
+  metodosAciertos = 0;
+  const saved = estado.respuestas.metodos || {};
+  Object.keys(saved).forEach(k=>{
+    const i = parseInt(k, 10);
+    if(saved[i] && typeof saved[i].j === 'number'){
+      responderMetodo(i, saved[i].j);
+    }
+  });
+}
+
+/* ================================================================
+   9. RETO 4 · SIMULADOR DE RIESGOS
+================================================================ */
+const riesgosSituaciones = [
+  {
+    titulo:'Retraso en el desarrollo',
+    desc:'A mitad del proyecto, te das cuenta de que la tarea de programación va a tardar más de lo previsto. Faltan 2 semanas para la entrega.',
+    opciones:[
+      {t:'Ocultarlo y esperar a que nadie lo note.', ok:false, why:'Ocultar un retraso es lo peor que se puede hacer: el problema se hace más grande y se pierde la confianza del equipo y del profesorado.'},
+      {t:'Comunicarlo cuanto antes al equipo, replanificar tareas y priorizar lo esencial.', ok:true, why:'¡Correcto! Comunicar rápido permite reorganizar, pedir ayuda y priorizar. Los retrasos se gestionan, no se esconden.'},
+      {t:'Trabajar toda la noche sin dormir para intentar acabar a tiempo.', ok:false, why:'El agotamiento reduce la calidad y aumenta los errores. Es mejor replanificar que sacrificar la salud.'}
+    ]
+  },
+  {
+    titulo:'Pérdida de datos',
+    desc:'Un miembro del equipo ha perdido un archivo importante que había estado trabajando durante varios días. Solo existía en su ordenador.',
+    opciones:[
+      {t:'Culparle delante de todo el equipo por no haber hecho copias de seguridad.', ok:false, why:'Culpar no resuelve el problema y daña el clima del equipo. Además, la responsabilidad de las copias de seguridad es de todo el equipo.'},
+      {t:'Recuperar lo que se pueda y establecer un sistema de copias de seguridad compartido.', ok:true, why:'¡Correcto! La prioridad es recuperar y prevenir. Un sistema de copias de seguridad es responsabilidad del equipo entero.'},
+      {t:'Ignorar el tema y seguir adelante como si nada.', ok:false, why:'Ignorar la pérdida puede llevar a rehacer el trabajo desde cero y a perder más tiempo.'}
+    ]
+  },
+  {
+    titulo:'Conflicto en el equipo',
+    desc:'Dos personas del equipo tienen opiniones muy distintas sobre cómo debe ser el diseño final. Discuten cada vez que se juntan.',
+    opciones:[
+      {t:'Dejar que uno de ellos imponga su criterio para que se acabe la discusión.', ok:false, why:'Imponer no resuelve el conflicto: la otra persona quedará desmotivada y el problema volverá. Hay que buscar una solución dialogada.'},
+      {t:'Reunir al equipo, escuchar las razones de cada uno y decidir de forma argumentada.', ok:true, why:'¡Correcto! Escuchar, argumentar y decidir en conjunto es la mejor manera de resolver conflictos y enriquecer el resultado.'},
+      {t:'Ignorar el conflicto y esperar a que se resuelva solo.', ok:false, why:'Los conflictos no resueltos crecen y afectan al proyecto. Hay que abordarlos con calma y respeto.'}
+    ]
+  },
+  {
+    titulo:'Cambio de alcance',
+    desc:'El profesor os pide añadir una nueva funcionalidad a la app cuando ya estáis en la fase de pruebas.',
+    opciones:[
+      {t:'Añadirla sin reorganizar el plan, intentando que quepa como sea.', ok:false, why:'Añadir trabajo sin replanificar suele llevar a retrasos y a bajar la calidad del resto. Siempre hay que revisar el plan.'},
+      {t:'Analizar el impacto del cambio, valorar qué se puede aplazar y replanificar con el equipo.', ok:true, why:'¡Correcto! Todo cambio de alcance debe analizarse y replanificarse. Puede implicar aplazar otras tareas menos prioritarias.'},
+      {t:'Negarse directamente al cambio sin dar opciones.', ok:false, why:'La rigidez no ayuda. Los cambios de alcance son frecuentes: hay que saber gestionarlos, no bloquearlos.'}
+    ]
+  },
+  {
+    titulo:'Falta de recursos',
+    desc:'El componente electrónico que necesitabais para el prototipo no llegará a tiempo y la fecha de presentación se acerca.',
+    opciones:[
+      {t:'Esperar sin hacer nada y presentar lo que haya, aunque esté incompleto.', ok:false, why:'Esperar pasivamente no resuelve la falta de recursos. Hay que buscar alternativas.'},
+      {t:'Buscar un componente alternativo, un sustituto cercano o adaptar el prototipo a lo disponible.', ok:true, why:'¡Correcto! La creatividad y la búsqueda de alternativas son claves para superar limitaciones de recursos.'},
+      {t:'Comprar otro componente mucho más caro sin consultar al equipo ni al profesorado.', ok:false, why:'Tomar decisiones de gasto sin consultar es imprudente y puede generar problemas con el presupuesto.'}
+    ]
+  }
+];
+
+let riesgosRespondidas = 0, riesgosAciertos = 0;
+
+function renderRiesgos(){
+  const cont = document.getElementById('riesgosContainer');
+  if(!cont) return;
+  cont.innerHTML = '';
+  riesgosSituaciones.forEach((r, i)=>{
+    const div = document.createElement('div');
+    div.className = 'riesgo-card';
+    div.innerHTML = `
+      <div class="rc-head">
+        <span class="rc-ico">⚠️</span>
+        <div>
+          <p class="rc-titulo">Riesgo ${i+1} · ${r.titulo}</p>
+          <p class="rc-desc">${r.desc}</p>
+        </div>
+      </div>
+      <div class="riesgo-opciones">
+        ${r.opciones.map((o,j)=>`
+          <button class="riesgo-op" data-i="${i}" data-j="${j}">
+            <span class="ro-letra">${String.fromCharCode(65+j)}</span>
+            <span>${o.t}</span>
+          </button>
+        `).join('')}
+      </div>
+      <div class="riesgo-fb"></div>
+    `;
+    cont.appendChild(div);
+    const btns = div.querySelectorAll('.riesgo-op');
+    btns.forEach(b=>{
+      b.addEventListener('click', ()=>{
+        responderRiesgo(i, parseInt(b.dataset.j, 10));
+      });
+    });
+  });
+}
+
+function responderRiesgo(i, j){
+  const r = riesgosSituaciones[i];
+  const div = document.querySelectorAll('.riesgo-card')[i];
+  if(!div) return;
+  const btns = div.querySelectorAll('.riesgo-op');
+  const fb = div.querySelector('.riesgo-fb');
+  const op = r.opciones[j];
+
+  btns.forEach(x=>x.disabled = true);
+  btns.forEach(x=>{
+    const idx = parseInt(x.dataset.j, 10);
+    if(r.opciones[idx].ok) x.classList.add('correct');
+  });
+  if(!op.ok){
+    btns.forEach(x=>{
+      if(parseInt(x.dataset.j, 10) === j) x.classList.add('wrong');
+    });
+  }
+  fb.innerHTML = (op.ok ? '✅ <strong>Buena decisión.</strong> ' : '❌ <strong>Revisa esta opción.</strong> ') + op.why;
+  fb.classList.add('show');
+
+  if(!restaurando){
+    estado.respuestas.riesgos[i] = { j };
+    guardarEstado();
+  }
+
+  riesgosRespondidas++;
+  if(op.ok) riesgosAciertos++;
+
+  if(riesgosRespondidas === riesgosSituaciones.length){
+    if(riesgosAciertos > estado.scores.riesgos){
+      estado.scores.riesgos = riesgosAciertos;
+      guardarEstado();
+      actualizarCertificado();
+    }
+    document.getElementById('riesgosMsg').innerHTML =
+      `Has resuelto correctamente <strong>${riesgosAciertos} de ${riesgosSituaciones.length}</strong> riesgos. ` +
+      (riesgosAciertos >= 4 ? '¡Excelente gestión de riesgos!' : 'Repasa las situaciones falladas.');
+    completarReto('riesgos', '¡Simulador de riesgos completado!');
+  }
+}
+
+function restaurarRiesgos(){
+  riesgosRespondidas = 0;
+  riesgosAciertos = 0;
+  const saved = estado.respuestas.riesgos || {};
+  Object.keys(saved).forEach(k=>{
+    const i = parseInt(k, 10);
+    if(saved[i] && typeof saved[i].j === 'number'){
+      responderRiesgo(i, saved[i].j);
+    }
+  });
+}
+
+/* ================================================================
+   10. RETO 5 · RÚBRICA DE EVALUACIÓN
+================================================================ */
+const rubricaCriterios = [
+  {
+    id:'funcionalidad',
+    titulo:'⚙️ Funcionalidad',
+    evidencia:'<strong>Evidencia:</strong> La app permite reservar aulas, patio cubierto y sala de ordenadores. Sin embargo, la reserva de la sala de ordenadores falla a veces al confirmar y hay que repetir el proceso.',
+    niveles:[
+      {v:4, txt:'Excelente', ok:false},
+      {v:3, txt:'Bien', ok:true},
+      {v:2, txt:'Mejorable', ok:false},
+      {v:1, txt:'Deficiente', ok:false}
+    ],
+    why:'La funcionalidad principal está implementada y funciona, pero hay un fallo puntual en la confirmación. Esto corresponde a un nivel "Bien": cumple los objetivos pero tiene un defecto a corregir.'
+  },
+  {
+    id:'fiabilidad',
+    titulo:'🧪 Fiabilidad técnica',
+    evidencia:'<strong>Evidencia:</strong> Se han hecho pruebas en varios móviles y navegadores. Se han corregido los errores detectados y se ha documentado el proceso en un registro de cambios.',
+    niveles:[
+      {v:4, txt:'Excelente', ok:true},
+      {v:3, txt:'Bien', ok:false},
+      {v:2, txt:'Mejorable', ok:false},
+      {v:1, txt:'Deficiente', ok:false}
+    ],
+    why:'Pruebas en varios dispositivos, corrección de errores y registro de cambios: es un nivel excelente de fiabilidad técnica.'
+  },
+  {
+    id:'accesibilidad',
+    titulo:'♿ Accesibilidad',
+    evidencia:'<strong>Evidencia:</strong> Los botones tienen contraste suficiente, el texto se adapta a distintos tamaños de pantalla y las imágenes incluyen texto alternativo. No se ha probado con lector de pantalla.',
+    niveles:[
+      {v:4, txt:'Excelente', ok:false},
+      {v:3, txt:'Bien', ok:true},
+      {v:2, txt:'Mejorable', ok:false},
+      {v:1, txt:'Deficiente', ok:false}
+    ],
+    why:'Se han aplicado criterios básicos de accesibilidad (contraste, texto alternativo, adaptabilidad) pero falta la prueba con lector de pantalla. Corresponde a un nivel "Bien".'
+  },
+  {
+    id:'sostenibilidad',
+    titulo:'🌱 Sostenibilidad',
+    evidencia:'<strong>Evidencia:</strong> La app usa software libre y servidores con energía renovable. El código está publicado en abierto con licencia Creative Commons. Los dispositivos de prueba se reutilizaron de versiones anteriores.',
+    niveles:[
+      {v:4, txt:'Excelente', ok:true},
+      {v:3, txt:'Bien', ok:false},
+      {v:2, txt:'Mejorable', ok:false},
+      {v:1, txt:'Deficiente', ok:false}
+    ],
+    why:'Software libre, servidores renovables, licencia abierta y reutilización de dispositivos: es un ejemplo de sostenibilidad de nivel excelente.'
+  }
+];
+
+let rubricaRespondidas = 0, rubricaAciertos = 0;
+
+function renderRubrica(){
+  const cont = document.getElementById('rubricaContainer');
+  if(!cont) return;
+  cont.innerHTML = '';
+  rubricaCriterios.forEach((c, i)=>{
+    const div = document.createElement('div');
+    div.className = 'rubrica-item';
+    div.innerHTML = `
+      <div class="ri-titulo">${c.titulo}</div>
+      <div class="ri-evidencia">${c.evidencia}</div>
+      <div class="rubrica-niveles">
+        ${c.niveles.map(n=>`
+          <button class="rubrica-nivel" data-i="${i}" data-v="${n.v}">
+            <span class="rn-num">${n.v}</span>
+            <span class="rn-txt">${n.txt}</span>
+          </button>
+        `).join('')}
+      </div>
+      <div class="rubrica-fb"></div>
+    `;
+    cont.appendChild(div);
+    const btns = div.querySelectorAll('.rubrica-nivel');
+    btns.forEach(b=>{
+      b.addEventListener('click', ()=>{
+        responderRubrica(i, parseInt(b.dataset.v, 10));
+      });
+    });
+  });
+}
+
+function responderRubrica(i, v){
+  const c = rubricaCriterios[i];
+  const div = document.querySelectorAll('.rubrica-item')[i];
+  if(!div) return;
+  const btns = div.querySelectorAll('.rubrica-nivel');
+  const fb = div.querySelector('.rubrica-fb');
+  const nivel = c.niveles.find(n=>n.v === v);
+  const correctoNivel = c.niveles.find(n=>n.ok);
+
+  btns.forEach(x=>{
+    x.disabled = true;
+    const vv = parseInt(x.dataset.v, 10);
+    if(vv === correctoNivel.v) x.classList.add('correct');
+  });
+  if(!nivel.ok){
+    btns.forEach(x=>{
+      if(parseInt(x.dataset.v, 10) === v) x.classList.add('wrong');
+    });
+  }
+  fb.innerHTML = (nivel.ok ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>Nivel no adecuado.</strong> ') + c.why;
+  fb.classList.add('show');
+  div.classList.add('completada');
+
+  if(!restaurando){
+    estado.respuestas.rubrica[i] = { v };
+    guardarEstado();
+  }
+
+  rubricaRespondidas++;
+  if(nivel.ok) rubricaAciertos++;
+
+  if(rubricaRespondidas === rubricaCriterios.length){
+    if(rubricaAciertos > estado.scores.rubrica){
+      estado.scores.rubrica = rubricaAciertos;
+      guardarEstado();
+      actualizarCertificado();
+    }
+    document.getElementById('rubricaMsg').innerHTML =
+      `Has evaluado correctamente <strong>${rubricaAciertos} de ${rubricaCriterios.length}</strong> criterios. ` +
+      (rubricaAciertos >= 3 ? '¡Tienes buen criterio para evaluar calidad!' : 'Repasa los criterios fallados.');
+    completarReto('rubrica', '¡Rúbrica completada!');
+  }
+}
+
+function restaurarRubrica(){
+  rubricaRespondidas = 0;
+  rubricaAciertos = 0;
+  const saved = estado.respuestas.rubrica || {};
+  Object.keys(saved).forEach(k=>{
+    const i = parseInt(k, 10);
+    if(saved[i] && typeof saved[i].v === 'number'){
+      responderRubrica(i, saved[i].v);
+    }
+  });
+}
+
+/* ================================================================
+   11. VOCABULARIO
+================================================================ */
+const vocabulario = [
+  {ico:'📅', t:'Cronograma / Gantt', d:'Representación visual de las tareas de un proyecto a lo largo del tiempo. Muestra qué tareas hay, cuánto duran, cuándo empiezan y de qué otras dependen.'},
+  {ico:'🔗', t:'Dependencia entre tareas', d:'Relación entre dos tareas en la que una no puede empezar hasta que la otra ha terminado. Respetar las dependencias es esencial para que un cronograma sea realista.'},
+  {ico:'⚡', t:'Camino crítico', d:'Secuencia de tareas que determina la duración total mínima del proyecto. Cualquier retraso en una tarea del camino crítico retrasa todo el proyecto.'},
+  {ico:'✅', t:'Criterio de calidad', d:'Característica medible que sirve para comprobar si un proyecto cumple con lo esperado: funcionalidad, fiabilidad, accesibilidad, sostenibilidad, documentación, seguridad.'},
+  {ico:'🧪', t:'Fiabilidad', d:'Grado en que un producto o proceso funciona de manera consistente y predecible en distintas condiciones. Se comprueba con pruebas sistemáticas y registro de resultados.'},
+  {ico:'📋', t:'Rúbrica', d:'Tabla que describe distintos niveles de desempeño para cada criterio de evaluación. Ayuda a evaluar de forma objetiva y a saber qué se espera en cada nivel.'},
+  {ico:'📊', t:'Indicador de calidad', d:'Métrica concreta que permite comprobar si se alcanza un criterio. Por ejemplo: % de errores detectados en pruebas, tiempo de carga, número de usuarios que completan la tarea.'},
+  {ico:'🔬', t:'Método de investigación', d:'Estrategia sistemática para obtener información: encuesta, entrevista, observación, análisis documental, prototipado o test de usuario. Cada uno es adecuado para objetivos distintos.'},
+  {ico:'📝', t:'Encuesta', d:'Método de investigación cuantitativo que recoge datos de muchas personas a través de preguntas estandarizadas. Útil para medir frecuencias, opiniones y tendencias.'},
+  {ico:'🎤', t:'Entrevista', d:'Método cualitativo que explora en profundidad la experiencia, motivaciones y opiniones de una persona. Útil para entender el "por qué" detrás de los comportamientos.'},
+  {ico:'🔍', t:'Observación sistemática', d:'Método que registra comportamientos reales en su contexto natural, sin intervenir. Aporta datos que las personas no siempre verbalizan con exactitud.'},
+  {ico:'📚', t:'Análisis documental', d:'Método de investigación basado en el estudio de fuentes escritas: informes, artículos, documentación técnica, proyectos similares. Útil para aprender de experiencias previas.'},
+  {ico:'🛠️', t:'Prototipado', d:'Construcción rápida de versiones preliminares (en cartón, plastilina, 3D o código) para explorar ideas y aprender antes de invertir recursos en la versión final.'},
+  {ico:'🧪', t:'Test de usuario', d:'Prueba en la que personas reales usan el producto mientras se observa y registra su comportamiento. Revela problemas de usabilidad que el equipo no ve por estar acostumbrado.'},
+  {ico:'⚠️', t:'Riesgo del proyecto', d:'Evento incierto que, si ocurre, puede afectar negativamente al proyecto (retrasos, fallos, conflictos, pérdida de recursos). Se identifican y se planifican respuestas.'},
+  {ico:'🛡️', t:'Mitigación', d:'Acción planificada para reducir la probabilidad o el impacto de un riesgo antes de que ocurra. Por ejemplo: copias de seguridad, plan B de proveedores, comunicación temprana.'},
+  {ico:'📈', t:'Mejora continua', d:'Filosofía de trabajo que busca revisar y mejorar constantemente procesos y productos, incluso cuando ya funcionan. Aplicada a la gestión de proyectos, evita estancarse.'},
+  {ico:'🎯', t:'Alcance del proyecto', d:'Conjunto de objetivos y entregables que se compromete a realizar el equipo. Cualquier cambio en el alcance debe analizarse y replanificarse.'},
+  {ico:'📊', t:'Matriz de riesgos', d:'Herramienta que clasifica los riesgos según su probabilidad de ocurrencia y su impacto potencial. Ayuda a priorizar cuáles requieren respuesta urgente.'},
+  {ico:'🔄', t:'Ciclo PDCA', d:'Modelo de mejora continua con 4 fases: Plan (planificar), Do (hacer), Check (verificar) y Act (actuar). Aplicado a la calidad y a la gestión de proyectos.'},
+  {ico:'📁', t:'Aseguramiento de la calidad', d:'Conjunto de procesos planificados que garantizan que el proyecto cumple los criterios de calidad definidos, antes de que se detecten los problemas.'},
+  {ico:'📝', t:'Autoevaluación', d:'Proceso por el que una persona valora su propio trabajo según unos criterios. Fomenta la reflexión, la responsabilidad y el aprendizaje autónomo.'}
+];
+
+(function initVoc(){
+  const grid = document.getElementById('vocGrid');
+  const defBox = document.getElementById('vocDef');
+  if(!grid) return;
+  vocabulario.forEach((v)=>{
+    const b = document.createElement('button');
+    b.className = 'voc-term';
+    b.innerHTML = `<span style="font-size:1.1rem">${v.ico}</span><span>${v.t}</span>`;
+    b.addEventListener('click', ()=>{
+      const yaActivo = b.classList.contains('active');
+      grid.querySelectorAll('.voc-term').forEach(x=>x.classList.remove('active'));
+      if(yaActivo){
+        defBox.classList.remove('show');
+        setTimeout(()=>{ defBox.innerHTML=''; }, 500);
+        return;
+      }
+      b.classList.add('active');
+      defBox.innerHTML = `<h4>${v.ico} ${v.t}</h4><p>${v.d}</p>`;
+      defBox.classList.add('show');
+    });
+    grid.appendChild(b);
+  });
+})();
+
+/* ================================================================
+   12. QUIZ FINAL
+================================================================ */
+const preguntasQuiz = [
+  {q:'¿Qué muestra un diagrama de Gantt?',
+   o:['El presupuesto detallado del proyecto y sus desviaciones',
+      'Los usuarios finales',
+      'Las tareas y su cronología con dependencias',
+      'Los errores del código'],
+   c:2, e:'Un Gantt muestra las tareas, sus duraciones, cuándo empiezan y de qué otras tareas dependen. Es la herramienta básica de planificación temporal.'},
+  {q:'¿Qué es el camino crítico de un proyecto?',
+   o:['La secuencia que fija la duración mínima',
+      'El conjunto de tareas más difíciles y con mayor riesgo asociado del proyecto',
+      'El camino más corto entre dos tareas',
+      'Las tareas con más riesgo'],
+   c:0, e:'El camino crítico es la secuencia de tareas dependientes que determina la duración total. Cualquier retraso en él retrasa todo el proyecto.'},
+  {q:'¿Cuál de estos es un criterio de CALIDAD del proyecto?',
+   o:['Que sea muy famoso y tenga millones de descargas en las tiendas de aplicaciones',
+      'Que se entregue antes de tiempo',
+      'Que tenga muchos colores',
+      'Documentación, fiabilidad y accesibilidad'],
+   c:3, e:'La calidad de un proyecto se mide con criterios verificables: documentación, fiabilidad técnica, accesibilidad, sostenibilidad, seguridad.'},
+  {q:'¿Qué método de investigación es más adecuado para medir cuántas personas usan una app?',
+   o:['Entrevista personal en profundidad a varios usuarios',
+      'Encuesta cuantitativa',
+      'Análisis documental',
+      'Prototipado'],
+   c:1, e:'La encuesta permite recoger datos cuantitativos de muchas personas de forma eficiente. Es ideal para medir frecuencias y tendencias.'},
+  {q:'¿Para qué sirve un test de usuario?',
+   o:['Para descargar la app y publicarla en las tiendas de aplicaciones móviles',
+      'Para comprar componentes',
+      'Para validar la usabilidad con personas reales',
+      'Para publicar en redes sociales'],
+   c:2, e:'El test de usuario revela problemas de usabilidad reales que el equipo no detecta por estar acostumbrado a su propia solución.'},
+  {q:'¿Qué es un riesgo del proyecto?',
+   o:['Un problema que ya ha ocurrido y que hay que resolver lo antes posible en el proyecto',
+      'Un evento incierto con impacto negativo',
+      'Un miembro del equipo',
+      'Un objetivo del proyecto'],
+   c:1, e:'Un riesgo es un evento futuro incierto con potencial impacto negativo. Se identifican antes de que ocurran y se planifican respuestas.'},
+  {q:'¿Cómo debe gestionarse un retraso en una tarea del proyecto?',
+   o:['Ocultarlo al equipo y al profesorado para no generar alarma innecesaria durante el proyecto',
+      'Trabajar sin dormir',
+      'Culpar a alguien',
+      'Comunicarlo y replanificar'],
+   c:3, e:'Comunicar rápido permite reorganizar, pedir ayuda y priorizar. Los retrasos se gestionan, no se esconden.'},
+  {q:'¿Qué es una rúbrica?',
+   o:['Una tabla con niveles por criterio',
+      'Una regla graduada que sirve para medir longitudes y distancias en el taller de tecnología',
+      'Un tipo de cronograma',
+      'Un método de investigación'],
+   c:0, e:'La rúbrica describe distintos niveles de desempeño por criterio, permitiendo evaluar de forma objetiva y saber qué se espera en cada nivel.'},
+  {q:'¿Por qué es importante elegir bien el método de investigación?',
+   o:['Porque todos los métodos son igual de válidos y da lo mismo usar uno u otro en cualquier situación',
+      'Porque lo exige el profesor',
+      'Porque cada pregunta requiere su método',
+      'Porque es más rápido'],
+   c:2, e:'No existe un método único válido para todo. Elegir el adecuado garantiza que los datos recogidos respondan realmente a la pregunta planteada.'},
+  {q:'¿Cuál de estas decisiones refleja buena GESTIÓN del proyecto?',
+   o:['Cambiar el plan cada día según lo que apetezca hacer al equipo, sin registrar nada por escrito',
+      'Reuniones, acuerdos escritos y control del avance',
+      'Ignorar los problemas técnicos',
+      'Trabajar siempre en solitario'],
+   c:1, e:'La buena gestión implica reuniones periódicas, acuerdos por escrito y seguimiento del avance frente al plan. Es lo que permite detectar desviaciones a tiempo.'}
+];
+
+let quizRespondidas = 0, quizAciertos = 0;
+
+function renderQuiz(){
+  const cont = document.getElementById('quizContainer');
+  if(!cont) return;
+  cont.querySelectorAll('.reveal').forEach(el=>io.unobserve(el));
+  cont.innerHTML = '';
+  preguntasQuiz.forEach((p, i)=>{
+    const div = document.createElement('div');
+    div.className = 'q reveal';
+    div.innerHTML = `
+      <span class="q-num">PREGUNTA ${i+1}</span>
+      <h4>${p.q}</h4>
+      <div class="opts">
+        ${p.o.map((o,j)=>`
+          <button class="opt" data-i="${i}" data-j="${j}">
+            <span class="letter">${String.fromCharCode(65+j)}</span>
+            <span>${o}</span>
+          </button>`).join('')}
+      </div>
+      <div class="expl"></div>
+    `;
+    cont.appendChild(div);
+    io.observe(div);
+    const btns = div.querySelectorAll('.opt');
+    btns.forEach(b=>{
+      b.addEventListener('click', ()=>{
+        responderQuiz(i, parseInt(b.dataset.j, 10));
+      });
+    });
+  });
+}
+
+function responderQuiz(i, j){
+  const p = preguntasQuiz[i];
+  const div = document.querySelectorAll('.q')[i];
+  if(!div) return;
+  const btns = div.querySelectorAll('.opt');
+  const expl = div.querySelector('.expl');
+
+  btns.forEach(x=>x.disabled = true);
+  btns.forEach(x=>{
+    if(parseInt(x.dataset.j, 10) === p.c) x.classList.add('correct');
+  });
+  if(j !== p.c){
+    btns.forEach(x=>{
+      if(parseInt(x.dataset.j, 10) === j) x.classList.add('wrong');
+    });
+  }
+  expl.innerHTML = (j === p.c ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>Respuesta incorrecta.</strong> ') + p.e;
+  expl.classList.add('show');
+
+  if(!restaurando){
+    estado.respuestas.quiz[i] = { j };
+    guardarEstado();
+  }
+
+  if(j === p.c) quizAciertos++;
+  quizRespondidas++;
+
+  if(quizRespondidas === preguntasQuiz.length){
+    mostrarResultadoQuiz();
+  }
+}
+
+function restaurarQuiz(){
+  quizRespondidas = 0;
+  quizAciertos = 0;
+  const saved = estado.respuestas.quiz || {};
+  Object.keys(saved).forEach(k=>{
+    const i = parseInt(k, 10);
+    if(saved[i] && typeof saved[i].j === 'number'){
+      responderQuiz(i, saved[i].j);
+    }
+  });
+}
+
+function mostrarResultadoQuiz(){
+  const res = document.getElementById('quizResult');
+  document.getElementById('quizScore').textContent = quizAciertos + '/' + preguntasQuiz.length;
+  const pct = Math.round(quizAciertos / preguntasQuiz.length * 100);
+  let titulo, msg;
+  if(pct === 100){ titulo = '🏆 ¡Perfecto!'; msg = 'Dominas la gestión de proyectos con calidad, fiabilidad y herramientas digitales.'; }
+  else if(pct >= 75){ titulo = '🌟 ¡Muy bien!'; msg = 'Tienes una comprensión sólida. Repasa las preguntas falladas para afinar los detalles.'; }
+  else if(pct >= 50){ titulo = '👍 Buen intento'; msg = 'Vas por el camino correcto. Vuelve a las secciones de planificación, calidad, investigación y riesgos.'; }
+  else { titulo = '📚 A seguir aprendiendo'; msg = 'Revisa con calma cada sección y vuelve a intentarlo.'; }
+  document.getElementById('quizTitle').textContent = titulo;
+  document.getElementById('quizMsg').textContent = msg;
+  res.style.display = 'block';
+  if(!restaurando) res.scrollIntoView({behavior:'smooth', block:'center'});
+  if(quizAciertos > estado.scores.quiz){
+    estado.scores.quiz = quizAciertos;
+    guardarEstado();
+    actualizarCertificado();
+  }
+  completarReto('quiz', '¡Cuestionario final completado! ' + quizAciertos + '/' + preguntasQuiz.length);
+}
+
+/* ================================================================
+   13. CERTIFICADO Y PDF RASTERIZADO
+================================================================ */
+function actualizarCertificado(){
+  const stats = document.getElementById('certStats');
+  const nombreEl = document.getElementById('certNombre');
+  const warn = document.getElementById('certWarn');
+  const btn = document.getElementById('btnCertificado');
+
+  nombreEl.textContent = estado.nombre || '—';
+
+  const s = estado.scores;
+  const nRetos = estado.retos.length;
+
+  const items = [
+    {num: (s.gantt ? '✓' : '—'), lbl:'Gantt'},
+    {num: (s.auditoria>0 ? s.auditoria + '/8' : '—'), lbl:'Auditoría'},
+    {num: (s.metodos>0 ? s.metodos + '/6' : '—'), lbl:'Métodos'},
+    {num: (s.riesgos>0 ? s.riesgos + '/5' : '—'), lbl:'Riesgos'},
+    {num: (s.rubrica>0 ? s.rubrica + '/4' : '—'), lbl:'Rúbrica'},
+    {num: (s.quiz>0 ? s.quiz + '/10' : '—'), lbl:'Cuestionario'},
+    {num: nRetos + '/' + RETOS_TOTALES, lbl:'Retos totales'}
+  ];
+
+  stats.innerHTML = items.map(it=>`
+    <div class="cert-stat">
+      <div class="num">${it.num}</div>
+      <div class="lbl">${it.lbl}</div>
+    </div>
+  `).join('');
+
+  if(nRetos === 0){
+    warn.style.display = 'block';
+    btn.disabled = true;
+    btn.style.opacity = .55;
+    btn.style.cursor = 'not-allowed';
+  } else {
+    warn.style.display = 'none';
+    btn.disabled = false;
+    btn.style.opacity = 1;
+    btn.style.cursor = 'pointer';
+  }
+}
+
+document.getElementById('btnCertificado').addEventListener('click', ()=>{
+  if(!estado.nombre){ toast('Introduce tu nombre primero'); return; }
+  if(estado.retos.length === 0){ toast('Completa al menos un reto para obtener el certificado'); return; }
+  generarPDFRasterizado();
+});
+
+function generarPDFRasterizado(){
+  if(!(window.jspdf && window.jspdf.jsPDF)){
+    toast('No se ha podido cargar la librería PDF. Inténtalo de nuevo.');
+    return;
+  }
+  try{
+    const DPI = 300;
+    const W_MM = 297, H_MM = 210;
+    const W = Math.round(W_MM / 25.4 * DPI);
+    const H = Math.round(H_MM / 25.4 * DPI);
+    const mm = v => v / 25.4 * DPI;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = '#eff6ff';
+    ctx.fillRect(0,0,W,H);
+
+    ctx.strokeStyle = '#1e3a8a';
+    ctx.lineWidth = mm(2);
+    ctx.strokeRect(mm(10), mm(10), W-mm(20), H-mm(20));
+    ctx.lineWidth = mm(0.5);
+    ctx.strokeRect(mm(14), mm(14), W-mm(28), H-mm(28));
+
+    ctx.fillStyle = '#1e3a8a';
+    ctx.fillRect(mm(14), mm(14), mm(20), mm(3));
+    ctx.fillRect(mm(14), mm(14), mm(3), mm(20));
+    ctx.fillRect(W-mm(34), mm(14), mm(20), mm(3));
+    ctx.fillRect(W-mm(17), mm(14), mm(3), mm(20));
+    ctx.fillRect(mm(14), H-mm(17), mm(20), mm(3));
+    ctx.fillRect(mm(14), H-mm(34), mm(3), mm(20));
+    ctx.fillRect(W-mm(34), H-mm(17), mm(20), mm(3));
+    ctx.fillRect(W-mm(17), H-mm(34), mm(3), mm(20));
+
+    ctx.fillStyle = '#1e3a8a';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = `bold ${mm(9)}px Arial, sans-serif`;
+    ctx.fillText('CERTIFICADO DE APROVECHAMIENTO', W/2, mm(38));
+
+    ctx.fillStyle = '#64748b';
+    ctx.font = `${mm(4)}px Arial, sans-serif`;
+    ctx.fillText('Proyectos con Calidad · Gestión, fiabilidad, investigación y herramientas digitales', W/2, mm(48));
+
+    ctx.strokeStyle = '#eab308';
+    ctx.lineWidth = mm(0.8);
+    ctx.beginPath();
+    ctx.moveTo(W/2 - mm(60), mm(53));
+    ctx.lineTo(W/2 + mm(60), mm(53));
+    ctx.stroke();
+
+    ctx.fillStyle = '#475569';
+    ctx.font = `${mm(4.5)}px Arial, sans-serif`;
+    ctx.fillText('Se certifica que', W/2, mm(68));
+
+    ctx.fillStyle = '#0f172a';
+    ctx.font = `bold ${mm(14)}px Arial, sans-serif`;
+    ctx.fillText(estado.nombre, W/2, mm(85));
+
+    ctx.fillStyle = '#334155';
+    ctx.font = `${mm(4)}px Arial, sans-serif`;
+    ctx.fillText('ha completado las actividades interactivas de la aplicación educativa sobre gestión', W/2, mm(97));
+    ctx.fillText('de proyectos tecnológicos con criterios de calidad y fiabilidad, obteniendo:', W/2, mm(104));
+
+    const s = estado.scores;
+    const resultados = [
+      ['Planificación del cronograma (Gantt)', s.gantt ? 'Completada correctamente' : 'No completada'],
+      ['Auditoría de calidad', s.auditoria>0 ? s.auditoria + ' / 8 aciertos' : 'No realizada'],
+      ['Métodos de investigación', s.metodos>0 ? s.metodos + ' / 6 aciertos' : 'No realizado'],
+      ['Simulador de riesgos', s.riesgos>0 ? s.riesgos + ' / 5 aciertos' : 'No realizado'],
+      ['Rúbrica de evaluación', s.rubrica>0 ? s.rubrica + ' / 4 criterios' : 'No realizada'],
+      ['Cuestionario final', s.quiz>0 ? s.quiz + ' / 10' : 'No realizado'],
+      ['Retos completados', estado.retos.length + ' / ' + RETOS_TOTALES]
+    ];
+
+    const tableX = mm(60);
+    const tableY = mm(116);
+    const rowH = mm(9);
+    const colW1 = mm(110), colW2 = mm(70);
+    const totalW = colW1 + colW2;
+
+    ctx.fillStyle = '#1e3a8a';
+    ctx.fillRect(tableX, tableY, totalW, mm(9));
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `bold ${mm(3.6)}px Arial, sans-serif`;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('ACTIVIDAD', tableX + mm(4), tableY + mm(4.5));
+    ctx.fillText('RESULTADO', tableX + colW1 + mm(4), tableY + mm(4.5));
+
+    resultados.forEach((row, i)=>{
+      const y = tableY + mm(9) + i * rowH;
+      if(i % 2 === 0){
+        ctx.fillStyle = '#dbeafe';
+        ctx.fillRect(tableX, y, totalW, rowH);
+      }
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = mm(0.2);
+      ctx.strokeRect(tableX, y, totalW, rowH);
+      ctx.fillStyle = '#1e293b';
+      ctx.font = `${mm(3.6)}px Arial, sans-serif`;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(row[0], tableX + mm(4), y + rowH/2);
+      ctx.font = `bold ${mm(3.6)}px Arial, sans-serif`;
+      ctx.fillText(row[1], tableX + colW1 + mm(4), y + rowH/2);
+    });
+
+    const fecha = new Date().toLocaleDateString('es-ES', {day:'numeric', month:'long', year:'numeric'});
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#64748b';
+    ctx.font = `${mm(3.5)}px Arial, sans-serif`;
+    ctx.fillText('Fecha de emisión: ' + fecha, W/2, H - mm(24));
+    ctx.font = `${mm(3)}px Arial, sans-serif`;
+    ctx.fillText('Este certificado acredita la realización de las actividades interactivas de la aplicación educativa.', W/2, H - mm(17));
+
+    const imgData = canvas.toDataURL('image/png');
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
+    doc.addImage(imgData, 'PNG', 0, 0, W_MM, H_MM, undefined, 'FAST');
+    doc.save('Certificado_ProyectosCalidad_' + estado.nombre.replace(/[^a-zA-Z0-9]/g,'_') + '.pdf');
+    toast('¡Certificado descargado!');
+  } catch(err){
+    console.error(err);
+    toast('No se pudo generar el PDF.');
+  }
+}
+
+/* ================================================================
+   14. RESET COMPLETO (cambiar nombre)
+================================================================ */
+function resetearTodo(){
+  estado = {
+    version: LS_VERSION,
+    nombre: '',
+    retos: [],
+    scores: {gantt:0,auditoria:0,metodos:0,riesgos:0,rubrica:0,quiz:0},
+    respuestas: {gantt:{},auditoria:{},metodos:{},riesgos:{},rubrica:{},quiz:{}},
+    iniciado: null
+  };
+  guardarEstado();
+
+  auditoriaRespondidas = 0; auditoriaAciertos = 0;
+  metodosRespondidas = 0; metodosAciertos = 0;
+  riesgosRespondidas = 0; riesgosAciertos = 0;
+  rubricaRespondidas = 0; rubricaAciertos = 0;
+  quizRespondidas = 0; quizAciertos = 0;
+
+  document.getElementById('auditMsg').innerHTML = '';
+  document.getElementById('metodosMsg').innerHTML = '';
+  document.getElementById('riesgosMsg').innerHTML = '';
+  document.getElementById('rubricaMsg').innerHTML = '';
+  document.getElementById('quizResult').style.display = 'none';
+
+  renderAuditoria();
+  renderMetodos();
+  renderRiesgos();
+  renderRubrica();
+  renderQuiz();
+
+  ganttTasks.forEach(t => { ganttStarts[t.id] = 1; });
+  renderGanttRows();
+  updateGantt();
+
+  actualizarProgreso();
+  actualizarCertificado();
+  renderLoginForm();
+}
+
+/* ================================================================
+   15. INICIALIZACIÓN Y RESTAURACIÓN
+================================================================ */
+cargarEstado();
+
+// Repoblamos todas las actividades con el estado guardado antes de mostrar el login.
+restaurando = true;
+initGantt();
+renderAuditoria();
+renderMetodos();
+renderRiesgos();
+renderRubrica();
+renderQuiz();
+restaurarAuditoria();
+restaurarMetodos();
+restaurarRiesgos();
+restaurarRubrica();
+restaurarQuiz();
+restaurando = false;
+
+mostrarLogin();
+actualizarProgreso();
+actualizarCertificado();
+</script>
+</body>
+</html>
