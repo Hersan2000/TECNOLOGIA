@@ -1,0 +1,3202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Comunicación Técnica · Símbolos, vocabulario y herramientas digitales</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --teal:#0d9488; --teal-claro:#ccfbf1; --teal-oscuro:#115e59;
+  --cian:#06b6d4; --cian-claro:#cffafe; --cian-oscuro:#155e75;
+  --indigo:#4f46e5; --indigo-claro:#e0e7ff; --indigo-oscuro:#312e81;
+  --rosa:#db2777; --rosa-claro:#fce7f3; --rosa-oscuro:#831843;
+  --ambar:#d97706; --ambar-claro:#fef3c7; --ambar-oscuro:#92400e;
+  --rojo:#dc2626; --rojo-claro:#fee2e2;
+  --gris:#64748b; --gris-claro:#f1f5f9; --gris-oscuro:#1e293b;
+  --blanco:#fff; --negro:#0f172a;
+  --sombra:0 10px 30px rgba(15,23,42,.08);
+  --sombra-lg:0 20px 50px rgba(15,23,42,.14);
+  --radio:20px;
+  --fuente:'Segoe UI',system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+  --mono:'Consolas','Monaco','Courier New',monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0; font-family:var(--fuente); background:var(--gris-claro); color:var(--negro); line-height:1.7; -webkit-font-smoothing:antialiased;}
+body.locked{overflow:hidden}
+h1,h2,h3,h4{line-height:1.2; margin:0 0 .5rem}
+p{margin:0 0 1rem}
+
+/* LOGIN */
+#loginOverlay{
+  position:fixed; inset:0; z-index:2000;
+  background:radial-gradient(1000px 600px at 20% 10%,#115e59 0%,transparent 60%),
+             radial-gradient(900px 500px at 85% 90%,#312e81 0%,transparent 55%),
+             linear-gradient(160deg,#042f2e,#0f172a);
+  display:grid; place-items:center; padding:1.2rem;
+  transition:opacity .6s, visibility .6s;
+}
+#loginOverlay.hidden{opacity:0; visibility:hidden; pointer-events:none}
+.login-card{
+  background:#fff; border-radius:26px; padding:2.2rem 2rem;
+  max-width:500px; width:100%; box-shadow:0 30px 70px rgba(0,0,0,.4);
+  text-align:center; position:relative; overflow:hidden;
+  animation:aparecer .6s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes aparecer{from{opacity:0;transform:translateY(24px) scale(.96)}to{opacity:1;transform:none}}
+.login-card::before{content:""; position:absolute; top:0; left:0; right:0; height:6px;
+  background:linear-gradient(90deg,var(--teal),var(--cian),var(--indigo));}
+.login-emoji{font-size:3.4rem; line-height:1; margin-bottom:.5rem; display:block}
+.login-card h1{font-size:1.55rem; color:var(--teal-oscuro); letter-spacing:-.4px}
+.login-card p.sub{font-size:.94rem; color:var(--gris); margin-bottom:1.5rem}
+.login-card input{width:100%; font-family:inherit; font-size:1.02rem; padding:.95rem 1.1rem;
+  border-radius:14px; border:2px solid #e2e8f0; background:#f8fafc; color:var(--negro);
+  transition:.2s; text-align:center; font-weight:600; margin-bottom:1rem;}
+.login-card input:focus{outline:none; border-color:var(--teal); background:#fff; box-shadow:0 0 0 5px rgba(13,148,136,.14);}
+.login-card .btn{width:100%; justify-content:center}
+.login-error{font-size:.82rem; color:var(--rojo); margin-top:.7rem; min-height:1.2em; font-weight:700}
+.welcome-back{background:var(--teal-claro); border:1.5px solid #99f6e4; border-radius:14px;
+  padding:1rem; margin-bottom:1.2rem; font-size:.92rem; color:var(--teal-oscuro);}
+.welcome-back strong{font-size:1.05rem}
+.login-btns{display:flex; gap:.6rem; flex-wrap:wrap; justify-content:center}
+.login-btns .btn{flex:1; min-width:130px; justify-content:center}
+
+/* PROGRESO */
+#progresoGlobal{position:fixed; top:0; left:0; right:0; height:5px; background:rgba(255,255,255,.2); z-index:1000;}
+#progresoBarra{height:100%; width:0%; transition:width .6s cubic-bezier(.2,.8,.2,1);
+  background:linear-gradient(90deg,var(--teal),var(--cian),var(--indigo));
+  box-shadow:0 0 12px rgba(13,148,136,.6);}
+
+/* NAV */
+nav{position:sticky; top:0; z-index:900; background:rgba(255,255,255,.9); backdrop-filter:blur(14px);
+  border-bottom:1px solid #e2e8f0; padding:.55rem .8rem;}
+.nav-inner{max-width:1200px; margin:0 auto; display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;}
+.nav-brand{font-weight:800; font-size:.92rem; letter-spacing:.5px; color:var(--teal-oscuro);
+  display:flex; align-items:center; gap:.45rem; margin-right:auto;}
+.nav-brand .dot{width:11px;height:11px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--indigo));}
+.nav-user{font-size:.8rem; font-weight:800; color:var(--teal-oscuro);
+  background:var(--teal-claro); padding:.3rem .8rem; border-radius:999px;
+  display:flex; align-items:center; gap:.35rem;}
+.nav-links{display:flex; gap:.3rem; flex-wrap:wrap}
+.nav-links a{font-size:.8rem; font-weight:600; text-decoration:none; color:var(--gris-oscuro);
+  padding:.35rem .7rem; border-radius:999px; transition:.25s; white-space:nowrap;}
+.nav-links a:hover{background:var(--teal-claro); color:var(--teal-oscuro)}
+.nav-links a.active{background:var(--teal-oscuro); color:#fff}
+#progresoPill{font-size:.72rem; font-weight:800; color:var(--teal-oscuro); background:var(--teal-claro);
+  padding:.3rem .7rem; border-radius:999px; white-space:nowrap;}
+
+/* HERO */
+header.hero{position:relative; overflow:hidden; color:#fff;
+  background:radial-gradient(1200px 600px at 15% -10%,#115e59 0%,transparent 60%),
+             radial-gradient(900px 500px at 90% 10%,#312e81 0%,transparent 55%),
+             linear-gradient(160deg,#042f2e,#0f172a);
+  padding:4.5rem 1.2rem 4rem;}
+.blob{position:absolute; border-radius:50%; filter:blur(70px); opacity:.4; animation:flotar 14s ease-in-out infinite}
+.blob.b1{width:340px;height:340px;background:#0d9488;top:-90px;left:-60px}
+.blob.b2{width:280px;height:280px;background:#06b6d4;bottom:-110px;right:-40px;animation-delay:-5s}
+.blob.b3{width:220px;height:220px;background:#4f46e5;top:40%;right:25%;animation-delay:-9s}
+@keyframes flotar{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(28px,-32px) scale(1.12)}}
+.hero-inner{position:relative; max-width:1000px; margin:0 auto; text-align:center}
+.badge-top{display:inline-flex; align-items:center; gap:.5rem; font-size:.76rem; font-weight:800;
+  letter-spacing:1.4px; text-transform:uppercase; color:#5eead4;
+  background:rgba(13,148,136,.18); border:1px solid rgba(94,234,212,.4);
+  padding:.42rem 1rem; border-radius:999px; margin-bottom:1.2rem;}
+header.hero h1{font-size:clamp(1.85rem,5.2vw,3.3rem); font-weight:900; letter-spacing:-1px; margin-bottom:.7rem;}
+header.hero h1 span{background:linear-gradient(90deg,#5eead4,#67e8f9,#a5b4fc);
+  -webkit-background-clip:text; background-clip:text; color:transparent;}
+.hero-sub{max-width:800px; margin:0 auto 1.6rem; color:#cbd5e1; font-size:clamp(.95rem,2.2vw,1.1rem)}
+.hero-sub strong{color:#5eead4}
+.hero-chips{display:flex; gap:.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:2rem}
+.chip{font-size:.74rem; font-weight:800; letter-spacing:.6px; padding:.34rem .8rem; border-radius:999px;
+  background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.22); color:#e2e8f0;}
+.hero-cta{display:flex; gap:.7rem; justify-content:center; flex-wrap:wrap}
+.btn{display:inline-flex; align-items:center; gap:.45rem; cursor:pointer; border:none;
+  font-family:inherit; font-size:.92rem; font-weight:800; padding:.8rem 1.5rem; border-radius:999px;
+  text-decoration:none; transition:transform .2s, box-shadow .2s, background .2s;}
+.btn-primary{background:linear-gradient(135deg,var(--teal),var(--teal-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(13,148,136,.4)}
+.btn-primary:hover{transform:translateY(-3px); box-shadow:0 16px 34px rgba(13,148,136,.5)}
+.btn-ghost{background:rgba(255,255,255,.1); color:#fff; border:1.5px solid rgba(255,255,255,.3)}
+.btn-ghost:hover{background:rgba(255,255,255,.2); transform:translateY(-3px)}
+.btn-cian{background:linear-gradient(135deg,var(--cian),var(--cian-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(6,182,212,.4)}
+.btn-cian:hover{transform:translateY(-3px)}
+.btn-indigo{background:linear-gradient(135deg,var(--indigo),var(--indigo-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(79,70,229,.4)}
+.btn-indigo:hover{transform:translateY(-3px)}
+.btn-rosa{background:linear-gradient(135deg,var(--rosa),var(--rosa-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(219,39,119,.4)}
+.btn-rosa:hover{transform:translateY(-3px)}
+.btn-ambar{background:linear-gradient(135deg,var(--ambar),var(--ambar-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(217,119,6,.4)}
+.btn-ambar:hover{transform:translateY(-3px)}
+
+/* LAYOUT */
+main{max-width:1200px; margin:0 auto; padding:0 1.1rem 5rem}
+section{padding:3.2rem 0 1rem; scroll-margin-top:70px}
+.sec-head{margin-bottom:1.8rem}
+.kicker{display:inline-block; font-size:.72rem; font-weight:900; letter-spacing:1.6px; text-transform:uppercase;
+  color:var(--teal-oscuro); background:var(--teal-claro); padding:.3rem .75rem; border-radius:999px; margin-bottom:.7rem;}
+.kicker.cian{color:var(--cian-oscuro); background:var(--cian-claro)}
+.kicker.indigo{color:var(--indigo-oscuro); background:var(--indigo-claro)}
+.kicker.rosa{color:var(--rosa-oscuro); background:var(--rosa-claro)}
+.kicker.ambar{color:var(--ambar-oscuro); background:var(--ambar-claro)}
+.sec-head h2{font-size:clamp(1.5rem,3.6vw,2.15rem); font-weight:900; letter-spacing:-.6px}
+.sec-head p.lead{color:var(--gris); max-width:900px; font-size:1rem}
+.card{background:var(--blanco); border-radius:var(--radio); padding:1.6rem; box-shadow:var(--sombra); border:1px solid #e2e8f0;}
+.grid{display:grid; gap:1.1rem}
+.g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.reveal{opacity:0; transform:translateY(26px); transition:opacity .7s cubic-bezier(.2,.8,.2,1), transform .7s cubic-bezier(.2,.8,.2,1)}
+.reveal.in{opacity:1; transform:none}
+
+/* PILARES */
+.pilar{background:#fff; border-radius:16px; padding:1.3rem; border:1px solid #e2e8f0;
+  border-top:5px solid var(--teal); box-shadow:var(--sombra); transition:.3s;}
+.pilar:hover{transform:translateY(-6px); box-shadow:var(--sombra-lg)}
+.pilar .ico{font-size:2rem; display:block; margin-bottom:.5rem}
+.pilar h4{font-size:1.05rem; color:var(--teal-oscuro)}
+.pilar p{font-size:.9rem; color:var(--gris); margin:0}
+
+/* ========== TEORÍA EXPANDIDA ========== */
+.teoria{
+  background:#fff; border-radius:var(--radio); padding:1.6rem; box-shadow:var(--sombra);
+  border:1px solid #e2e8f0; margin-bottom:1.4rem;
+}
+.teoria h3{
+  color:var(--teal-oscuro); font-size:1.15rem; margin-bottom:.8rem;
+  display:flex; align-items:center; gap:.5rem;
+}
+.teoria h3 .th-ico{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:34px; height:34px; border-radius:10px;
+  background:var(--teal-claro); color:var(--teal-oscuro);
+  font-size:1rem;
+}
+.teoria h4{
+  color:var(--teal-oscuro); font-size:1rem; margin-top:1.2rem; margin-bottom:.5rem;
+  padding-left:.6rem; border-left:4px solid var(--teal);
+}
+.teoria p{font-size:.94rem; color:var(--gris-oscuro); margin-bottom:.8rem}
+.teoria ul, .teoria ol{font-size:.92rem; color:var(--gris-oscuro); margin:0 0 1rem; padding-left:1.3rem}
+.teoria li{margin-bottom:.35rem}
+.teoria li strong{color:var(--teal-oscuro)}
+.teoria .destacado{
+  background:linear-gradient(150deg,var(--teal-claro),#fff);
+  border-left:4px solid var(--teal); border-radius:0 12px 12px 0;
+  padding:.9rem 1.1rem; margin:1rem 0; font-size:.92rem;
+  color:var(--teal-oscuro);
+}
+.teoria .destacado strong{color:var(--teal-oscuro); font-weight:900}
+.teoria.cian .th-ico{background:var(--cian-claro); color:var(--cian-oscuro)}
+.teoria.cian h3{color:var(--cian-oscuro)}
+.teoria.cian h4{color:var(--cian-oscuro); border-color:var(--cian)}
+.teoria.cian li strong{color:var(--cian-oscuro)}
+.teoria.cian .destacado{background:linear-gradient(150deg,var(--cian-claro),#fff); border-color:var(--cian); color:var(--cian-oscuro)}
+.teoria.indigo .th-ico{background:var(--indigo-claro); color:var(--indigo-oscuro)}
+.teoria.indigo h3{color:var(--indigo-oscuro)}
+.teoria.indigo h4{color:var(--indigo-oscuro); border-color:var(--indigo)}
+.teoria.indigo li strong{color:var(--indigo-oscuro)}
+.teoria.indigo .destacado{background:linear-gradient(150deg,var(--indigo-claro),#fff); border-color:var(--indigo); color:var(--indigo-oscuro)}
+.teoria.rosa .th-ico{background:var(--rosa-claro); color:var(--rosa-oscuro)}
+.teoria.rosa h3{color:var(--rosa-oscuro)}
+.teoria.rosa h4{color:var(--rosa-oscuro); border-color:var(--rosa)}
+.teoria.rosa li strong{color:var(--rosa-oscuro)}
+.teoria.rosa .destacado{background:linear-gradient(150deg,var(--rosa-claro),#fff); border-color:var(--rosa); color:var(--rosa-oscuro)}
+.teoria.ambar .th-ico{background:var(--ambar-claro); color:var(--ambar-oscuro)}
+.teoria.ambar h3{color:var(--ambar-oscuro)}
+.teoria.ambar h4{color:var(--ambar-oscuro); border-color:var(--ambar)}
+.teoria.ambar li strong{color:var(--ambar-oscuro)}
+.teoria.ambar .destacado{background:linear-gradient(150deg,var(--ambar-claro),#fff); border-color:var(--ambar); color:var(--ambar-oscuro)}
+.teoria .ejemplo{
+  background:#f8fafc; border-radius:10px; padding:.7rem .9rem;
+  font-size:.85rem; color:var(--gris-oscuro); margin:.5rem 0;
+  border-left:3px solid var(--gris);
+}
+.teoria .ejemplo strong{color:var(--gris-oscuro)}
+.teoria .tabla-tipos{
+  width:100%; border-collapse:collapse; margin:.8rem 0 1rem;
+  font-size:.86rem;
+}
+.teoria .tabla-tipos th, .teoria .tabla-tipos td{
+  padding:.6rem .7rem; text-align:left;
+  border-bottom:1px solid #e2e8f0;
+}
+.teoria .tabla-tipos th{
+  background:var(--teal-claro); color:var(--teal-oscuro);
+  font-weight:900; font-size:.78rem; text-transform:uppercase; letter-spacing:.4px;
+}
+.teoria.cian .tabla-tipos th{background:var(--cian-claro); color:var(--cian-oscuro)}
+.teoria.indigo .tabla-tipos th{background:var(--indigo-claro); color:var(--indigo-oscuro)}
+.teoria.rosa .tabla-tipos th{background:var(--rosa-claro); color:var(--rosa-oscuro)}
+.teoria.ambar .tabla-tipos th{background:var(--ambar-claro); color:var(--ambar-oscuro)}
+.teoria .tabla-tipos tr:nth-child(even) td{background:#f8fafc}
+.teoria .grid-teoria{
+  display:grid; gap:.8rem; grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  margin:1rem 0;
+}
+.teoria .bloque-teoria{
+  background:#f8fafc; border-radius:12px; padding:.9rem 1rem;
+  border-top:3px solid var(--teal);
+}
+.teoria.cian .bloque-teoria{border-color:var(--cian)}
+.teoria.indigo .bloque-teoria{border-color:var(--indigo)}
+.teoria.rosa .bloque-teoria{border-color:var(--rosa)}
+.teoria.ambar .bloque-teoria{border-color:var(--ambar)}
+.teoria .bloque-teoria h5{
+  font-size:.88rem; font-weight:900; color:var(--teal-oscuro);
+  margin:0 0 .4rem;
+}
+.teoria.cian .bloque-teoria h5{color:var(--cian-oscuro)}
+.teoria.indigo .bloque-teoria h5{color:var(--indigo-oscuro)}
+.teoria.rosa .bloque-teoria h5{color:var(--rosa-oscuro)}
+.teoria.ambar .bloque-teoria h5{color:var(--ambar-oscuro)}
+.teoria .bloque-teoria p{font-size:.85rem; margin:0; color:var(--gris)}
+.teoria .fases{
+  display:grid; gap:.6rem; grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  margin:1rem 0;
+}
+.teoria .fase{
+  background:#fff; border:2px solid var(--teal-claro); border-radius:12px;
+  padding:.75rem; text-align:center; position:relative;
+}
+.teoria .fase .fase-num{
+  display:inline-block; font-size:.72rem; font-weight:900; background:var(--teal);
+  color:#fff; padding:.15rem .55rem; border-radius:999px; margin-bottom:.35rem;
+}
+.teoria .fase h6{font-size:.85rem; font-weight:900; color:var(--teal-oscuro); margin:.2rem 0}
+.teoria .fase p{font-size:.75rem; color:var(--gris); margin:0; line-height:1.35}
+
+/* ACTIVIDADES */
+.actividad{background:#fff; border-radius:var(--radio); padding:1.6rem; box-shadow:var(--sombra);
+  border:1px solid #e2e8f0; margin-top:1.6rem;}
+.actividad h3{color:var(--teal-oscuro); font-size:1.15rem; margin-bottom:.3rem}
+.actividad .intro{font-size:.93rem; color:var(--gris); margin-bottom:1rem}
+
+/* ========== RETO 1: SÍMBOLOS TÉCNICOS ========== */
+.simbolos-wrap{display:grid; gap:1rem; grid-template-columns:repeat(auto-fit,minmax(300px,1fr));}
+.simbolo-card{
+  background:#fff; border:2px solid #e2e8f0; border-radius:16px; padding:1rem 1.1rem;
+  transition:.3s; display:flex; flex-direction:column; gap:.7rem;
+}
+.simbolo-card.done{border-color:var(--teal); background:#f0fdfa}
+.simb-visual{
+  background:#0f172a; border-radius:12px; padding:.7rem;
+  display:flex; align-items:center; justify-content:center;
+}
+.simb-visual svg{width:70px; height:70px;}
+.simb-pregunta{font-size:.9rem; font-weight:800; color:var(--teal-oscuro); text-align:center;}
+.simb-opciones{display:grid; grid-template-columns:1fr; gap:.4rem;}
+.simb-btn{
+  font-family:inherit; font-size:.82rem; font-weight:700; cursor:pointer; text-align:left;
+  padding:.55rem .8rem; border-radius:10px; border:2px solid #e2e8f0; background:#f8fafc;
+  color:var(--gris-oscuro); transition:.2s; display:flex; gap:.5rem; align-items:center;
+}
+.simb-btn:hover:not(:disabled){border-color:var(--teal); background:var(--teal-claro); color:var(--teal-oscuro)}
+.simb-btn:disabled{cursor:default; opacity:.55}
+.simb-btn .sib-num{
+  flex:0 0 22px; height:22px; border-radius:6px; background:#e2e8f0; color:var(--gris-oscuro);
+  display:grid; place-items:center; font-size:.7rem; font-weight:900;
+}
+.simb-btn.correct{background:#dcfce7; border-color:#16a34a; color:#15803d; opacity:1}
+.simb-btn.correct .sib-num{background:#16a34a; color:#fff}
+.simb-btn.wrong{background:#fee2e2; border-color:#dc2626; color:#b91c1c; opacity:1}
+.simb-btn.wrong .sib-num{background:#dc2626; color:#fff}
+.simb-fb{
+  font-size:.78rem; border-radius:10px; padding:0; max-height:0; overflow:hidden;
+  transition:.35s; color:var(--gris-oscuro);
+}
+.simb-fb.show{max-height:220px; padding:.6rem .75rem; background:#fff; border-left:3px solid var(--teal)}
+#simbMsg{text-align:center; margin-top:1.2rem; font-weight:800; color:var(--teal-oscuro); min-height:1.4em}
+
+/* ========== RETO 2: ABREVIATURAS ========== */
+.abrev-wrap{display:grid; gap:1rem; grid-template-columns:1fr 1fr;}
+@media(max-width:720px){.abrev-wrap{grid-template-columns:1fr}}
+.abrev-col h4{
+  font-size:.8rem; letter-spacing:.9px; text-transform:uppercase;
+  color:var(--indigo-oscuro); font-weight:900; margin-bottom:.6rem; padding-left:.4rem;
+}
+.abrev-item{
+  background:#fff; border:2px solid #e2e8f0; border-radius:14px; padding:.7rem .9rem;
+  margin-bottom:.5rem; cursor:pointer; transition:.22s; font-size:.88rem; font-weight:700;
+  color:var(--gris-oscuro);
+}
+.abrev-item.abrev{ font-family:var(--mono); text-align:center; font-size:.95rem; font-weight:900; letter-spacing:1px; }
+.abrev-item:hover:not(.matched){border-color:var(--indigo); background:var(--indigo-claro); color:var(--indigo-oscuro); transform:translateX(4px)}
+.abrev-item.sel{background:var(--indigo); color:#fff; border-color:var(--indigo-oscuro)}
+.abrev-item.matched{background:var(--teal-claro); border-color:var(--teal); color:var(--teal-oscuro); cursor:default; opacity:.9}
+.abrev-item.matched::before{content:"✓"; font-weight:900; color:var(--teal); font-size:1rem; margin-right:.35rem}
+.abrev-item.error{animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+#abrevMsg{text-align:center; margin-top:1.2rem; font-weight:800; color:var(--indigo-oscuro); min-height:1.4em}
+
+/* ========== RETO 3: HERRAMIENTA DIGITAL ========== */
+.herr-digital-wrap{display:grid; gap:1rem; grid-template-columns:repeat(auto-fit,minmax(300px,1fr));}
+.herr-digital-card{
+  background:#fff; border:2px solid #e2e8f0; border-radius:16px; padding:1rem 1.1rem;
+  transition:.3s; display:flex; flex-direction:column; gap:.7rem;
+}
+.herr-digital-card.done{border-color:var(--rosa); background:#fdf2f8}
+.hd-head{display:flex; gap:.6rem; align-items:flex-start}
+.hd-ico{font-size:1.8rem; flex-shrink:0}
+.hd-titulo{font-size:.95rem; font-weight:900; color:var(--rosa-oscuro); margin:0 0 .15rem}
+.hd-desc{font-size:.83rem; color:var(--gris-oscuro); margin:0; line-height:1.5}
+.hd-opciones{display:grid; grid-template-columns:1fr 1fr; gap:.4rem;}
+.hd-btn{
+  font-family:inherit; font-size:.78rem; font-weight:800; cursor:pointer;
+  padding:.55rem .5rem; border-radius:10px; border:2px solid #e2e8f0; background:#f8fafc;
+  color:var(--gris-oscuro); transition:.2s; text-align:left;
+}
+.hd-btn:hover:not(:disabled){border-color:var(--rosa); background:var(--rosa-claro); color:var(--rosa-oscuro)}
+.hd-btn:disabled{cursor:default; opacity:.55}
+.hd-btn.correct{background:#dcfce7; border-color:#16a34a; color:#15803d; opacity:1}
+.hd-btn.wrong{background:#fee2e2; border-color:#dc2626; color:#b91c1c; opacity:1}
+.hd-fb{
+  font-size:.8rem; border-radius:10px; padding:0; max-height:0; overflow:hidden;
+  transition:.35s; color:var(--gris-oscuro);
+}
+.hd-fb.show{max-height:240px; padding:.6rem .75rem; background:#fff; border-left:3px solid var(--rosa)}
+#hdMsg{text-align:center; margin-top:1.2rem; font-weight:800; color:var(--rosa-oscuro); min-height:1.4em}
+
+/* ========== RETO 4: ESQUEMA DE BLOQUES ========== */
+.esquema-intro{
+  background:linear-gradient(150deg,#e0e7ff,#fff); border-left:6px solid var(--indigo);
+  border-radius:0 14px 14px 0; padding:1rem 1.2rem; margin-bottom:1.2rem;
+}
+.esquema-intro h4{color:var(--indigo-oscuro); font-size:1rem; margin-bottom:.3rem}
+.esquema-intro p{font-size:.9rem; margin:0; color:var(--gris-oscuro)}
+.esquema-slots{
+  display:grid; grid-template-columns:repeat(5, 1fr); gap:.6rem; align-items:center;
+  background:#f8fafc; border-radius:16px; padding:1rem; margin-bottom:1.2rem;
+  overflow-x:auto;
+}
+@media(max-width:800px){
+  .esquema-slots{grid-template-columns:1fr; gap:.4rem;}
+  .esquema-slots .esq-flecha{display:none}
+}
+.esq-slot{
+  background:#fff; border:3px dashed #cbd5e1; border-radius:14px;
+  padding:.9rem .6rem; text-align:center; min-height:120px;
+  display:flex; flex-direction:column; justify-content:center; gap:.3rem;
+  transition:.3s; position:relative;
+}
+.esq-slot.activo{border-color:var(--indigo); border-style:solid; box-shadow:0 0 0 5px rgba(79,70,229,.15)}
+.esq-slot.lleno{border-style:solid; border-color:var(--teal); background:linear-gradient(150deg,#f0fdfa,#fff)}
+.esq-slot .esq-num{
+  position:absolute; top:-12px; left:50%; transform:translateX(-50%);
+  background:var(--indigo); color:#fff; font-weight:900; font-size:.75rem;
+  padding:.15rem .55rem; border-radius:999px; letter-spacing:.5px;
+}
+.esq-slot .esq-ico{font-size:1.6rem; color:var(--indigo); font-weight:900}
+.esq-slot .esq-lbl{font-size:.8rem; font-weight:800; color:var(--indigo-oscuro)}
+.esq-slot .esq-desc{font-size:.72rem; color:var(--gris)}
+.esq-slot .esq-vacio{font-size:.72rem; color:var(--gris); font-style:italic}
+.esq-flecha{
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.5rem; color:var(--indigo); font-weight:900;
+}
+.esq-bloques{
+  display:grid; gap:.6rem; grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+}
+.esq-bloque{
+  background:#fff; border:2px solid #e2e8f0; border-radius:12px; padding:.7rem .9rem;
+  cursor:pointer; transition:.2s; display:flex; gap:.5rem; align-items:center;
+  font-size:.85rem;
+}
+.esq-bloque:hover:not(.usado){border-color:var(--indigo); background:var(--indigo-claro); color:var(--indigo-oscuro); transform:translateY(-2px)}
+.esq-bloque.usado{opacity:.35; cursor:default; border-style:dashed}
+.esq-bloque .eb-ico{font-size:1.4rem; flex-shrink:0}
+.esq-bloque .eb-info{flex:1}
+.esq-bloque .eb-nombre{font-weight:900; font-size:.88rem; color:var(--indigo-oscuro)}
+.esq-bloque .eb-desc{font-size:.75rem; color:var(--gris); line-height:1.3}
+#esqMsg{text-align:center; margin-top:1.2rem; font-weight:800; color:var(--indigo-oscuro); min-height:1.4em}
+
+/* ========== RETO 5: CONVERSACIÓN TÉCNICA ========== */
+.conv-wrap{display:flex; flex-direction:column; gap:1.2rem;}
+.conv-card{
+  background:linear-gradient(150deg,#f0fdfa,#fff); border:2px solid #99f6e4;
+  border-radius:16px; padding:1.1rem;
+  transition:.3s;
+}
+.conv-card.done{border-color:var(--teal); background:#f0fdfa}
+.conv-escena{
+  display:flex; gap:.7rem; align-items:flex-start; margin-bottom:.8rem;
+  background:#fff; border-radius:12px; padding:.9rem 1rem;
+  border-left:4px solid var(--teal);
+}
+.conv-escena .ce-ico{font-size:1.8rem; flex-shrink:0}
+.conv-escena .ce-txt{font-size:.88rem; color:var(--gris-oscuro); margin:0; line-height:1.5}
+.conv-escena .ce-txt strong{color:var(--teal-oscuro)}
+.conv-chat{
+  display:flex; flex-direction:column; gap:.45rem; margin-bottom:.8rem;
+}
+.conv-burbuja{
+  max-width:80%; padding:.55rem .9rem; border-radius:16px;
+  font-size:.85rem; font-weight:600; line-height:1.4;
+}
+.conv-burbuja.izq{
+  background:#fff; border:1px solid #e2e8f0; color:var(--gris-oscuro);
+  align-self:flex-start; border-bottom-left-radius:4px;
+}
+.conv-burbuja.der{
+  background:linear-gradient(135deg,var(--teal),var(--teal-oscuro)); color:#fff;
+  align-self:flex-end; border-bottom-right-radius:4px;
+}
+.conv-burbuja .cb-nombre{
+  font-size:.68rem; font-weight:900; opacity:.75; display:block; margin-bottom:.15rem;
+  letter-spacing:.5px; text-transform:uppercase;
+}
+.conv-pregunta{
+  font-size:.88rem; font-weight:800; color:var(--teal-oscuro); margin-bottom:.5rem;
+}
+.conv-opciones{display:grid; gap:.4rem;}
+.conv-op{
+  font-family:inherit; font-size:.83rem; font-weight:600; cursor:pointer; text-align:left;
+  padding:.65rem .9rem; border-radius:11px; border:2px solid #e2e8f0; background:#fff;
+  color:var(--gris-oscuro); transition:.2s; display:flex; gap:.5rem; align-items:flex-start;
+}
+.conv-op:hover:not(:disabled){border-color:var(--teal); background:var(--teal-claro); color:var(--teal-oscuro); transform:translateX(4px)}
+.conv-op:disabled{cursor:default}
+.conv-op .co-letter{
+  flex:0 0 22px; height:22px; border-radius:6px; background:#e2e8f0; color:var(--gris-oscuro);
+  display:grid; place-items:center; font-size:.7rem; font-weight:900;
+}
+.conv-op.correct{background:#dcfce7; border-color:#16a34a; color:#15803d; opacity:1}
+.conv-op.correct .co-letter{background:#16a34a; color:#fff}
+.conv-op.wrong{background:#fee2e2; border-color:#dc2626; color:#b91c1c; opacity:1}
+.conv-op.wrong .co-letter{background:#dc2626; color:#fff}
+.conv-fb{
+  font-size:.82rem; border-radius:10px; padding:0; max-height:0; overflow:hidden;
+  transition:.35s; color:var(--gris-oscuro);
+}
+.conv-fb.show{max-height:240px; padding:.6rem .8rem; background:#fff; border-left:3px solid var(--teal); margin-top:.6rem}
+#convMsg{text-align:center; margin-top:1.2rem; font-weight:800; color:var(--teal-oscuro); min-height:1.4em}
+
+/* QUIZ */
+.q{background:#fff; border-radius:16px; padding:1.3rem 1.4rem; box-shadow:var(--sombra);
+  border:1px solid #e2e8f0; margin-bottom:1rem;}
+.q-num{display:inline-block; font-size:.72rem; font-weight:900; letter-spacing:1px; color:#fff;
+  background:var(--teal-oscuro); padding:.2rem .6rem; border-radius:8px; margin-bottom:.6rem;}
+.q h4{font-size:1rem; margin-bottom:.9rem}
+.opts{display:grid; gap:.5rem}
+.opt{text-align:left; font-family:inherit; font-size:.9rem; font-weight:600; cursor:pointer;
+  padding:.7rem .9rem; border-radius:12px; border:2px solid #e2e8f0; background:#f8fafc; color:var(--gris-oscuro);
+  transition:.2s; display:flex; gap:.6rem; align-items:flex-start;}
+.opt:hover:not(:disabled){border-color:var(--teal); background:var(--teal-claro); color:var(--teal-oscuro); transform:translateX(4px)}
+.opt:disabled{cursor:default}
+.opt .letter{flex:0 0 24px; height:24px; border-radius:7px; background:#e2e8f0; color:var(--gris-oscuro);
+  display:grid; place-items:center; font-size:.75rem; font-weight:900;}
+.opt.correct{background:#dcfce7; border-color:#16a34a; color:#14532d}
+.opt.correct .letter{background:#16a34a; color:#fff}
+.opt.wrong{background:#fee2e2; border-color:#dc2626; color:#7f1d1d}
+.opt.wrong .letter{background:#dc2626; color:#fff}
+.expl{margin-top:.85rem; font-size:.86rem; background:#f0fdfa; border-left:4px solid var(--teal);
+  padding:.7rem .9rem; border-radius:0 10px 10px 0; color:var(--gris-oscuro); display:none;}
+.expl.show{display:block}
+
+/* VOCABULARIO */
+.voc-grid{display:grid; gap:.6rem; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); margin-bottom:1rem}
+.voc-term{text-align:left; font-family:inherit; font-size:.88rem; font-weight:800; cursor:pointer;
+  padding:.85rem 1rem; border-radius:14px; border:2px solid #e2e8f0; background:#fff;
+  color:var(--gris-oscuro); transition:.25s; display:flex; align-items:center; gap:.5rem;}
+.voc-term:hover{border-color:var(--teal); background:var(--teal-claro); color:var(--teal-oscuro); transform:translateY(-3px)}
+.voc-term.active{background:var(--teal-oscuro); color:#fff; border-color:var(--teal-oscuro)}
+#vocDef{max-height:0; overflow:hidden; transition:max-height .5s cubic-bezier(.2,.8,.2,1), padding .3s;
+  background:linear-gradient(150deg,#115e59,#042f2e); color:#fff; border-radius:16px; padding:0 1.4rem;}
+#vocDef.show{max-height:440px; padding:1.3rem 1.4rem}
+#vocDef h4{color:#5eead4; font-size:1.05rem; margin-bottom:.5rem}
+#vocDef p{color:#99f6e4; font-size:.92rem; margin:0}
+
+/* CERTIFICADO */
+#certificado{background:linear-gradient(150deg,#115e59,#042f2e); color:#fff; border-radius:26px;
+  padding:2.4rem 1.8rem; box-shadow:var(--sombra-lg); text-align:center; position:relative; overflow:hidden;}
+#certificado::before{content:""; position:absolute; inset:14px; border:2px solid rgba(94,234,212,.35);
+  border-radius:18px; pointer-events:none;}
+#certificado h2{color:#5eead4; font-size:1.5rem; margin-bottom:.3rem}
+#certificado p.sub{color:#99f6e4; font-size:.95rem; max-width:560px; margin:0 auto 1.4rem}
+.cert-name{font-size:clamp(1.6rem,5vw,2.4rem); font-weight:900; letter-spacing:-.5px; margin:.6rem 0 1rem;
+  background:linear-gradient(90deg,#5eead4,#67e8f9,#a5b4fc); -webkit-background-clip:text; background-clip:text; color:transparent;}
+.cert-stats{display:grid; gap:.7rem; grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  max-width:820px; margin:0 auto 1.6rem;}
+.cert-stat{background:rgba(255,255,255,.09); border:1px solid rgba(94,234,212,.3);
+  border-radius:14px; padding:.8rem .6rem; text-align:center;}
+.cert-stat .num{font-size:1.35rem; font-weight:900; color:#fbbf24; line-height:1}
+.cert-stat .lbl{font-size:.7rem; color:#99f6e4; text-transform:uppercase; letter-spacing:.9px; font-weight:800; margin-top:.3rem}
+.cert-warn{background:rgba(251,191,36,.14); border:1px solid rgba(251,191,36,.4);
+  color:#fde68a; font-size:.86rem; padding:.7rem 1rem; border-radius:12px;
+  max-width:600px; margin:0 auto 1.2rem;}
+.cert-note{font-size:.78rem; color:#94a3b8; margin-top:1rem; max-width:560px; margin-left:auto; margin-right:auto;}
+
+/* Toast */
+#toast{position:fixed; bottom:1.4rem; left:50%; transform:translate(-50%,140%); z-index:1200;
+  background:var(--negro); color:#fff; font-weight:700; font-size:.88rem; padding:.85rem 1.4rem;
+  border-radius:999px; box-shadow:var(--sombra-lg); transition:transform .45s cubic-bezier(.2,.8,.2,1);
+  display:flex; align-items:center; gap:.55rem; max-width:92vw; text-align:center;}
+#toast.show{transform:translate(-50%,0)}
+
+footer{background:var(--negro); color:#94a3b8; text-align:center; padding:2.6rem 1.2rem; font-size:.85rem;}
+footer strong{color:#5eead4}
+
+@media(max-width:640px){
+  .card{padding:1.2rem}
+  .nav-brand span.txt{display:none}
+  .esquema-slots{padding:.7rem}
+  .conv-burbuja{max-width:95%}
+}
+</style>
+</head>
+<body class="locked">
+
+<div id="loginOverlay">
+  <div class="login-card" id="loginCard"></div>
+</div>
+
+<div id="progresoGlobal"><div id="progresoBarra"></div></div>
+
+<nav>
+  <div class="nav-inner">
+    <div class="nav-brand"><span class="dot"></span><span class="txt">Comunicación Técnica</span></div>
+    <div class="nav-user">👤 <span id="navUserName">—</span></div>
+    <div class="nav-links">
+      <a href="#intro">Inicio</a>
+      <a href="#simbolos">Símbolos</a>
+      <a href="#abreviaturas">Abreviaturas</a>
+      <a href="#herramientas">Herramientas</a>
+      <a href="#esquemas">Esquemas</a>
+      <a href="#conversacion">Conversación</a>
+      <a href="#quiz">Quiz</a>
+      <a href="#certificado">Certificado</a>
+    </div>
+    <div id="progresoPill">0 / 6 retos</div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+  <div class="hero-inner">
+    <div class="badge-top">💬 Comunicación técnica</div>
+    <h1>Habla el lenguaje de la <span>tecnología</span></h1>
+    <p class="hero-sub">
+      Hola, <strong id="heroNombre">amigo/a</strong>. Aprende a <strong>comunicarte con precisión</strong>
+      en el ámbito tecnológico: reconocer <strong>símbolos</strong>, dominar el <strong>vocabulario
+      técnico</strong>, usar las <strong>herramientas digitales</strong> adecuadas, interpretar
+      <strong>esquemas de bloques</strong> y trabajar mejor en equipo.
+    </p>
+    <div class="hero-chips">
+      <span class="chip">🔣 Símbolos</span>
+      <span class="chip">📚 Vocabulario</span>
+      <span class="chip">🛠️ Herramientas digitales</span>
+      <span class="chip">📊 Esquemas</span>
+      <span class="chip">👥 Trabajo en equipo</span>
+    </div>
+    <div class="hero-cta">
+      <a href="#intro" class="btn btn-primary">🚀 Empezar</a>
+      <a href="#certificado" class="btn btn-ghost">🏆 Mi certificado</a>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============ INTRO ============ -->
+  <section id="intro">
+    <div class="sec-head reveal">
+      <span class="kicker">Punto de partida</span>
+      <h2>La tecnología tiene su propio lenguaje</h2>
+      <p class="lead">
+        En tecnología, comunicarse bien es tan importante como saber hacer. Un <strong>símbolo
+        mal interpretado</strong>, un <strong>término mal usado</strong> o una <strong>herramienta
+        inadecuada</strong> pueden arruinar un proyecto. Por eso, dominar el lenguaje técnico, los
+        esquemas y las herramientas digitales es imprescindible para <strong>intercambiar
+        información con precisión</strong> y para <strong>trabajar bien en equipo</strong>.
+      </p>
+    </div>
+
+    <div class="teoria reveal">
+      <h3><span class="th-ico">📘</span> ¿Qué es la comunicación técnica?</h3>
+      <p>
+        La <strong>comunicación técnica</strong> es el conjunto de estrategias, símbolos, lenguajes
+        y herramientas que permiten <strong>transmitir información precisa</strong> sobre sistemas
+        tecnológicos entre personas especializadas o entre especialistas y público general. Su
+        objetivo no es solo informar: es <strong>coordinar acciones</strong>, evitar errores y
+        garantizar que todo el mundo entienda lo mismo.
+      </p>
+
+      <h4>¿Por qué es tan importante la precisión?</h4>
+      <p>
+        En ámbitos técnicos, un error de comunicación puede tener consecuencias graves:
+      </p>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>🔧 En fabricación</h5>
+          <p>Leer mal una cota puede arruinar una pieza. Un símbolo mal interpretado implica rehacer todo el trabajo.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>⚡ En electricidad</h5>
+          <p>Confundir un componente con otro puede provocar cortocircuitos, quemar equipos o causar accidentes.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🏗️ En obra civil</h5>
+          <p>Un plano mal interpretado puede derivar en estructuras inestables y poner en riesgo a las personas.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>💻 En software</h5>
+          <p>Una especificación ambigua puede generar bugs costosos y retrasos en el desarrollo.</p>
+        </div>
+      </div>
+
+      <h4>Los 4 canales de la comunicación técnica</h4>
+      <p>
+        La información técnica se transmite por distintos canales, y cada uno tiene sus reglas:
+      </p>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Canal</th>
+          <th>Herramientas</th>
+          <th>Cuándo usarlo</th>
+        </tr>
+        <tr>
+          <td><strong>📝 Texto técnico</strong></td>
+          <td>Manuales, informes, memorias, especificaciones.</td>
+          <td>Documentación detallada, instrucciones, referencia.</td>
+        </tr>
+        <tr>
+          <td><strong>🎨 Gráfico</strong></td>
+          <td>Planos, esquemas, diagramas, infografías.</td>
+          <td>Representar visualmente sistemas, procesos o piezas.</td>
+        </tr>
+        <tr>
+          <td><strong>🔣 Simbólico</strong></td>
+          <td>Símbolos normalizados, iconos, abreviaturas.</td>
+          <td>Representar componentes y funciones de forma universal.</td>
+        </tr>
+        <tr>
+          <td><strong>💬 Oral/digital</strong></td>
+          <td>Reuniones, videollamadas, chat, correo.</td>
+          <td>Coordinar el equipo, tomar decisiones, resolver dudas.</td>
+        </tr>
+      </table>
+
+      <h4>Las 5 claves de una comunicación técnica eficaz</h4>
+      <div class="fases">
+        <div class="fase">
+          <span class="fase-num">1</span>
+          <h6>🎯 Precisión</h6>
+          <p>Usar términos exactos, sin ambigüedades ni vaguedades.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">2</span>
+          <h6>📐 Claridad</h6>
+          <p>Que el mensaje se entienda sin necesidad de interpretación.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">3</span>
+          <h6>⚡ Brevedad</h6>
+          <p>Decir lo necesario sin rodeos. Lo breve se lee y se recuerda mejor.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">4</span>
+          <h6>🎯 Adecuación</h6>
+          <p>Adaptar el mensaje a quien lo va a recibir (técnico o no técnico).</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">5</span>
+          <h6>🔄 Verificación</h6>
+          <p>Confirmar que el receptor ha entendido lo que se le ha querido decir.</p>
+        </div>
+      </div>
+
+      <h4>El lenguaje técnico frente al lenguaje común</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Lenguaje común</th>
+          <th>Lenguaje técnico</th>
+        </tr>
+        <tr>
+          <td>"Ese cable con corriente"</td>
+          <td>"Conductor de fase a 230 V"</td>
+        </tr>
+        <tr>
+          <td>"La pieza esa redonda"</td>
+          <td>"Eje cilíndrico de Ø 8 mm"</td>
+        </tr>
+        <tr>
+          <td>"El aparato que hace chispas"</td>
+          <td>"Bobina de encendido"</td>
+        </tr>
+        <tr>
+          <td>"El chisme que va por internet"</td>
+          <td>"Módulo ESP32 con conectividad Wi-Fi"</td>
+        </tr>
+      </table>
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> la comunicación técnica no es "hablar raro". Es
+        <strong>usar el lenguaje que permite a todas las personas entender lo mismo</strong>. Un
+        término ambiguo puede interpretarse de maneras diferentes y provocar errores graves. Por
+        eso el vocabulario técnico es universal y preciso.
+      </div>
+
+      <h4>La comunicación técnica como competencia profesional</h4>
+      <p>
+        En cualquier trabajo técnico (ingeniería, electricidad, mecánica, programación, arquitectura)
+        la capacidad de comunicar con precisión es tan valorada como la destreza técnica. Los
+        profesionales que mejor comunican son los que mejor coordinan, los que menos errores
+        cometen y los que más rápido progresan en sus carreras.
+      </p>
+      <p>
+        En esta aplicación vas a trabajar cinco dimensiones fundamentales de la comunicación técnica:
+      </p>
+      <ul>
+        <li><strong>Símbolos:</strong> el lenguaje gráfico universal.</li>
+        <li><strong>Abreviaturas:</strong> el vocabulario comprimido del sector.</li>
+        <li><strong>Herramientas digitales:</strong> los canales para coordinar equipos.</li>
+        <li><strong>Esquemas de bloques:</strong> la representación visual de sistemas.</li>
+        <li><strong>Conversación técnica:</strong> la interacción oral y escrita.</li>
+      </ul>
+    </div>
+
+    <div class="grid g4">
+      <div class="pilar reveal" style="border-top-color:var(--teal)">
+        <span class="ico">🔣</span>
+        <h4>Símbolos técnicos</h4>
+        <p>Representaciones gráficas normalizadas de componentes y funciones: resistencias, motores, válvulas, puertas lógicas…</p>
+      </div>
+      <div class="pilar reveal" style="border-top-color:var(--indigo)">
+        <span class="ico">📚</span>
+        <h4>Vocabulario técnico</h4>
+        <p>Términos precisos y abreviaturas que todo profesional del sector utiliza y comprende.</p>
+      </div>
+      <div class="pilar reveal" style="border-top-color:var(--rosa)">
+        <span class="ico">🛠️</span>
+        <h4>Herramientas digitales</h4>
+        <p>Plataformas que permiten coordinar el trabajo del equipo: gestión, comunicación, código, diseño…</p>
+      </div>
+      <div class="pilar reveal" style="border-top-color:var(--ambar)">
+        <span class="ico">📊</span>
+        <h4>Esquemas de bloques</h4>
+        <p>Representaciones simplificadas de sistemas tecnológicos que muestran cómo fluye la información.</p>
+      </div>
+    </div>
+
+    <div class="card reveal" style="margin-top:1.5rem; border-left:6px solid var(--teal)">
+      <h3 style="color:var(--teal-oscuro)">🎯 Comunicar bien = trabajar mejor</h3>
+      <p style="font-size:.95rem; color:var(--gris-oscuro)">
+        Cuando todo el equipo utiliza el <strong>mismo lenguaje</strong> y las <strong>mismas
+        herramientas</strong>, los errores de comunicación se reducen drásticamente y el trabajo se
+        vuelve mucho más eficaz. A lo largo de esta aplicación vas a trabajar cada una de las
+        piezas clave de la comunicación técnica.
+      </p>
+    </div>
+  </section>
+
+  <!-- ========== RETO 1: SÍMBOLOS TÉCNICOS ========== -->
+  <section id="simbolos">
+    <div class="sec-head reveal">
+      <span class="kicker">Bloque 1</span>
+      <h2>🔣 Decodifica los símbolos técnicos</h2>
+      <p class="lead">
+        Los símbolos técnicos son un <strong>lenguaje universal</strong>: se usan en planos, esquemas
+        y manuales de todo el mundo. Reconocerlos permite entender cualquier circuito o sistema sin
+        necesidad de leer largas explicaciones.
+      </p>
+    </div>
+
+    <div class="teoria reveal">
+      <h3><span class="th-ico">🔣</span> Los símbolos técnicos: el lenguaje gráfico universal</h3>
+      <p>
+        Un <strong>símbolo técnico</strong> es una representación gráfica <strong>normalizada</strong>
+        de un componente, una función o una magnitud. Se usan en esquemas eléctricos, electrónicos,
+        neumáticos, hidráulicos y mecánicos. Su principal ventaja es que son <strong>universales</strong>:
+        un electricista japonés y uno español entienden el mismo esquema sin necesidad de traducción.
+      </p>
+
+      <h4>¿Por qué existen los símbolos normalizados?</h4>
+      <p>
+        Antes del siglo XX cada fabricante representaba los componentes a su manera. Esto provocaba
+        errores, malentendidos y dificultades de comunicación. Con la industrialización se
+        establecieron <strong>normas internacionales</strong> para unificar los símbolos:
+      </p>
+      <ul>
+        <li><strong>IEC (International Electrotechnical Commission):</strong> símbolos eléctricos y electrónicos.</li>
+        <li><strong>ISO (International Organization for Standardization):</strong> símbolos mecánicos y de procesos.</li>
+        <li><strong>UNE (Una Norma Española):</strong> adaptación española de las normas internacionales.</li>
+        <li><strong>ANSI (American National Standards Institute):</strong> normas estadounidenses.</li>
+      </ul>
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> aprender símbolos técnicos no es memorizar dibujos sin
+        sentido. Es aprender <strong>el idioma universal de la industria</strong>, el mismo que usan
+        ingenieros, electricistas, mecánicos y programadores de todo el mundo.
+      </div>
+
+      <h4>Tipos de esquemas que usan símbolos</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Tipo de esquema</th>
+          <th>Qué representa</th>
+          <th>Símbolos típicos</th>
+        </tr>
+        <tr>
+          <td><strong>Eléctrico</strong></td>
+          <td>Conexiones de un circuito eléctrico.</td>
+          <td>Resistencias, bombillas, interruptores, pilas.</td>
+        </tr>
+        <tr>
+          <td><strong>Electrónico</strong></td>
+          <td>Circuito con componentes electrónicos.</td>
+          <td>Diodos, transistores, condensadores, circuitos integrados.</td>
+        </tr>
+        <tr>
+          <td><strong>Neumático</strong></td>
+          <td>Circuito de aire comprimido.</td>
+          <td>Compresores, válvulas, cilindros.</td>
+        </tr>
+        <tr>
+          <td><strong>Hidráulico</strong></td>
+          <td>Circuito de aceite a presión.</td>
+          <td>Bombas, válvulas, cilindros hidráulicos.</td>
+        </tr>
+        <tr>
+          <td><strong>De bloques</strong></td>
+          <td>Flujo de información entre partes de un sistema.</td>
+          <td>Cajas, flechas, bloques funcionales.</td>
+        </tr>
+      </table>
+
+      <h4>Los 4 símbolos más reconocidos internacionalmente</h4>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>⚡ Resistor (zigzag)</h5>
+          <p>Limita o divide la corriente en un circuito. Es uno de los componentes más usados.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🔋 Batería (líneas alternas)</h5>
+          <p>Fuente de corriente continua. Las líneas largas son polos positivos; las cortas, negativos.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>⚙️ Motor (círculo con M)</h5>
+          <p>Convierte energía eléctrica en energía mecánica (movimiento rotatorio).</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🔵 Tierra (líneas decrecientes)</h5>
+          <p>Conexión de seguridad a tierra. Protege a personas y equipos frente a corrientes peligrosas.</p>
+        </div>
+      </div>
+
+      <h4>Cómo leer un esquema técnico</h4>
+      <ol>
+        <li><strong>Identificar el tipo de esquema:</strong> ¿es eléctrico, electrónico, neumático o de bloques?</li>
+        <li><strong>Localizar la alimentación:</strong> normalmente arriba o a la izquierda.</li>
+        <li><strong>Buscar el flujo:</strong> la corriente o la señal circula de la fuente al consumo.</li>
+        <li><strong>Identificar cada componente</strong> con su símbolo normalizado.</li>
+        <li><strong>Seguir el trazado</strong> sin saltarse ninguna conexión.</li>
+        <li><strong>Comprobar el retorno</strong> al polo negativo o a tierra.</li>
+      </ol>
+
+      <h4>Errores frecuentes al interpretar símbolos</h4>
+      <ul>
+        <li><strong>Confundir símbolos parecidos:</strong> un condensador y una batería tienen símbolos similares pero funciones completamente diferentes.</li>
+        <li><strong>Ignorar la polaridad:</strong> los diodos, LED y condensadores electrolíticos tienen polaridad.</li>
+        <li><strong>No identificar la alimentación:</strong> sin saber de dónde viene la corriente, no se puede interpretar el circuito.</li>
+        <li><strong>Confundir la dirección de la señal:</strong> las flechas en los símbolos indican el sentido del flujo.</li>
+        <li><strong>No consultar la leyenda:</strong> algunos esquemas incluyen símbolos especiales que se explican en la leyenda.</li>
+      </ul>
+    </div>
+
+    <div class="actividad reveal" style="border-top:6px solid var(--teal)">
+      <span class="kicker">🎮 Reto 1 · Reconocer símbolos</span>
+      <h3>¿Qué representa cada símbolo?</h3>
+      <p class="intro">
+        Cada tarjeta muestra un símbolo técnico. Elige la respuesta correcta entre las opciones.
+        Recibirás feedback con la explicación. Hay 8 símbolos.
+      </p>
+
+      <div class="simbolos-wrap" id="simbolosWrap"></div>
+      <div id="simbMsg"></div>
+    </div>
+  </section>
+
+  <!-- ========== RETO 2: ABREVIATURAS ========== -->
+  <section id="abreviaturas">
+    <div class="sec-head reveal">
+      <span class="kicker indigo">Bloque 2</span>
+      <h2>📚 Abreviaturas y siglas técnicas</h2>
+      <p class="lead">
+        El mundo de la tecnología está lleno de <strong>siglas y abreviaturas</strong>: IoT, CAD,
+        PLC, LED, CPU, RAM… Conocer su significado es imprescindible para leer documentación,
+        entender manuales y comunicarse con profesionales del sector.
+      </p>
+    </div>
+
+    <div class="teoria indigo reveal">
+      <h3><span class="th-ico">📚</span> Siglas, acrónimos y abreviaturas técnicas</h3>
+      <p>
+        El lenguaje técnico utiliza <strong>formas abreviadas</strong> para referirse a conceptos
+        complejos. Conocer su significado y saber distinguir los tipos es esencial para moverse en
+        el mundo profesional.
+      </p>
+
+      <h4>Diferencia entre sigla, acrónimo y abreviatura</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Tipo</th>
+          <th>Definición</th>
+          <th>Ejemplo</th>
+        </tr>
+        <tr>
+          <td><strong>Sigla</strong></td>
+          <td>Se forma con las iniciales de varias palabras. Se lee letra a letra.</td>
+          <td>CPU (Central Processing Unit), LED, USB.</td>
+        </tr>
+        <tr>
+          <td><strong>Acrónimo</strong></td>
+          <td>Se forma con iniciales y se lee como una palabra normal.</td>
+          <td>RAM (se lee "ram"), PLC (se lee "pe-ele-ce" o "plc").</td>
+        </tr>
+        <tr>
+          <td><strong>Abreviatura</strong></td>
+          <td>Versión corta de una palabra que conserva letras significativas.</td>
+          <td>aprox. (aproximadamente), máx. (máximo), Ø (diámetro).</td>
+        </tr>
+      </table>
+
+      <h4>Las siglas más usadas en tecnología</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Sigla</th>
+          <th>Significado</th>
+          <th>Ámbito</th>
+        </tr>
+        <tr>
+          <td><strong>IoT</strong></td>
+          <td>Internet of Things (Internet de las Cosas)</td>
+          <td>Redes y sistemas conectados.</td>
+        </tr>
+        <tr>
+          <td><strong>CAD</strong></td>
+          <td>Computer Aided Design (Diseño Asistido por Ordenador)</td>
+          <td>Diseño técnico.</td>
+        </tr>
+        <tr>
+          <td><strong>CAM</strong></td>
+          <td>Computer Aided Manufacturing (Fabricación Asistida por Ordenador)</td>
+          <td>Fabricación.</td>
+        </tr>
+        <tr>
+          <td><strong>CNC</strong></td>
+          <td>Control Numérico por Computadora</td>
+          <td>Máquinas-herramienta.</td>
+        </tr>
+        <tr>
+          <td><strong>PLC</strong></td>
+          <td>Programmable Logic Controller (Controlador Lógico Programable)</td>
+          <td>Automatización industrial.</td>
+        </tr>
+        <tr>
+          <td><strong>CPU</strong></td>
+          <td>Central Processing Unit (Unidad Central de Procesamiento)</td>
+          <td>Informática.</td>
+        </tr>
+        <tr>
+          <td><strong>RAM</strong></td>
+          <td>Random Access Memory (Memoria de Acceso Aleatorio)</td>
+          <td>Informática.</td>
+        </tr>
+        <tr>
+          <td><strong>ROM</strong></td>
+          <td>Read Only Memory (Memoria de Solo Lectura)</td>
+          <td>Informática.</td>
+        </tr>
+        <tr>
+          <td><strong>USB</strong></td>
+          <td>Universal Serial Bus (Bus Serie Universal)</td>
+          <td>Conectores y comunicaciones.</td>
+        </tr>
+        <tr>
+          <td><strong>LED</strong></td>
+          <td>Light Emitting Diode (Diodo Emisor de Luz)</td>
+          <td>Electrónica.</td>
+        </tr>
+        <tr>
+          <td><strong>LCD</strong></td>
+          <td>Liquid Crystal Display (Pantalla de Cristal Líquido)</td>
+          <td>Pantallas.</td>
+        </tr>
+        <tr>
+          <td><strong>GPS</strong></td>
+          <td>Global Positioning System (Sistema de Posicionamiento Global)</td>
+          <td>Navegación.</td>
+        </tr>
+        <tr>
+          <td><strong>API</strong></td>
+          <td>Application Programming Interface (Interfaz de Programación de Aplicaciones)</td>
+          <td>Programación.</td>
+        </tr>
+        <tr>
+          <td><strong>URL</strong></td>
+          <td>Uniform Resource Locator (Localizador Uniforme de Recursos)</td>
+          <td>Internet.</td>
+        </tr>
+        <tr>
+          <td><strong>HTML</strong></td>
+          <td>HyperText Markup Language (Lenguaje de Marcado de Hipertexto)</td>
+          <td>Desarrollo web.</td>
+        </tr>
+        <tr>
+          <td><strong>IA</strong></td>
+          <td>Inteligencia Artificial</td>
+          <td>Informática avanzada.</td>
+        </tr>
+      </table>
+
+      <h4>Símbolos y unidades del Sistema Internacional (SI)</h4>
+      <p>
+        En tecnología también se usan <strong>símbolos de unidades</strong> normalizadas por el
+        Sistema Internacional. Es imprescindible conocerlos para no confundir magnitudes:
+      </p>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Magnitud</th>
+          <th>Símbolo</th>
+          <th>Unidad</th>
+        </tr>
+        <tr>
+          <td>Longitud</td>
+          <td><strong>l, L</strong></td>
+          <td>metro (m)</td>
+        </tr>
+        <tr>
+          <td>Masa</td>
+          <td><strong>m</strong></td>
+          <td>kilogramo (kg)</td>
+        </tr>
+        <tr>
+          <td>Tiempo</td>
+          <td><strong>t</strong></td>
+          <td>segundo (s)</td>
+        </tr>
+        <tr>
+          <td>Intensidad eléctrica</td>
+          <td><strong>I</strong></td>
+          <td>amperio (A)</td>
+        </tr>
+        <tr>
+          <td>Tensión eléctrica</td>
+          <td><strong>V</strong></td>
+          <td>voltio (V)</td>
+        </tr>
+        <tr>
+          <td>Resistencia eléctrica</td>
+          <td><strong>R</strong></td>
+          <td>ohmio (Ω)</td>
+        </tr>
+        <tr>
+          <td>Potencia</td>
+          <td><strong>P</strong></td>
+          <td>vatio (W)</td>
+        </tr>
+        <tr>
+          <td>Fuerza</td>
+          <td><strong>F</strong></td>
+          <td>newton (N)</td>
+        </tr>
+        <tr>
+          <td>Presión</td>
+          <td><strong>p</strong></td>
+          <td>pascal (Pa)</td>
+        </tr>
+        <tr>
+          <td>Temperatura</td>
+          <td><strong>T</strong></td>
+          <td>kelvin (K) o grado Celsius (°C)</td>
+        </tr>
+      </table>
+
+      <h4>Prefijos del Sistema Internacional</h4>
+      <p>
+        Los múltiplos y submúltiplos de las unidades se expresan con prefijos. Conocerlos evita
+        errores graves (por ejemplo, confundir kilo con mili):
+      </p>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Prefijo</th>
+          <th>Símbolo</th>
+          <th>Factor</th>
+          <th>Ejemplo</th>
+        </tr>
+        <tr>
+          <td>tera</td>
+          <td>T</td>
+          <td>10¹²</td>
+          <td>1 TB = 1.000.000.000.000 bytes</td>
+        </tr>
+        <tr>
+          <td>giga</td>
+          <td>G</td>
+          <td>10⁹</td>
+          <td>1 GHz = 1.000.000.000 Hz</td>
+        </tr>
+        <tr>
+          <td>mega</td>
+          <td>M</td>
+          <td>10⁶</td>
+          <td>1 MW = 1.000.000 W</td>
+        </tr>
+        <tr>
+          <td>kilo</td>
+          <td>k</td>
+          <td>10³</td>
+          <td>1 kV = 1.000 V</td>
+        </tr>
+        <tr>
+          <td>mili</td>
+          <td>m</td>
+          <td>10⁻³</td>
+          <td>1 mA = 0,001 A</td>
+        </tr>
+        <tr>
+          <td>micro</td>
+          <td>µ</td>
+          <td>10⁻⁶</td>
+          <td>1 µF = 0,000001 F</td>
+        </tr>
+        <tr>
+          <td>nano</td>
+          <td>n</td>
+          <td>10⁻⁹</td>
+          <td>1 nm = 0,000000001 m</td>
+        </tr>
+      </table>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> las siglas y abreviaturas técnicas no son un capricho: son
+        <strong>herramientas de precisión</strong>. Conocerlas evita ambigüedades, permite leer
+        documentación especializada y facilita la comunicación con profesionales de cualquier país.
+      </div>
+
+      <h4>Errores frecuentes con siglas y abreviaturas</h4>
+      <ul>
+        <li><strong>Confundir mayúsculas y minúsculas:</strong> "mA" es miliamperio; "MA" no es una unidad estándar.</li>
+        <li><strong>No escribir el punto:</strong> muchas abreviaturas requieren punto (aprox., máx.), otras no (kg, m).</li>
+        <li><strong>Traducir siglas al castellano:</strong> lo estándar es mantener la sigla original en inglés (LED, USB).</li>
+        <li><strong>Confundir unidades:</strong> "Mb" (megabit) ≠ "MB" (megabyte). Diferencia de factor 8.</li>
+        <li><strong>No usar el prefijo adecuado:</strong> decir "0,001 A" en lugar de "1 mA" es correcto pero menos claro.</li>
+      </ul>
+    </div>
+
+    <div class="actividad reveal" style="border-top:6px solid var(--indigo)">
+      <span class="kicker indigo">🎮 Reto 2 · Match de siglas</span>
+      <h3>Empareja cada abreviatura con su significado</h3>
+      <p class="intro">
+        Pulsa una abreviatura (columna izquierda) y luego su significado (columna derecha). Hay
+        8 parejas en total.
+      </p>
+
+      <div class="abrev-wrap">
+        <div class="abrev-col">
+          <h4>🔤 Abreviaturas</h4>
+          <div id="abrevAbrev"></div>
+        </div>
+        <div class="abrev-col">
+          <h4>💡 Significados</h4>
+          <div id="abrevSignificados"></div>
+        </div>
+      </div>
+      <div id="abrevMsg"></div>
+    </div>
+  </section>
+
+  <!-- ========== RETO 3: HERRAMIENTA DIGITAL ========== -->
+  <section id="herramientas">
+    <div class="sec-head reveal">
+      <span class="kicker rosa">Bloque 3</span>
+      <h2>🛠️ La herramienta digital adecuada</h2>
+      <p class="lead">
+        Existen cientos de herramientas digitales para coordinar equipos, compartir archivos,
+        gestionar tareas, comunicarse o programar. Elegir la adecuada en cada momento marca la
+        diferencia entre un proyecto que fluye y otro que se atasca.
+      </p>
+    </div>
+
+    <div class="teoria rosa reveal">
+      <h3><span class="th-ico">🛠️</span> Herramientas digitales de comunicación y colaboración</h3>
+      <p>
+        Las <strong>herramientas digitales colaborativas</strong> son plataformas que permiten a un
+        equipo coordinar su trabajo a distancia. Conocer sus categorías y saber cuándo usar cada
+        una es una competencia imprescindible en cualquier proyecto tecnológico actual.
+      </p>
+
+      <h4>Las 5 categorías de herramientas colaborativas</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Categoría</th>
+          <th>Para qué sirve</th>
+          <th>Ejemplos</th>
+        </tr>
+        <tr>
+          <td><strong>💬 Comunicación</strong></td>
+          <td>Mensajería, videollamadas, foros internos del equipo.</td>
+          <td>Slack, Teams, Discord, Zoom, Google Meet.</td>
+        </tr>
+        <tr>
+          <td><strong>📋 Gestión de tareas</strong></td>
+          <td>Organizar tareas, asignar responsables, ver el avance.</td>
+          <td>Trello, Asana, Notion, Todoist, Microsoft Planner.</td>
+        </tr>
+        <tr>
+          <td><strong>📁 Almacenamiento</strong></td>
+          <td>Guardar y compartir archivos en la nube.</td>
+          <td>Google Drive, Dropbox, OneDrive, iCloud.</td>
+        </tr>
+        <tr>
+          <td><strong>🐙 Control de versiones</strong></td>
+          <td>Coordinar cambios en código, mantener historial.</td>
+          <td>GitHub, GitLab, Bitbucket.</td>
+        </tr>
+        <tr>
+          <td><strong>🎨 Diseño colaborativo</strong></td>
+          <td>Crear y editar diseños en tiempo real.</td>
+          <td>Figma, Canva, Miro, Mural.</td>
+        </tr>
+      </table>
+
+      <h4>Herramientas clave explicadas</h4>
+
+      <h5 style="font-size:.95rem; margin-top:1rem; color:var(--rosa-oscuro)">📋 Trello / Kanban: gestión visual de tareas</h5>
+      <p>
+        El método <strong>Kanban</strong> organiza las tareas en columnas según su estado. Es
+        visual, intuitivo y muy eficaz para ver de un vistazo qué falta, qué está en curso y qué
+        está hecho. Columnas típicas:
+      </p>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>📥 Pendiente</h5>
+          <p>Tareas por empezar.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🔧 En curso</h5>
+          <p>Tareas en las que se está trabajando.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🔍 En revisión</h5>
+          <p>Tareas terminadas pendientes de validar.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>✅ Hecho</h5>
+          <p>Tareas terminadas y validadas.</p>
+        </div>
+      </div>
+
+      <h5 style="font-size:.95rem; margin-top:1rem; color:var(--rosa-oscuro)">🐙 GitHub: control de versiones</h5>
+      <p>
+        <strong>Git</strong> es un sistema de control de versiones que registra todos los cambios
+        de un proyecto. <strong>GitHub</strong> es la plataforma más usada para alojarlo.
+        Conceptos clave:
+      </p>
+      <ul>
+        <li><strong>Repositorio:</strong> la "carpeta del proyecto" con historial completo.</li>
+        <li><strong>Commit:</strong> una captura del estado del proyecto en un momento dado.</li>
+        <li><strong>Branch (rama):</strong> una línea paralela de desarrollo para experimentar sin afectar al proyecto principal.</li>
+        <li><strong>Merge:</strong> fusionar una rama con el proyecto principal.</li>
+        <li><strong>Pull request:</strong> propuesta de cambios para que el equipo los revise.</li>
+        <li><strong>Issue:</strong> incidencia, tarea o propuesta de mejora.</li>
+      </ul>
+
+      <h5 style="font-size:.95rem; margin-top:1rem; color:var(--rosa-oscuro)">🎨 Figma: diseño colaborativo en tiempo real</h5>
+      <p>
+        Figma permite que varias personas editen el mismo diseño a la vez, viendo los cambios al
+        instante. Es el estándar actual para diseñar interfaces y prototipos de apps.
+      </p>
+
+      <h5 style="font-size:.95rem; margin-top:1rem; color:var(--rosa-oscuro)">📁 Google Drive / OneDrive: la nube</h5>
+      <p>
+        Guardar los archivos en la nube tiene ventajas enormes frente a tenerlos solo en un
+        dispositivo:
+      </p>
+      <ul>
+        <li>Acceso desde cualquier dispositivo con conexión.</li>
+        <li>Varias personas pueden trabajar sobre el mismo documento a la vez.</li>
+        <li>Historial de cambios automático.</li>
+        <li>Si se rompe el dispositivo, los archivos siguen a salvo.</li>
+        <li>Se pueden compartir con permisos específicos (ver, comentar, editar).</li>
+      </ul>
+
+      <h4>¿Cómo elegir la herramienta adecuada?</h4>
+      <p>
+        No hay una herramienta universalmente mejor. La elección depende de:
+      </p>
+      <ol>
+        <li><strong>La tarea:</strong> ¿comunicar, organizar, almacenar, diseñar o programar?</li>
+        <li><strong>El equipo:</strong> ¿cuántas personas? ¿dónde están? ¿qué nivel técnico tienen?</li>
+        <li><strong>El tipo de proyecto:</strong> ¿es corto o largo? ¿iterativo o lineal? ¿con código o sin código?</li>
+        <li><strong>La integración:</strong> ¿se conecta bien con las otras herramientas que ya usáis?</li>
+        <li><strong>La curva de aprendizaje:</strong> ¿merece la pena el tiempo de aprenderla para este proyecto?</li>
+      </ol>
+
+      <h4>Buenas prácticas de comunicación digital</h4>
+      <ul>
+        <li><strong>Un canal por tema:</strong> no mezclar conversaciones en un único chat.</li>
+        <li><strong>Nombres de archivo con criterio:</strong> "informe_v2_2024-03-15.pdf" en lugar de "documento final bueno.pdf".</li>
+        <li><strong>Registrar los acuerdos por escrito:</strong> las decisiones importantes no pueden quedar en un chat.</li>
+        <li><strong>Reuniones breves y con orden del día:</strong> evitar reuniones eternas sin objetivo.</li>
+        <li><strong>Un único repositorio:</strong> evitar versiones paralelas y copias duplicadas.</li>
+        <li><strong>Documentar todo:</strong> quien venga después debe poder entender el proyecto sin preguntar.</li>
+      </ul>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> las herramientas digitales no sustituyen la organización:
+        la <strong>facilitan</strong>. Un equipo desorganizado seguirá desorganizado aunque use
+        las mejores herramientas. La herramienta adecuada multiplica la eficacia de un equipo que
+        ya trabaja bien.
+      </div>
+    </div>
+
+    <div class="actividad reveal" style="border-top:6px solid var(--rosa)">
+      <span class="kicker rosa">🎮 Reto 3 · Elige la herramienta</span>
+      <h3>¿Qué herramienta digital usarías en cada situación?</h3>
+      <p class="intro">
+        Lee cada situación real de equipo y elige la herramienta digital más adecuada. Recibirás
+        feedback con la explicación. Hay 6 situaciones.
+      </p>
+
+      <div class="herr-digital-wrap" id="herrDigitalWrap"></div>
+      <div id="hdMsg"></div>
+    </div>
+  </section>
+
+  <!-- ========== RETO 4: ESQUEMAS DE BLOQUES ========== -->
+  <section id="esquemas">
+    <div class="sec-head reveal">
+      <span class="kicker">Bloque 4</span>
+      <h2>📊 Construye el esquema de bloques</h2>
+      <p class="lead">
+        Un <strong>esquema de bloques</strong> representa un sistema tecnológico mostrando el
+        <strong>flujo de información</strong> entre sus partes: entrada, procesamiento, control,
+        actuación y realimentación. Es el lenguaje visual con el que se diseña cualquier sistema
+        automático.
+      </p>
+    </div>
+
+    <div class="teoria indigo reveal">
+      <h3><span class="th-ico">📊</span> Esquemas de bloques y pensamiento sistémico</h3>
+      <p>
+        Un <strong>esquema de bloques</strong> (o diagrama de bloques) es una representación
+        simplificada de un sistema tecnológico. Cada <strong>bloque</strong> representa una función
+        o un componente, y las <strong>flechas</strong> indican el flujo de información, energía o
+        material entre ellos.
+      </p>
+
+      <h4>¿Por qué usar esquemas de bloques?</h4>
+      <p>
+        Los esquemas de bloques permiten <strong>entender sistemas complejos</strong> sin entrar
+        en el detalle de cada componente. Son herramientas de pensamiento y comunicación:
+      </p>
+      <ul>
+        <li><strong>Simplifican:</strong> muestran solo lo esencial.</li>
+        <li><strong>Comunican:</strong> cualquier persona técnica entiende el sistema.</li>
+        <li><strong>Diseñan:</strong> permiten pensar el sistema antes de construirlo.</li>
+        <li><strong>Analizan:</strong> ayudan a detectar errores y puntos débiles.</li>
+        <li><strong>Documentan:</strong> dejan constancia de cómo funciona un sistema.</li>
+      </ul>
+
+      <h4>Los 5 componentes típicos de un sistema de control</h4>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>📡 Entrada (sensor)</h5>
+          <p>Capta información del entorno y la convierte en señal. Ejemplo: termómetro, sensor de luz.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>⚙️ Procesamiento</h5>
+          <p>Compara la señal de entrada con el valor deseado y calcula la acción. Ejemplo: comparador.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🎛️ Control</h5>
+          <p>Toma decisiones y genera la señal de mando. Ejemplo: controlador PID, microcontrolador.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>⚡ Actuador</h5>
+          <p>Ejecuta la acción física según la señal de control. Ejemplo: motor, resistencia, válvula.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🏠 Salida / proceso</h5>
+          <p>Es el efecto real sobre el sistema. Ejemplo: subir la temperatura de la habitación.</p>
+        </div>
+      </div>
+
+      <h4>La realimentación (feedback)</h4>
+      <p>
+        La <strong>realimentación</strong> es el proceso por el que la información de la salida
+        vuelve a la entrada para compararla con el valor deseado y corregir el comportamiento. Es
+        la base del <strong>control en lazo cerrado</strong>.
+      </p>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Lazo abierto</th>
+          <th>Lazo cerrado</th>
+        </tr>
+        <tr>
+          <td>Ejecuta sin comprobar el resultado.</td>
+          <td>Mide la salida y ajusta la entrada.</td>
+        </tr>
+        <tr>
+          <td>Ejemplo: tostadora con temporizador.</td>
+          <td>Ejemplo: termostato, robot seguidor de línea.</td>
+        </tr>
+        <tr>
+          <td>Simple pero impreciso.</td>
+          <td>Complejo pero preciso.</td>
+        </tr>
+      </table>
+
+      <h4>Tipos de diagramas de bloques</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Tipo</th>
+          <th>Qué representa</th>
+          <th>Aplicación</th>
+        </tr>
+        <tr>
+          <td><strong>Diagrama funcional</strong></td>
+          <td>Las funciones del sistema y su flujo.</td>
+          <td>Diseñar la lógica de un sistema.</td>
+        </tr>
+        <tr>
+          <td><strong>Diagrama de flujo</strong></td>
+          <td>Los pasos de un algoritmo o proceso.</td>
+          <td>Programación, procesos industriales.</td>
+        </tr>
+        <tr>
+          <td><strong>Diagrama de bloques de control</strong></td>
+          <td>Los componentes de un sistema de control y sus señales.</td>
+          <td>Automatización, robótica.</td>
+        </tr>
+        <tr>
+          <td><strong>Diagrama de estados</strong></td>
+          <td>Los estados de un sistema y sus transiciones.</td>
+          <td>Programación de sistemas reactivos.</td>
+        </tr>
+      </table>
+
+      <h4>Cómo construir un esquema de bloques</h4>
+      <ol>
+        <li><strong>Identificar la función global</strong> del sistema: ¿qué tiene que hacer?</li>
+        <li><strong>Descomponer en funciones básicas:</strong> entrada, procesamiento, control, actuación, salida.</li>
+        <li><strong>Ordenar las funciones</strong> según el flujo de información.</li>
+        <li><strong>Dibujar cada función como un bloque</strong> con su nombre.</li>
+        <li><strong>Conectar los bloques con flechas</strong> indicando la dirección del flujo.</li>
+        <li><strong>Añadir la realimentación</strong> si el sistema la necesita.</li>
+        <li><strong>Revisar el conjunto</strong> para asegurar que el flujo tiene sentido.</li>
+      </ol>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> los esquemas de bloques son una herramienta de
+        <strong>pensamiento sistémico</strong>. Nos obligan a ver el sistema como un todo, con sus
+        partes y sus relaciones, antes de construirlo. Son tan útiles para diseñar sistemas
+        automáticos como para analizar cualquier proceso tecnológico.
+      </div>
+    </div>
+
+    <div class="actividad reveal" style="border-top:6px solid var(--indigo)">
+      <span class="kicker indigo">🎮 Reto 4 · Esquema de bloques</span>
+      <h3>Monta el esquema de un sistema de control de temperatura</h3>
+      <p class="intro">
+        Coloca cada bloque en la posición correcta del esquema (de izquierda a derecha). Sigue el
+        flujo típico: <strong>entrada → procesamiento → control → actuación → salida</strong>.
+      </p>
+
+      <div class="esquema-intro">
+        <h4>📋 Sistema a representar</h4>
+        <p>Un sistema automático que mide la temperatura de una habitación, la compara con la deseada y enciende o apaga la calefacción según sea necesario. La temperatura se mide continuamente para corregir el comportamiento (realimentación).</p>
+      </div>
+
+      <div class="esquema-slots" id="esquemaSlots"></div>
+
+      <div class="esq-bloques" id="esqBloques"></div>
+      <div id="esqMsg"></div>
+    </div>
+  </section>
+
+  <!-- ========== RETO 5: CONVERSACIÓN TÉCNICA ========== -->
+  <section id="conversacion">
+    <div class="sec-head reveal">
+      <span class="kicker cian">Bloque 5</span>
+      <h2>👥 Conversación técnica en equipo</h2>
+      <p class="lead">
+        La comunicación dentro de un equipo técnico no es solo hablar: es <strong>escuchar,
+        preguntar, argumentar y coordinar</strong>. Las palabras que elegimos, el canal que usamos
+        y el momento en que comunicamos afectan directamente al resultado del proyecto.
+      </p>
+    </div>
+
+    <div class="teoria cian reveal">
+      <h3><span class="th-ico">💬</span> Comunicación efectiva en equipos técnicos</h3>
+      <p>
+        La <strong>comunicación efectiva</strong> dentro de un equipo técnico es tan importante
+        como el trabajo individual. Un equipo con buena comunicación resuelve problemas más rápido,
+        comete menos errores y mantiene mejor el ambiente. Un equipo con mala comunicación se
+        atasca, se frustra y pierde calidad.
+      </p>
+
+      <h4>Los 6 pilares de la comunicación en equipo</h4>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>👂 Escucha activa</h5>
+          <p>Escuchar con atención, sin interrumpir, mostrando interés y verificando que se ha entendido.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🎯 Precisión</h5>
+          <p>Usar términos técnicos correctos, con datos concretos y sin ambigüedades.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🤝 Respeto</h5>
+          <p>Criticar ideas, no personas. Valorar las aportaciones de todas las personas.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>⏱️ Oportunidad</h5>
+          <p>Comunicar en el momento adecuado. Ni antes de tener datos ni cuando ya es tarde.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>📝 Registro</h5>
+          <p>Dejar constancia escrita de las decisiones importantes. Lo que no queda registrado, se olvida.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🔄 Feedback</h5>
+          <p>Dar y recibir retroalimentación constructiva, centrada en hechos y orientada a mejorar.</p>
+        </div>
+      </div>
+
+      <h4>La escucha activa: escuchar es más que oír</h4>
+      <p>
+        La <strong>escucha activa</strong> es una habilidad que se entrena. Consiste en prestar
+        atención plena a lo que dice la otra persona, verificando la comprensión y respondiendo
+        de forma adecuada. Técnicas concretas:
+      </p>
+      <ul>
+        <li><strong>Parafrasear:</strong> repetir con tus palabras lo que has entendido.</li>
+        <li><strong>Preguntar:</strong> hacer preguntas abiertas para profundizar.</li>
+        <li><strong>No interrumpir:</strong> dejar terminar antes de responder.</li>
+        <li><strong>Tomar notas:</strong> anotar los puntos clave.</li>
+        <li><strong>Observar el lenguaje no verbal:</strong> gestos, tono, postura.</li>
+      </ul>
+
+      <h4>El feedback constructivo</h4>
+      <p>
+        Dar feedback es una de las habilidades más difíciles y más valiosas de la comunicación
+        técnica. Un buen feedback:
+      </p>
+      <ul>
+        <li><strong>Se centra en hechos</strong>, no en juicios personales.</li>
+        <li><strong>Es específico</strong>, no genérico ("el botón tarda 2 segundos en responder" en lugar de "va lento").</li>
+        <li><strong>Es oportuno:</strong> se da cuanto antes, no semanas después.</li>
+        <li><strong>Es equilibrado:</strong> reconoce lo positivo y propone mejoras.</li>
+        <li><strong>Ofrece alternativas:</strong> no solo señala el problema, propone soluciones.</li>
+      </ul>
+      <div class="ejemplo">
+        <strong>Mal feedback:</strong> "Tu diseño es un desastre".<br>
+        <strong>Buen feedback:</strong> "He probado el diseño en tres móviles y en uno de ellos el texto se sale del botón. ¿Podemos revisar los márgenes para que se adapte?".
+      </div>
+
+      <h4>Los canales de comunicación en un equipo</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Canal</th>
+          <th>Ventajas</th>
+          <th>Cuándo usarlo</th>
+        </tr>
+        <tr>
+          <td><strong>Reunión presencial</strong></td>
+          <td>Rica en matices, permite debate y decisiones rápidas.</td>
+          <td>Decisiones importantes, planificación, resolución de conflictos.</td>
+        </tr>
+        <tr>
+          <td><strong>Videollamada</strong></td>
+          <td>Permite ver y oír a distancia, compartir pantalla.</td>
+          <td>Reuniones con personas en otras ciudades, revisiones.</td>
+        </tr>
+        <tr>
+          <td><strong>Chat del equipo</strong></td>
+          <td>Rápido, informal, organizado por canales.</td>
+          <td>Consultas rápidas, coordinación diaria, avisos.</td>
+        </tr>
+        <tr>
+          <td><strong>Correo electrónico</strong></td>
+          <td>Formal, deja registro, permite adjuntos.</td>
+          <td>Comunicaciones formales, resúmenes, entrega de documentos.</td>
+        </tr>
+        <tr>
+          <td><strong>Documento compartido</strong></td>
+          <td>Registro escrito, editable por varias personas.</td>
+          <td>Acuerdos, actas, especificaciones, documentación.</td>
+        </tr>
+      </table>
+
+      <h4>Cómo gestionar conflictos en un equipo</h4>
+      <p>
+        Los conflictos son normales en cualquier equipo. La clave no es evitarlos, sino
+        <strong>gestionarlos</strong> bien:
+      </p>
+      <ol>
+        <li><strong>Identificar el problema:</strong> ¿es técnico, personal o de expectativas?</li>
+        <li><strong>Escuchar a todas las partes</strong> implicadas, sin juzgar.</li>
+        <li><strong>Separar las personas del problema:</strong> criticar ideas, no a las personas.</li>
+        <li><strong>Buscar intereses comunes:</strong> ¿qué queremos todos?</li>
+        <li><strong>Generar alternativas</strong> y elegir la mejor para el equipo.</li>
+        <li><strong>Registrar el acuerdo</strong> y verificar que se cumple.</li>
+      </ol>
+
+      <h4>Errores frecuentes de comunicación en equipos</h4>
+      <ul>
+        <li><strong>No preguntar cuando no se entiende algo</strong> por miedo a parecer ignorante.</li>
+        <li><strong>Dar por supuesto</strong> que la otra persona ha entendido algo sin verificarlo.</li>
+        <li><strong>Hablar en lugar de escuchar:</strong> muchos equipos fracasan por exceso de monólogos.</li>
+        <li><strong>Comunicar en el canal equivocado:</strong> decisiones importantes por WhatsApp.</li>
+        <li><strong>No registrar los acuerdos:</strong> las decisiones se olvidan y se repiten.</li>
+        <li><strong>Personalizar los conflictos:</strong> atacar a la persona en vez de resolver el problema.</li>
+      </ul>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> en un equipo técnico, la comunicación no es "hablar mucho":
+        es <strong>transmitir información precisa de forma que todas las personas la entiendan y
+        puedan actuar en consecuencia</strong>. Un equipo que comunica bien trabaja el doble de
+        rápido.
+      </div>
+    </div>
+
+    <div class="actividad reveal" style="border-top:6px solid var(--cian)">
+      <span class="kicker cian">🎮 Reto 5 · Elige tu respuesta</span>
+      <h3>¿Cómo responderías en cada situación?</h3>
+      <p class="intro">
+        Cada escenario muestra una conversación real de un equipo técnico. Elige la respuesta más
+        adecuada según los principios de comunicación efectiva y trabajo en equipo.
+      </p>
+
+      <div class="conv-wrap" id="convWrap"></div>
+      <div id="convMsg"></div>
+    </div>
+
+    <div class="actividad reveal" style="border-top:6px solid var(--teal-oscuro)">
+      <span class="kicker">📚 Vocabulario clave</span>
+      <h3>Diccionario interactivo</h3>
+      <p class="intro">Pulsa sobre cualquier término para ver su explicación detallada.</p>
+      <div class="voc-grid" id="vocGrid"></div>
+      <div id="vocDef"></div>
+    </div>
+  </section>
+
+  <!-- ========== QUIZ ========== -->
+  <section id="quiz">
+    <div class="sec-head reveal">
+      <span class="kicker ambar">🎯 Reto 6 · Cuestionario final</span>
+      <h2>Comprueba lo que has aprendido</h2>
+      <p class="lead">10 preguntas sobre símbolos técnicos, vocabulario, herramientas digitales, esquemas y comunicación en equipo.</p>
+    </div>
+    <div id="quizContainer"></div>
+    <div id="quizResult" style="display:none;text-align:center;padding:1.8rem;border-radius:var(--radio);color:#fff;background:linear-gradient(135deg,#115e59,#042f2e);box-shadow:var(--sombra-lg)">
+      <div id="quizScore" style="font-size:3rem;font-weight:900;line-height:1;margin-bottom:.4rem">0/10</div>
+      <h3 id="quizTitle" style="color:#fff">¡Buen trabajo!</h3>
+      <p id="quizMsg" style="color:#99f6e4;max-width:560px;margin:0 auto"></p>
+    </div>
+  </section>
+
+  <!-- ========== CERTIFICADO ========== -->
+  <section id="certificado">
+    <div id="certificado">
+      <h2>🏆 Tu certificado de aprovechamiento</h2>
+      <p class="sub">Al completar las actividades obtendrás un certificado personalizado con tus resultados, que podrás descargar en PDF.</p>
+
+      <div class="cert-name" id="certNombre">—</div>
+
+      <div class="cert-stats" id="certStats"></div>
+
+      <div class="cert-warn" id="certWarn" style="display:none">
+        ⚠️ Aún no has completado ninguna actividad. Termina al menos una para generar tu certificado.
+      </div>
+
+      <button class="btn btn-ambar" id="btnCertificado" style="font-size:1rem;padding:.95rem 2rem">
+        📄 Descargar certificado en PDF
+      </button>
+      <p class="cert-note">El PDF se genera como imagen rasterizada: el texto no es editable ni seleccionable, garantizando su integridad.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p style="margin-bottom:.4rem"><strong>Comunicación Técnica</strong> · Símbolos · Vocabulario · Herramientas digitales · Trabajo en equipo</p>
+  <p style="margin:0;font-size:.8rem">Aplicación educativa interactiva · Tu progreso se guarda en este navegador</p>
+</footer>
+
+<div id="toast"></div>
+
+<script>
+/* ================================================================
+   1. ESTADO PERSISTENTE (incluye detalle de actividades)
+================================================================ */
+const LS_KEY = 'comunicacionTecnica_v2';
+const RETOS_TOTALES = 6;
+
+let estado = {
+  nombre: '',
+  retos: [],
+  scores: {
+    simbolos: 0,
+    abreviaturas: 0,
+    herramientas: 0,
+    esquemas: 0,
+    conversacion: 0,
+    quiz: 0
+  },
+  iniciado: null,
+  detalle: {
+    simbolos: {},      // { [idSimbolo]: { elegido:'v', acierto:bool } }
+    abreviaturas: [],  // [idAbrev, ...]
+    herramientas: {},  // { [idHerramienta]: { elegido:'texto', acierto:bool } }
+    esquemas: 0,       // número de bloques colocados (0-5)
+    conversacion: {},  // { [idEscenario]: { elegido:index, acierto:bool } }
+    quiz: {}           // { [indicePregunta]: { elegido:indexOpcion, acierto:bool } }
+  }
+};
+
+function guardarEstado(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(estado)); }catch(e){} }
+function cargarEstado(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(raw){
+      const d = JSON.parse(raw);
+      if(d && typeof d === 'object'){
+        estado = Object.assign(estado, d);
+        estado.scores = Object.assign({simbolos:0,abreviaturas:0,herramientas:0,esquemas:0,conversacion:0,quiz:0}, d.scores || {});
+        estado.retos = Array.isArray(d.retos) ? d.retos : [];
+        // Migración / inicialización del detalle
+        if(!estado.detalle || typeof estado.detalle !== 'object') estado.detalle = {};
+        estado.detalle.simbolos = estado.detalle.simbolos || {};
+        estado.detalle.abreviaturas = Array.isArray(estado.detalle.abreviaturas) ? estado.detalle.abreviaturas : [];
+        estado.detalle.herramientas = estado.detalle.herramientas || {};
+        estado.detalle.esquemas = Number(estado.detalle.esquemas) || 0;
+        estado.detalle.conversacion = estado.detalle.conversacion || {};
+        estado.detalle.quiz = estado.detalle.quiz || {};
+      }
+    }
+  }catch(e){}
+}
+
+// IMPORTANTE: cargar el estado ANTES de que se ejecuten los init de actividades
+cargarEstado();
+
+/* ================================================================
+   2. PROGRESO
+================================================================ */
+function actualizarProgreso(){
+  const n = estado.retos.length;
+  document.getElementById('progresoPill').textContent = n + ' / ' + RETOS_TOTALES + ' retos';
+  document.getElementById('progresoBarra').style.width = (n / RETOS_TOTALES * 100) + '%';
+}
+function completarReto(id, msg){
+  const eraNuevo = !estado.retos.includes(id);
+  if(eraNuevo) estado.retos.push(id);
+  guardarEstado();
+  actualizarProgreso();
+  actualizarCertificado();
+  if(msg && eraNuevo) toast(msg);
+}
+let toastTimer;
+function toast(texto){
+  const t = document.getElementById('toast');
+  t.innerHTML = '🏅 ' + texto;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 3500);
+}
+
+/* ================================================================
+   3. LOGIN
+================================================================ */
+const overlay = document.getElementById('loginOverlay');
+const card = document.getElementById('loginCard');
+
+function mostrarLogin(){
+  if(estado.nombre){
+    card.innerHTML = `
+      <span class="login-emoji">💬</span>
+      <h1>¡Hola de nuevo!</h1>
+      <p class="sub">Hemos guardado tu progreso en este navegador.</p>
+      <div class="welcome-back">
+        Continuar como <strong>${escaparHTML(estado.nombre)}</strong><br>
+        <span style="font-size:.82rem">Retos completados: ${estado.retos.length} / ${RETOS_TOTALES}</span>
+      </div>
+      <div class="login-btns">
+        <button class="btn btn-primary" id="btnContinuar">▶ Continuar</button>
+        <button class="btn btn-ghost" id="btnCambiar" style="background:#f1f5f9;color:#0f172a;border-color:#e2e8f0">👤 Cambiar nombre</button>
+      </div>
+    `;
+    document.getElementById('btnContinuar').addEventListener('click', iniciarApp);
+    document.getElementById('btnCambiar').addEventListener('click', ()=>{
+      estado.nombre = '';
+      estado.retos = [];
+      estado.scores = {simbolos:0,abreviaturas:0,herramientas:0,esquemas:0,conversacion:0,quiz:0};
+      estado.iniciado = null;
+      estado.detalle = {
+        simbolos: {}, abreviaturas: [], herramientas: {},
+        esquemas: 0, conversacion: {}, quiz: {}
+      };
+      guardarEstado();
+      renderLoginForm();
+    });
+  } else {
+    renderLoginForm();
+  }
+}
+
+function renderLoginForm(){
+  card.innerHTML = `
+    <span class="login-emoji">💬</span>
+    <h1>Bienvenido/a a Comunicación Técnica</h1>
+    <p class="sub">Antes de empezar, dinos cómo te llamas. Tu progreso se guardará en este navegador para que puedas continuar cuando quieras.</p>
+    <input type="text" id="inputNombre" placeholder="Escribe tu nombre" maxlength="40" autocomplete="off">
+    <button class="btn btn-primary" id="btnEntrar">🚀 Comenzar la aventura</button>
+    <div class="login-error" id="loginError"></div>
+  `;
+  const inp = document.getElementById('inputNombre');
+  const btn = document.getElementById('btnEntrar');
+  const err = document.getElementById('loginError');
+  const submit = ()=>{
+    const v = inp.value.trim();
+    if(v.length < 2){ err.textContent = 'Por favor, introduce al menos 2 caracteres.'; inp.focus(); return; }
+    estado.nombre = v;
+    estado.iniciado = new Date().toISOString();
+    guardarEstado();
+    iniciarApp();
+  };
+  btn.addEventListener('click', submit);
+  inp.addEventListener('keydown', e=>{ if(e.key === 'Enter') submit(); });
+  setTimeout(()=>inp.focus(), 200);
+}
+
+function iniciarApp(){
+  overlay.classList.add('hidden');
+  document.body.classList.remove('locked');
+  document.getElementById('navUserName').textContent = estado.nombre;
+  document.getElementById('heroNombre').textContent = estado.nombre;
+  actualizarProgreso();
+  actualizarCertificado();
+}
+
+function escaparHTML(s){
+  return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ================================================================
+   4. REVEAL
+================================================================ */
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach((e,i)=>{
+    if(e.isIntersecting){
+      setTimeout(()=>e.target.classList.add('in'), i*70);
+      io.unobserve(e.target);
+    }
+  });
+},{threshold:.12, rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+/* ================================================================
+   5. NAV ACTIVO
+================================================================ */
+const secciones = [...document.querySelectorAll('section[id]')];
+const navLinks = [...document.querySelectorAll('.nav-links a')];
+window.addEventListener('scroll', ()=>{
+  let actual = '';
+  secciones.forEach(s=>{ if(window.scrollY >= s.offsetTop - 120) actual = s.id; });
+  navLinks.forEach(a=>a.classList.toggle('active', a.getAttribute('href') === '#'+actual));
+});
+
+/* ================================================================
+   6. RETO 1 · SÍMBOLOS TÉCNICOS
+================================================================ */
+const simbolosData = [
+  {
+    id:'s1', nombre:'Resistencia',
+    svg:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <line x1="5" y1="50" x2="20" y2="50" stroke="#5eead4" stroke-width="3"/>
+      <polyline points="20,50 25,40 35,60 45,40 55,60 65,40 75,60 80,50"
+                fill="none" stroke="#5eead4" stroke-width="3" stroke-linejoin="round"/>
+      <line x1="80" y1="50" x2="95" y2="50" stroke="#5eead4" stroke-width="3"/>
+    </svg>`,
+    correcta:'resistencia',
+    opciones:[
+      {v:'resistencia', t:'Resistencia eléctrica'},
+      {v:'condensador', t:'Condensador'},
+      {v:'bateria', t:'Batería'},
+      {v:'led', t:'LED'}
+    ],
+    why:'El símbolo en zigzag representa una RESISTENCIA. Se usa para limitar o dividir la corriente en un circuito.'
+  },
+  {
+    id:'s2', nombre:'Condensador',
+    svg:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <line x1="5" y1="50" x2="42" y2="50" stroke="#5eead4" stroke-width="3"/>
+      <line x1="42" y1="25" x2="42" y2="75" stroke="#5eead4" stroke-width="3"/>
+      <line x1="58" y1="25" x2="58" y2="75" stroke="#5eead4" stroke-width="3"/>
+      <line x1="58" y1="50" x2="95" y2="50" stroke="#5eead4" stroke-width="3"/>
+    </svg>`,
+    correcta:'condensador',
+    opciones:[
+      {v:'resistencia', t:'Resistencia eléctrica'},
+      {v:'condensador', t:'Condensador'},
+      {v:'diodo', t:'Diodo'},
+      {v:'interruptor', t:'Interruptor'}
+    ],
+    why:'Dos líneas paralelas separadas por un hueco representan un CONDENSADOR. Almacena carga eléctrica temporalmente.'
+  },
+  {
+    id:'s3', nombre:'Batería',
+    svg:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <line x1="5" y1="50" x2="35" y2="50" stroke="#5eead4" stroke-width="3"/>
+      <line x1="35" y1="30" x2="35" y2="70" stroke="#5eead4" stroke-width="3"/>
+      <line x1="45" y1="38" x2="45" y2="62" stroke="#5eead4" stroke-width="3"/>
+      <line x1="55" y1="25" x2="55" y2="75" stroke="#5eead4" stroke-width="3"/>
+      <line x1="65" y1="38" x2="65" y2="62" stroke="#5eead4" stroke-width="3"/>
+      <line x1="65" y1="50" x2="95" y2="50" stroke="#5eead4" stroke-width="3"/>
+    </svg>`,
+    correcta:'bateria',
+    opciones:[
+      {v:'condensador', t:'Condensador'},
+      {v:'bateria', t:'Batería (pila)'},
+      {v:'tierra', t:'Toma de tierra'},
+      {v:'resistencia', t:'Resistencia'}
+    ],
+    why:'Las líneas alternas largas y cortas representan una BATERÍA o PILA. La línea larga es el polo positivo y la corta el negativo.'
+  },
+  {
+    id:'s4', nombre:'LED',
+    svg:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <line x1="5" y1="50" x2="30" y2="50" stroke="#5eead4" stroke-width="3"/>
+      <polygon points="30,25 30,75 60,50" fill="#5eead4"/>
+      <line x1="60" y1="25" x2="60" y2="75" stroke="#5eead4" stroke-width="3"/>
+      <line x1="60" y1="50" x2="95" y2="50" stroke="#5eead4" stroke-width="3"/>
+      <line x1="65" y1="20" x2="75" y2="10" stroke="#5eead4" stroke-width="2"/>
+      <line x1="70" y1="25" x2="80" y2="15" stroke="#5eead4" stroke-width="2"/>
+    </svg>`,
+    correcta:'led',
+    opciones:[
+      {v:'diodo', t:'Diodo rectificador'},
+      {v:'led', t:'LED (diodo emisor de luz)'},
+      {v:'resistencia', t:'Resistencia'},
+      {v:'transistor', t:'Transistor'}
+    ],
+    why:'El triángulo con línea y dos flechas hacia fuera representa un LED (diodo emisor de luz). Emite luz cuando pasa corriente en polarización directa.'
+  },
+  {
+    id:'s5', nombre:'Interruptor',
+    svg:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <line x1="5" y1="50" x2="30" y2="50" stroke="#5eead4" stroke-width="3"/>
+      <circle cx="30" cy="50" r="3" fill="#5eead4"/>
+      <line x1="30" y1="50" x2="65" y2="30" stroke="#5eead4" stroke-width="3"/>
+      <circle cx="70" cy="50" r="3" fill="#5eead4"/>
+      <line x1="70" y1="50" x2="95" y2="50" stroke="#5eead4" stroke-width="3"/>
+    </svg>`,
+    correcta:'interruptor',
+    opciones:[
+      {v:'interruptor', t:'Interruptor (abierto)'},
+      {v:'pulsador', t:'Pulsador'},
+      {v:'conmutador', t:'Conmutador'},
+      {v:'fusible', t:'Fusible'}
+    ],
+    why:'El símbolo con un brazo inclinado que no cierra el circuito representa un INTERRUPTOR ABIERTO. Al cerrarlo, deja pasar la corriente.'
+  },
+  {
+    id:'s6', nombre:'Toma de tierra',
+    svg:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <line x1="50" y1="5" x2="50" y2="55" stroke="#5eead4" stroke-width="3"/>
+      <line x1="25" y1="55" x2="75" y2="55" stroke="#5eead4" stroke-width="3"/>
+      <line x1="33" y1="68" x2="67" y2="68" stroke="#5eead4" stroke-width="3"/>
+      <line x1="42" y1="81" x2="58" y2="81" stroke="#5eead4" stroke-width="3"/>
+    </svg>`,
+    correcta:'tierra',
+    opciones:[
+      {v:'tierra', t:'Toma de tierra'},
+      {v:'antena', t:'Antena'},
+      {v:'resistencia', t:'Resistencia'},
+      {v:'condensador', t:'Condensador'}
+    ],
+    why:'Las tres líneas horizontales de longitud decreciente representan la TOMA DE TIERRA. Protege a las personas y a los equipos frente a corrientes peligrosas.'
+  },
+  {
+    id:'s7', nombre:'Motor',
+    svg:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="50" r="30" fill="none" stroke="#5eead4" stroke-width="3"/>
+      <text x="50" y="60" text-anchor="middle" font-size="26" font-weight="900" fill="#5eead4">M</text>
+      <line x1="5" y1="50" x2="20" y2="50" stroke="#5eead4" stroke-width="3"/>
+      <line x1="80" y1="50" x2="95" y2="50" stroke="#5eead4" stroke-width="3"/>
+    </svg>`,
+    correcta:'motor',
+    opciones:[
+      {v:'motor', t:'Motor eléctrico'},
+      {v:'generador', t:'Generador'},
+      {v:'transformador', t:'Transformador'},
+      {v:'resistencia', t:'Resistencia'}
+    ],
+    why:'El círculo con la letra M representa un MOTOR ELÉCTRICO. Convierte energía eléctrica en energía mecánica (movimiento).'
+  },
+  {
+    id:'s8', nombre:'Puerta AND',
+    svg:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <line x1="5" y1="35" x2="25" y2="35" stroke="#5eead4" stroke-width="3"/>
+      <line x1="5" y1="65" x2="25" y2="65" stroke="#5eead4" stroke-width="3"/>
+      <path d="M 25 20 L 55 20 Q 80 20 80 50 Q 80 80 55 80 L 25 80 Z"
+            fill="none" stroke="#5eead4" stroke-width="3"/>
+      <line x1="80" y1="50" x2="95" y2="50" stroke="#5eead4" stroke-width="3"/>
+    </svg>`,
+    correcta:'and',
+    opciones:[
+      {v:'and', t:'Puerta lógica AND'},
+      {v:'or', t:'Puerta lógica OR'},
+      {v:'not', t:'Puerta lógica NOT'},
+      {v:'xor', t:'Puerta lógica XOR'}
+    ],
+    why:'La forma de "D" (con el lado curvo hacia la salida) representa la puerta lógica AND. Su salida es 1 solo si sus DOS entradas son 1.'
+  }
+];
+
+let simbRespondidas = 0, simbAciertos = 0;
+
+function initSimbolos(){
+  const cont = document.getElementById('simbolosWrap');
+  if(!cont) return;
+  cont.innerHTML = '';
+  simbRespondidas = 0;
+  simbAciertos = 0;
+  const mezcla = [...simbolosData].sort(()=>Math.random()-0.5);
+  mezcla.forEach((s, idx)=>{
+    const div = document.createElement('div');
+    div.className = 'simbolo-card';
+    const opsMezcladas = [...s.opciones].sort(()=>Math.random()-0.5);
+    div.innerHTML = `
+      <div class="simb-visual">${s.svg}</div>
+      <p class="simb-pregunta">¿Qué símbolo es este?</p>
+      <div class="simb-opciones">
+        ${opsMezcladas.map((o, i)=>`
+          <button class="simb-btn" data-id="${s.id}" data-v="${o.v}">
+            <span class="sib-num">${String.fromCharCode(65+i)}</span>
+            <span>${o.t}</span>
+          </button>
+        `).join('')}
+      </div>
+      <div class="simb-fb"></div>
+    `;
+    cont.appendChild(div);
+    const btns = div.querySelectorAll('.simb-btn');
+    const fb = div.querySelector('.simb-fb');
+
+    // --- RESTAURAR si ya estaba respondida ---
+    const guardado = estado.detalle.simbolos[s.id];
+    if(guardado){
+      btns.forEach(x=>{
+        x.disabled = true;
+        if(x.dataset.v === s.correcta) x.classList.add('correct');
+      });
+      if(!guardado.acierto){
+        btns.forEach(x=>{ if(x.dataset.v === guardado.elegido) x.classList.add('wrong'); });
+      }
+      fb.innerHTML = (guardado.acierto ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>No exactamente.</strong> ') + s.why;
+      fb.classList.add('show');
+      div.classList.add('done');
+      simbRespondidas++;
+      if(guardado.acierto) simbAciertos++;
+    }
+
+    // --- CLICK (solo si no estaba ya respondida) ---
+    btns.forEach(b=>{
+      b.addEventListener('click', ()=>{
+        if(guardado) return; // ya respondida
+        const elegido = b.dataset.v;
+        const acierto = elegido === s.correcta;
+        btns.forEach(x=>{
+          x.disabled = true;
+          if(x.dataset.v === s.correcta) x.classList.add('correct');
+        });
+        if(!acierto) b.classList.add('wrong');
+        fb.innerHTML = (acierto ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>No exactamente.</strong> ') + s.why;
+        fb.classList.add('show');
+        div.classList.add('done');
+        simbRespondidas++;
+        if(acierto) simbAciertos++;
+
+        // Guardar en el estado persistente
+        estado.detalle.simbolos[s.id] = { elegido, acierto };
+        guardarEstado();
+
+        if(simbRespondidas === simbolosData.length){
+          if(simbAciertos > estado.scores.simbolos){
+            estado.scores.simbolos = simbAciertos;
+            guardarEstado();
+            actualizarCertificado();
+          }
+          document.getElementById('simbMsg').innerHTML =
+            `Has reconocido correctamente <strong>${simbAciertos} de ${simbolosData.length}</strong> símbolos. ` +
+            (simbAciertos >= 6 ? '¡Sabes leer el lenguaje de los esquemas técnicos!' : 'Repasa los símbolos fallados.');
+          completarReto('simbolos', '¡Símbolos técnicos dominados!');
+        }
+      });
+    });
+  });
+
+  // Si al restaurar ya estaban todas respondidas, mostrar mensaje y asegurar reto
+  if(simbRespondidas === simbolosData.length){
+    document.getElementById('simbMsg').innerHTML =
+      `Has reconocido correctamente <strong>${simbAciertos} de ${simbolosData.length}</strong> símbolos. ` +
+      (simbAciertos >= 6 ? '¡Sabes leer el lenguaje de los esquemas técnicos!' : 'Repasa los símbolos fallados.');
+    if(simbAciertos > estado.scores.simbolos){
+      estado.scores.simbolos = simbAciertos;
+      guardarEstado();
+      actualizarCertificado();
+    }
+    completarReto('simbolos', null);
+  }
+}
+
+initSimbolos();
+
+/* ================================================================
+   7. RETO 2 · ABREVIATURAS
+================================================================ */
+const abreviaturasData = [
+  {id:'a1', abr:'IoT', sig:'Internet of Things (Internet de las Cosas)'},
+  {id:'a2', abr:'CAD', sig:'Computer Aided Design (Diseño Asistido por Ordenador)'},
+  {id:'a3', abr:'PLC', sig:'Programmable Logic Controller (Controlador Lógico Programable)'},
+  {id:'a4', abr:'LED', sig:'Light Emitting Diode (Diodo Emisor de Luz)'},
+  {id:'a5', abr:'CPU', sig:'Central Processing Unit (Unidad Central de Procesamiento)'},
+  {id:'a6', abr:'RAM', sig:'Random Access Memory (Memoria de Acceso Aleatorio)'},
+  {id:'a7', abr:'USB', sig:'Universal Serial Bus (Bus Serie Universal)'},
+  {id:'a8', abr:'CNC', sig:'Control Numérico por Computadora'}
+];
+
+let abrevSelAbr = null;
+let abrevSelSig = null;
+let abrevEmparejadas = 0;
+
+function shuffle(arr){
+  const a = [...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function initAbreviaturas(){
+  const ca = document.getElementById('abrevAbrev');
+  const cs = document.getElementById('abrevSignificados');
+  if(!ca || !cs) return;
+  ca.innerHTML = '';
+  cs.innerHTML = '';
+  abrevSelAbr = null;
+  abrevSelSig = null;
+  abrevEmparejadas = 0;
+
+  // Crear elementos
+  shuffle(abreviaturasData).forEach(a=>{
+    const el = document.createElement('div');
+    el.className = 'abrev-item abrev';
+    el.dataset.id = a.id;
+    el.dataset.tipo = 'abr';
+    el.textContent = a.abr;
+    el.addEventListener('click', ()=>clickAbrev(el));
+    ca.appendChild(el);
+  });
+  shuffle(abreviaturasData).forEach(a=>{
+    const el = document.createElement('div');
+    el.className = 'abrev-item';
+    el.dataset.id = a.id;
+    el.dataset.tipo = 'sig';
+    el.textContent = a.sig;
+    el.addEventListener('click', ()=>clickAbrev(el));
+    cs.appendChild(el);
+  });
+
+  // Restaurar parejas ya emparejadas
+  estado.detalle.abreviaturas.forEach(id=>{
+    const a = ca.querySelector(`.abrev-item[data-id="${id}"]`);
+    const b = cs.querySelector(`.abrev-item[data-id="${id}"]`);
+    if(a) a.classList.add('matched');
+    if(b) b.classList.add('matched');
+    abrevEmparejadas++;
+  });
+
+  if(abrevEmparejadas === abreviaturasData.length){
+    document.getElementById('abrevMsg').innerHTML = '🎉 ¡Has emparejado las 8 abreviaturas con su significado!';
+    if(abrevEmparejadas > estado.scores.abreviaturas){
+      estado.scores.abreviaturas = abrevEmparejadas;
+      guardarEstado();
+      actualizarCertificado();
+    }
+    completarReto('abreviaturas', null);
+  }
+}
+
+function clickAbrev(el){
+  if(el.classList.contains('matched')) return;
+
+  if(el.dataset.tipo === 'abr'){
+    if(abrevSelAbr) abrevSelAbr.classList.remove('sel');
+    abrevSelAbr = el;
+    el.classList.add('sel');
+  } else {
+    if(abrevSelSig) abrevSelSig.classList.remove('sel');
+    abrevSelSig = el;
+    el.classList.add('sel');
+  }
+
+  if(abrevSelAbr && abrevSelSig){
+    const a = abrevSelAbr, b = abrevSelSig;
+    const msg = document.getElementById('abrevMsg');
+    if(a.dataset.id === b.dataset.id){
+      a.classList.remove('sel');
+      b.classList.remove('sel');
+      a.classList.add('matched');
+      b.classList.add('matched');
+      abrevEmparejadas++;
+
+      // Guardar pareja emparejada
+      if(!estado.detalle.abreviaturas.includes(a.dataset.id)){
+        estado.detalle.abreviaturas.push(a.dataset.id);
+        guardarEstado();
+      }
+
+      msg.textContent = `✅ ¡Bien! Pareja ${abrevEmparejadas} de 8 encontrada.`;
+      abrevSelAbr = null;
+      abrevSelSig = null;
+      if(abrevEmparejadas > estado.scores.abreviaturas){
+        estado.scores.abreviaturas = abrevEmparejadas;
+        guardarEstado();
+        actualizarCertificado();
+      }
+      if(abrevEmparejadas === 8){
+        msg.innerHTML = '🎉 ¡Has emparejado las 8 abreviaturas con su significado!';
+        completarReto('abreviaturas', '¡Abreviaturas técnicas dominadas!');
+      }
+    } else {
+      a.classList.add('error');
+      b.classList.add('error');
+      msg.innerHTML = '❌ No coinciden. Inténtalo de nuevo.';
+      setTimeout(()=>{
+        a.classList.remove('error','sel');
+        b.classList.remove('error','sel');
+        abrevSelAbr = null;
+        abrevSelSig = null;
+      }, 550);
+    }
+  }
+}
+
+initAbreviaturas();
+
+/* ================================================================
+   8. RETO 3 · HERRAMIENTA DIGITAL ADECUADA
+================================================================ */
+const herramientasDigitalesData = [
+  {
+    id:'h1', ico:'📋', titulo:'Organizar las tareas del equipo',
+    desc:'El equipo tiene 15 tareas asignadas a 4 personas con distintas fechas. Necesitáis ver de un vistazo qué está pendiente, qué está en curso y qué está hecho.',
+    opciones:[
+      {t:'Trello o tablero Kanban', ok:true, why:'Los tableros Kanban (Trello) organizan visualmente tareas en columnas según su estado. Perfectos para ver el avance del equipo de un vistazo.'},
+      {t:'Editor de texto colaborativo', ok:false, why:'Un editor de texto sirve para escribir documentos, no para gestionar tareas con estados y responsables.'},
+      {t:'Hoja de cálculo sin compartir', ok:false, why:'Sin compartir no sirve para coordinar el equipo. Y no muestra el estado de forma tan visual como un Kanban.'}
+    ]
+  },
+  {
+    id:'h2', ico:'🌿', titulo:'Controlar versiones del código',
+    desc:'El equipo programa una app en Python. Varias personas modifican el mismo archivo y necesitáis no perder cambios y saber quién ha hecho qué.',
+    opciones:[
+      {t:'GitHub o GitLab', ok:true, why:'GitHub permite el control de versiones con Git: cada cambio queda registrado y se pueden coordinar las aportaciones de varias personas.'},
+      {t:'WhatsApp en grupo', ok:false, why:'Enviar archivos por mensajería es un caos: se pierden versiones y no hay historial de cambios.'},
+      {t:'Carpeta compartida en la nube', ok:false, why:'Una carpeta compartida no gestiona conflictos ni versiones. Es mucho menos seguro que un sistema de control de versiones.'}
+    ]
+  },
+  {
+    id:'h3', ico:'💬', titulo:'Comunicación rápida del equipo',
+    desc:'El equipo necesita un canal para consultas rápidas, avisos y coordinación diaria. Queréis poder separar temas en "canales" y recibir notificaciones.',
+    opciones:[
+      {t:'Slack, Teams o Discord', ok:true, why:'Estas plataformas organizan la comunicación en canales temáticos y permiten notificaciones, menciones y búsquedas. Perfectos para equipos.'},
+      {t:'Correo electrónico', ok:false, why:'El correo es útil para mensajes formales, pero demasiado lento y desordenado para la coordinación diaria de un equipo.'},
+      {t:'Llamadas telefónicas', ok:false, why:'Las llamadas no dejan registro y no son prácticas para coordinar muchas personas.'}
+    ]
+  },
+  {
+    id:'h4', ico:'🎨', titulo:'Diseñar la interfaz de la app en equipo',
+    desc:'Tres personas necesitan diseñar la pantalla de la app de forma colaborativa en tiempo real, viendo los cambios de las demás al instante.',
+    opciones:[
+      {t:'Figma o Canva colaborativo', ok:true, why:'Figma es el estándar para diseño colaborativo en tiempo real: varias personas editan a la vez y ven los cambios al instante.'},
+      {t:'Paint', ok:false, why:'Paint no es colaborativo ni profesional. No permite trabajar en equipo sobre el mismo diseño.'},
+      {t:'Imprimir bocetos en papel', ok:false, why:'Los bocetos en papel son útiles en fases iniciales, pero no permiten la colaboración en tiempo real que se necesita.'}
+    ]
+  },
+  {
+    id:'h5', ico:'📁', titulo:'Guardar y compartir documentos del proyecto',
+    desc:'El equipo maneja documentos (memoria, presupuesto, planos). Necesitáis poder verlos, editarlos a la vez y tenerlos siempre disponibles desde cualquier dispositivo.',
+    opciones:[
+      {t:'Google Drive o OneDrive', ok:true, why:'Los servicios de almacenamiento en la nube permiten editar documentos a la vez, acceder desde cualquier dispositivo y mantenerlos organizados.'},
+      {t:'Guardarlos en un pendrive', ok:false, why:'Un pendrive puede perderse o estropearse y no permite el trabajo simultáneo.'},
+      {t:'Enviarlos por email cada vez', ok:false, why:'Enviar versiones por email genera confusión y multiplica los archivos duplicados.'}
+    ]
+  },
+  {
+    id:'h6', ico:'📹', titulo:'Reunión con un experto de otra ciudad',
+    desc:'El equipo necesita hablar durante 30 minutos con un ingeniero que vive en otra isla, mostrarle planos por pantalla y grabar la conversación.',
+    opciones:[
+      {t:'Zoom, Google Meet o Teams', ok:true, why:'Las plataformas de videoconferencia permiten reuniones con compartir pantalla, grabación y chat. Perfectas para reuniones a distancia.'},
+      {t:'Enviar mensajes de texto', ok:false, why:'El texto no permite mostrar planos ni mantener una conversación fluida en tiempo real.'},
+      {t:'Esperar a que venga en persona', ok:false, why:'No es práctico y retrasa el proyecto. La videoconferencia resuelve el problema al instante.'}
+    ]
+  }
+];
+
+let herrDigRespondidas = 0, herrDigAciertos = 0;
+
+function initHerramientasDigitales(){
+  const cont = document.getElementById('herrDigitalWrap');
+  if(!cont) return;
+  cont.innerHTML = '';
+  herrDigRespondidas = 0;
+  herrDigAciertos = 0;
+  herramientasDigitalesData.forEach((h)=>{
+    const div = document.createElement('div');
+    div.className = 'herr-digital-card';
+    const opsMezcladas = [...h.opciones].sort(()=>Math.random()-0.5);
+    div.innerHTML = `
+      <div class="hd-head">
+        <span class="hd-ico">${h.ico}</span>
+        <div>
+          <p class="hd-titulo">${h.titulo}</p>
+          <p class="hd-desc">${h.desc}</p>
+        </div>
+      </div>
+      <div class="hd-opciones">
+        ${opsMezcladas.map(o=>`
+          <button class="hd-btn" data-id="${h.id}" data-v="${o.t}">${o.t}</button>
+        `).join('')}
+      </div>
+      <div class="hd-fb"></div>
+    `;
+    cont.appendChild(div);
+    const btns = div.querySelectorAll('.hd-btn');
+    const fb = div.querySelector('.hd-fb');
+
+    // --- RESTAURAR ---
+    const guardado = estado.detalle.herramientas[h.id];
+    if(guardado){
+      btns.forEach(x=>{
+        x.disabled = true;
+        const ox = h.opciones.find(o => o.t === x.dataset.v);
+        if(ox && ox.ok) x.classList.add('correct');
+      });
+      if(!guardado.acierto){
+        btns.forEach(x=>{ if(x.dataset.v === guardado.elegido) x.classList.add('wrong'); });
+      }
+      const op = h.opciones.find(o => o.t === guardado.elegido);
+      fb.innerHTML = (guardado.acierto ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>No es la mejor opción.</strong> ') + (op ? op.why : '');
+      fb.classList.add('show');
+      div.classList.add('done');
+      herrDigRespondidas++;
+      if(guardado.acierto) herrDigAciertos++;
+    }
+
+    btns.forEach(b=>{
+      b.addEventListener('click', ()=>{
+        if(guardado) return;
+        const op = h.opciones.find(o => o.t === b.dataset.v);
+        const acierto = op && op.ok;
+        btns.forEach(x=>{
+          x.disabled = true;
+          const ox = h.opciones.find(o => o.t === x.dataset.v);
+          if(ox && ox.ok) x.classList.add('correct');
+        });
+        if(!acierto) b.classList.add('wrong');
+        fb.innerHTML = (acierto ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>No es la mejor opción.</strong> ') + (op ? op.why : '');
+        fb.classList.add('show');
+        div.classList.add('done');
+        herrDigRespondidas++;
+        if(acierto) herrDigAciertos++;
+
+        estado.detalle.herramientas[h.id] = { elegido: b.dataset.v, acierto };
+        guardarEstado();
+
+        if(herrDigRespondidas === herramientasDigitalesData.length){
+          if(herrDigAciertos > estado.scores.herramientas){
+            estado.scores.herramientas = herrDigAciertos;
+            guardarEstado();
+            actualizarCertificado();
+          }
+          document.getElementById('hdMsg').innerHTML =
+            `Has acertado <strong>${herrDigAciertos} de ${herramientasDigitalesData.length}</strong> situaciones. ` +
+            (herrDigAciertos >= 5 ? '¡Sabes elegir la herramienta digital adecuada!' : 'Repasa las situaciones falladas.');
+          completarReto('herramientas', '¡Selección de herramientas digitales completada!');
+        }
+      });
+    });
+  });
+
+  if(herrDigRespondidas === herramientasDigitalesData.length){
+    document.getElementById('hdMsg').innerHTML =
+      `Has acertado <strong>${herrDigAciertos} de ${herramientasDigitalesData.length}</strong> situaciones. ` +
+      (herrDigAciertos >= 5 ? '¡Sabes elegir la herramienta digital adecuada!' : 'Repasa las situaciones falladas.');
+    if(herrDigAciertos > estado.scores.herramientas){
+      estado.scores.herramientas = herrDigAciertos;
+      guardarEstado();
+      actualizarCertificado();
+    }
+    completarReto('herramientas', null);
+  }
+}
+
+initHerramientasDigitales();
+
+/* ================================================================
+   9. RETO 4 · ESQUEMA DE BLOQUES
+================================================================ */
+const esquemaBloquesData = [
+  {id:'b1', ico:'🌡️', nombre:'Sensor', desc:'Mide la temperatura de la habitación y envía la señal.', pos:1},
+  {id:'b2', ico:'⚙️', nombre:'Comparador / Procesamiento', desc:'Compara la temperatura medida con la deseada y decide.', pos:2},
+  {id:'b3', ico:'🎛️', nombre:'Controlador', desc:'Genera la señal de mando para el actuador.', pos:3},
+  {id:'b4', ico:'🔥', nombre:'Actuador (calefacción)', desc:'Enciende o apaga la calefacción según la orden.', pos:4},
+  {id:'b5', ico:'🏠', nombre:'Salida (habitación)', desc:'Produce el efecto real: la habitación se calienta.', pos:5}
+];
+
+let esqActualIdx = 1;
+let esqColocados = 0;
+
+function initEsquema(){
+  const slots = document.getElementById('esquemaSlots');
+  const bloques = document.getElementById('esqBloques');
+  if(!slots || !bloques) return;
+  slots.innerHTML = '';
+  bloques.innerHTML = '';
+  esqActualIdx = 1;
+  esqColocados = 0;
+
+  for(let i = 1; i <= 5; i++){
+    if(i > 1){
+      const arrow = document.createElement('div');
+      arrow.className = 'esq-flecha';
+      arrow.textContent = '➜';
+      slots.appendChild(arrow);
+    }
+    const slot = document.createElement('div');
+    slot.className = 'esq-slot';
+    if(i === 1) slot.classList.add('activo');
+    slot.dataset.pos = i;
+    slot.innerHTML = `
+      <span class="esq-num">${i}</span>
+      <span class="esq-vacio">(vacío)</span>
+    `;
+    slots.appendChild(slot);
+  }
+
+  const mezcla = [...esquemaBloquesData].sort(()=>Math.random()-0.5);
+  mezcla.forEach(b=>{
+    const el = document.createElement('div');
+    el.className = 'esq-bloque';
+    el.dataset.id = b.id;
+    el.dataset.pos = b.pos;
+    el.innerHTML = `
+      <span class="eb-ico">${b.ico}</span>
+      <div class="eb-info">
+        <div class="eb-nombre">${b.nombre}</div>
+        <div class="eb-desc">${b.desc}</div>
+      </div>
+    `;
+    el.addEventListener('click', ()=>clickEsqBloque(el, b));
+    bloques.appendChild(el);
+  });
+
+  document.getElementById('esqMsg').textContent = '';
+
+  // --- RESTAURAR bloques ya colocados ---
+  const guardados = Number(estado.detalle.esquemas) || 0;
+  for(let pos = 1; pos <= guardados; pos++){
+    const b = esquemaBloquesData.find(x => x.pos === pos);
+    if(!b) continue;
+    const el = bloques.querySelector(`.esq-bloque[data-pos="${pos}"]`);
+    const slot = slots.querySelector(`.esq-slot[data-pos="${pos}"]`);
+    if(el) el.classList.add('usado');
+    if(slot){
+      slot.classList.remove('activo');
+      slot.classList.add('lleno');
+      slot.innerHTML = `
+        <span class="esq-num">${pos}</span>
+        <span class="esq-ico">${b.ico}</span>
+        <span class="esq-lbl">${b.nombre}</span>
+        <span class="esq-desc">${b.desc}</span>
+      `;
+    }
+    esqColocados++;
+  }
+  esqActualIdx = esqColocados + 1;
+  if(esqActualIdx <= 5){
+    const next = slots.querySelector(`.esq-slot[data-pos="${esqActualIdx}"]`);
+    if(next) next.classList.add('activo');
+  }
+
+  if(esqColocados === 5){
+    document.getElementById('esqMsg').innerHTML = '🎉 ¡Has construido correctamente el esquema de bloques completo!';
+    if(esqColocados > estado.scores.esquemas){
+      estado.scores.esquemas = esqColocados;
+      guardarEstado();
+      actualizarCertificado();
+    }
+    completarReto('esquemas', null);
+  } else if(esqColocados > 0){
+    document.getElementById('esqMsg').textContent = `✅ ¡Bien! Llevas ${esqColocados}/5 bloques colocados.`;
+  }
+}
+
+function clickEsqBloque(el, b){
+  if(el.classList.contains('usado')) return;
+  const msg = document.getElementById('esqMsg');
+  if(b.pos === esqActualIdx){
+    el.classList.add('usado');
+    const slot = document.querySelector(`.esq-slot[data-pos="${esqActualIdx}"]`);
+    slot.classList.remove('activo');
+    slot.classList.add('lleno');
+    slot.innerHTML = `
+      <span class="esq-num">${esqActualIdx}</span>
+      <span class="esq-ico">${b.ico}</span>
+      <span class="esq-lbl">${b.nombre}</span>
+      <span class="esq-desc">${b.desc}</span>
+    `;
+    esqColocados++;
+    esqActualIdx++;
+
+    // Guardar progreso del esquema
+    estado.detalle.esquemas = esqColocados;
+    guardarEstado();
+
+    if(esqActualIdx <= 5){
+      document.querySelector(`.esq-slot[data-pos="${esqActualIdx}"]`).classList.add('activo');
+    }
+    msg.textContent = `✅ ¡Bien! Llevas ${esqColocados}/5 bloques colocados.`;
+    if(esqColocados > estado.scores.esquemas){
+      estado.scores.esquemas = esqColocados;
+      guardarEstado();
+      actualizarCertificado();
+    }
+    if(esqColocados === 5){
+      msg.innerHTML = '🎉 ¡Has construido correctamente el esquema de bloques completo!';
+      completarReto('esquemas', '¡Esquema de bloques completado!');
+    }
+  } else {
+    el.style.animation = 'none';
+    el.offsetHeight;
+    el.style.animation = 'shake .4s';
+    const esperado = esquemaBloquesData.find(x=>x.pos === esqActualIdx);
+    msg.innerHTML = `❌ Ese bloque no va en la posición ${esqActualIdx}.<br><span style="font-size:.82rem;color:var(--gris)">Pista: el bloque ${esqActualIdx} debería ser algo que ${esperado.desc.toLowerCase().split(',')[0]}</span>`;
+    setTimeout(()=>{ el.style.animation = ''; }, 500);
+  }
+}
+
+initEsquema();
+
+/* ================================================================
+   10. RETO 5 · CONVERSACIÓN TÉCNICA
+================================================================ */
+const conversacionesData = [
+  {
+    id:'c1',
+    escena:'Un compañero propone una solución técnica que tú crees que puede fallar. Estáis en una reunión de equipo.',
+    chat:[
+      {quien:'Compañero', texto:'Propongo usar una única fuente de alimentación para todos los motores, así ahorramos espacio en el chasis.'}
+    ],
+    pregunta:'¿Cuál es la mejor respuesta de equipo?',
+    opciones:[
+      {t:'"No tienes ni idea, eso nunca funcionará."',
+       ok:false,
+       why:'Descalificar a la persona sin argumentar bloquea la comunicación y daña el clima del equipo. Hay que criticar ideas, no personas.'},
+      {t:'"Entiendo tu propuesta. ¿Has tenido en cuenta el consumo conjunto? Podríamos calcularlo antes de decidir."',
+       ok:true,
+       why:'¡Correcto! Escuchar, reconocer la aportación y proponer verificar los datos con argumentos técnicos mejora la comunicación del equipo.'},
+      {t:'"Como quieras, da igual."',
+       ok:false,
+       why:'El desinterés bloquea la toma de decisiones y puede llevar a errores que después habrá que corregir con más coste.'}
+    ]
+  },
+  {
+    id:'c2',
+    escena:'Un compañero ha dejado de subir sus avances al repositorio del equipo desde hace días.',
+    chat:[
+      {quien:'Tú', texto:'(Piensas) Debería hablar con él/ella, pero no sé cómo decírselo.'}
+    ],
+    pregunta:'¿Cuál es la mejor manera de abordarlo?',
+    opciones:[
+      {t:'Escribirle en el chat público del equipo que está fallando al grupo.',
+       ok:false,
+       why:'Exponer a alguien en público daña la confianza y puede generar conflicto. Los problemas se tratan en privado primero.'},
+      {t:'Escribirle en privado con tono amable, contarle lo que has observado y preguntar si necesita ayuda.',
+       ok:true,
+       why:'¡Correcto! La comunicación en privado y con empatía es la mejor manera de resolver este tipo de situaciones sin dañar al equipo.'},
+      {t:'Ignorarlo y seguir con tu parte.',
+       ok:false,
+       why:'Ignorar el problema hace que el equipo pierda coordinación y avance de forma desequilibrada.'}
+    ]
+  },
+  {
+    id:'c3',
+    escena:'Estás escribiendo un mensaje para el equipo con las conclusiones de una investigación.',
+    chat:[
+      {quien:'Tú', texto:'(Necesitas contarlo de forma clara y breve, sin ambigüedades.)'}
+    ],
+    pregunta:'¿Qué mensaje es más adecuado técnicamente?',
+    opciones:[
+      {t:'"Bueno, mira, he estado pensando y creo que más o menos podría ser que el sensor falla a veces, no sé, lo mismo es por la temperatura, o no..."',
+       ok:false,
+       why:'Un mensaje vago, lleno de dudas y sin datos, no ayuda al equipo a decidir. La comunicación técnica debe ser clara y concreta.'},
+      {t:'"Resumen del análisis del sensor: falla 3 veces de cada 100 lecturas cuando la temperatura supera los 45 °C. Recomiendo usar el modelo B, que aguanta hasta 80 °C."',
+       ok:true,
+       why:'¡Excelente! Un mensaje con datos concretos, conclusión clara y recomendación fundamentada es exactamente lo que un equipo técnico necesita.'},
+      {t:'"Creo que el sensor es malo. Cambiadlo."',
+       ok:false,
+       why:'Sin datos que lo justifiquen, la indicación es poco rigurosa. En un contexto técnico necesitamos argumentos y datos.'}
+    ]
+  },
+  {
+    id:'c4',
+    escena:'El profesor os pide cambiar el enfoque del proyecto a mitad de camino. El equipo está desorientado.',
+    chat:[
+      {quien:'Compañero', texto:'"Esto es un desastre, ¿y ahora qué hacemos?"'}
+    ],
+    pregunta:'¿Cómo responderías para reconducir la situación?',
+    opciones:[
+      {t:'"Sí, es un desastre, ya no vale la pena seguir."',
+       ok:false,
+       why:'Amplificar el problema sin aportar soluciones desmotiva al equipo y no ayuda a avanzar.'},
+      {t:'"Vale, analicemos entre todos qué cambia y qué podemos conservar. Propongo una reunión rápida de 15 minutos para reorganizarnos."',
+       ok:true,
+       why:'¡Correcto! Reconducir con calma, proponer un análisis conjunto y organizar una reunión rápida permite avanzar. Es una actitud muy profesional.'},
+      {t:'"Hagamos lo que dice el profesor y ya veremos."',
+       ok:false,
+       why:'Ejecutar sin analizar suele generar más errores. Un cambio de enfoque requiere planificación.'}
+    ]
+  },
+  {
+    id:'c5',
+    escena:'Tienes que compartir un archivo grande con planos de tu proyecto con el equipo.',
+    chat:[
+      {quien:'Tú', texto:'(Necesitas enviarlos por un canal adecuado y dejar claro qué contiene.)'}
+    ],
+    pregunta:'¿Cuál es la mejor manera?',
+    opciones:[
+      {t:'Enviar el archivo por WhatsApp sin mensaje que lo acompañe.',
+       ok:false,
+       why:'Un archivo sin contexto genera confusión. Además, WhatsApp comprime el contenido y puede degradar la calidad.'},
+      {t:'Subirlo a la carpeta compartida de Drive, y avisar por el canal del equipo indicando el nombre exacto del archivo, la versión y un breve resumen.',
+       ok:true,
+       why:'¡Correcto! Subir a la carpeta compartida, indicar el nombre y versión del archivo y añadir un resumen es la mejor práctica de comunicación técnica.'},
+      {t:'Enviar el enlace por correo sin más información.',
+       ok:false,
+       why:'Un enlace suelto, sin contexto ni versión, genera dudas y puede llevar a confundir archivos.'}
+    ]
+  }
+];
+
+let convRespondidas = 0, convAciertos = 0;
+
+function initConversaciones(){
+  const cont = document.getElementById('convWrap');
+  if(!cont) return;
+  cont.innerHTML = '';
+  convRespondidas = 0;
+  convAciertos = 0;
+  conversacionesData.forEach((c)=>{
+    const div = document.createElement('div');
+    div.className = 'conv-card';
+    div.innerHTML = `
+      <div class="conv-escena">
+        <span class="ce-ico">💬</span>
+        <p class="ce-txt">${c.escena}</p>
+      </div>
+      <div class="conv-chat">
+        ${c.chat.map(b=>`
+          <div class="conv-burbuja izq">
+            <span class="cb-nombre">${b.quien}</span>
+            ${b.texto}
+          </div>
+        `).join('')}
+      </div>
+      <p class="conv-pregunta">${c.pregunta}</p>
+      <div class="conv-opciones">
+        ${c.opciones.map((o, i)=>`
+          <button class="conv-op" data-id="${c.id}" data-v="${i}">
+            <span class="co-letter">${String.fromCharCode(65+i)}</span>
+            <span>${o.t}</span>
+          </button>
+        `).join('')}
+      </div>
+      <div class="conv-fb"></div>
+    `;
+    cont.appendChild(div);
+    const btns = div.querySelectorAll('.conv-op');
+    const fb = div.querySelector('.conv-fb');
+
+    // --- RESTAURAR ---
+    const guardado = estado.detalle.conversacion[c.id];
+    if(guardado){
+      btns.forEach(x=>{
+        x.disabled = true;
+        const xi = parseInt(x.dataset.v, 10);
+        if(c.opciones[xi].ok) x.classList.add('correct');
+      });
+      if(!guardado.acierto){
+        btns.forEach(x=>{ if(parseInt(x.dataset.v, 10) === guardado.elegido) x.classList.add('wrong'); });
+      }
+      const op = c.opciones[guardado.elegido];
+      fb.innerHTML = (guardado.acierto ? '✅ <strong>¡Buena respuesta!</strong> ' : '❌ <strong>Respuesta no adecuada.</strong> ') + op.why;
+      fb.classList.add('show');
+      div.classList.add('done');
+      convRespondidas++;
+      if(guardado.acierto) convAciertos++;
+    }
+
+    btns.forEach(b=>{
+      b.addEventListener('click', ()=>{
+        if(guardado) return;
+        const i = parseInt(b.dataset.v, 10);
+        const op = c.opciones[i];
+        btns.forEach(x=>x.disabled = true);
+        btns.forEach(x=>{
+          const xi = parseInt(x.dataset.v, 10);
+          if(c.opciones[xi].ok) x.classList.add('correct');
+        });
+        if(!op.ok) b.classList.add('wrong');
+        fb.innerHTML = (op.ok ? '✅ <strong>¡Buena respuesta!</strong> ' : '❌ <strong>Respuesta no adecuada.</strong> ') + op.why;
+        fb.classList.add('show');
+        div.classList.add('done');
+        convRespondidas++;
+        if(op.ok) convAciertos++;
+
+        estado.detalle.conversacion[c.id] = { elegido: i, acierto: op.ok };
+        guardarEstado();
+
+        if(convRespondidas === conversacionesData.length){
+          if(convAciertos > estado.scores.conversacion){
+            estado.scores.conversacion = convAciertos;
+            guardarEstado();
+            actualizarCertificado();
+          }
+          document.getElementById('convMsg').innerHTML =
+            `Has dado una buena respuesta en <strong>${convAciertos} de ${conversacionesData.length}</strong> situaciones. ` +
+            (convAciertos >= 4 ? '¡Tienes una excelente comunicación en equipo!' : 'Repasa las situaciones falladas.');
+          completarReto('conversacion', '¡Conversación técnica completada!');
+        }
+      });
+    });
+  });
+
+  if(convRespondidas === conversacionesData.length){
+    document.getElementById('convMsg').innerHTML =
+      `Has dado una buena respuesta en <strong>${convAciertos} de ${conversacionesData.length}</strong> situaciones. ` +
+      (convAciertos >= 4 ? '¡Tienes una excelente comunicación en equipo!' : 'Repasa las situaciones falladas.');
+    if(convAciertos > estado.scores.conversacion){
+      estado.scores.conversacion = convAciertos;
+      guardarEstado();
+      actualizarCertificado();
+    }
+    completarReto('conversacion', null);
+  }
+}
+
+initConversaciones();
+
+/* ================================================================
+   11. VOCABULARIO
+================================================================ */
+const vocabulario = [
+  {ico:'🔣', t:'Símbolo técnico', d:'Representación gráfica normalizada de un componente, una función o una magnitud en un esquema. Su significado es universal y permite leer planos de cualquier país sin necesidad de traducción.'},
+  {ico:'📐', t:'Esquema de bloques', d:'Representación simplificada de un sistema mostrando sus partes principales como cajas (bloques) unidas por flechas que indican el flujo de información, energía o materia.'},
+  {ico:'🔄', t:'Realimentación (feedback)', d:'Proceso por el que la salida de un sistema vuelve a la entrada para compararla con el valor deseado y corregir el comportamiento. Es la base del control en lazo cerrado.'},
+  {ico:'📚', t:'Vocabulario técnico', d:'Conjunto de términos precisos que se usan en un campo profesional concreto. En tecnología: sensor, actuador, calibración, tolerancia, protocolo, etc.'},
+  {ico:'🔤', t:'Abreviatura', d:'Forma reducida de una palabra o expresión formada por algunas de sus letras. Ejemplo: "aprox." por "aproximadamente".'},
+  {ico:'🎯', t:'Sigla', d:'Abreviatura formada por las iniciales de varias palabras. Ejemplos: IoT, CAD, PLC, LED. Se suelen escribir en mayúsculas.'},
+  {ico:'🛠️', t:'Herramienta digital', d:'Aplicación o plataforma informática que facilita alguna tarea: comunicación, gestión de proyectos, diseño, programación, almacenamiento, etc.'},
+  {ico:'💬', t:'Comunicación técnica', d:'Intercambio de información entre personas del ámbito tecnológico usando lenguaje preciso, símbolos, esquemas y herramientas adecuadas, con el objetivo de coordinar el trabajo.'},
+  {ico:'👥', t:'Trabajo en equipo', d:'Colaboración coordinada de varias personas con roles y responsabilidades definidas, comunicación abierta y objetivos compartidos.'},
+  {ico:'📋', t:'Gestión de tareas', d:'Organización de las actividades de un proyecto asignando responsables, plazos y estados (pendiente, en curso, hecho). Se hace con herramientas como Trello o Asana.'},
+  {ico:'📂', t:'Control de versiones', d:'Sistema que registra todos los cambios de un archivo o proyecto (habitualmente código) permitiendo volver a versiones anteriores y coordinar a varias personas. Ejemplo: Git.'},
+  {ico:'🗂️', t:'Repositorio', d:'Espacio donde se almacenan y organizan los archivos de un proyecto, con su historial de cambios. GitHub y GitLab son repositorios muy usados en proyectos tecnológicos.'},
+  {ico:'📹', t:'Videoconferencia', d:'Reunión virtual por vídeo que permite ver y oír a otras personas a distancia. A menudo incluye compartir pantalla, chat y grabación.'},
+  {ico:'📝', t:'Mensaje técnico eficaz', d:'Comunicación escrita breve, clara y con datos concretos, que incluye contexto, conclusión y, si procede, propuesta de acción. Evita ambigüedades y palabras vacías.'},
+  {ico:'🎯', t:'Precisión terminológica', d:'Uso del término exacto para cada concepto. En tecnología es imprescindible: no es lo mismo "voltaje" que "intensidad", ni "sensor" que "actuador".'},
+  {ico:'💡', t:'Argumentación técnica', d:'Explicar una idea aportando razones, datos y evidencias. En un equipo técnico, las decisiones deben basarse en argumentos, no en opiniones sin fundamento.'},
+  {ico:'🤝', t:'Escucha activa', d:'Escuchar con atención lo que dice otra persona, sin interrumpir, mostrando interés y verificando que se ha entendido antes de responder.'},
+  {ico:'⚖️', t:'Retroalimentación constructiva', d:'Comentario sobre el trabajo de otra persona orientado a mejorar, sin descalificar. Se centra en hechos y ofrece alternativas, no en juicios personales.'},
+  {ico:'🎨', t:'Diagrama funcional', d:'Tipo de esquema de bloques que representa las funciones del sistema y su flujo de información, sin entrar en los componentes concretos.'},
+  {ico:'⚙️', t:'Pensamiento sistémico', d:'Forma de analizar la realidad viendo el conjunto y las relaciones entre sus partes, no solo los elementos aislados. Los esquemas de bloques son su principal herramienta.'},
+  {ico:'📡', t:'Lazo abierto vs. cerrado', d:'En lazo abierto el sistema ejecuta sin comprobar el resultado. En lazo cerrado mide la salida y ajusta la entrada mediante realimentación.'},
+  {ico:'🔵', t:'Prefijo del SI', d:'Símbolo que se antepone a una unidad para expresar múltiplos o submúltiplos: k (kilo, 10³), M (mega, 10⁶), G (giga, 10⁹), m (mili, 10⁻³), µ (micro, 10⁻⁶).'}
+];
+
+(function initVoc(){
+  const grid = document.getElementById('vocGrid');
+  const defBox = document.getElementById('vocDef');
+  if(!grid) return;
+  vocabulario.forEach((v)=>{
+    const b = document.createElement('button');
+    b.className = 'voc-term';
+    b.innerHTML = `<span style="font-size:1.1rem">${v.ico}</span><span>${v.t}</span>`;
+    b.addEventListener('click', ()=>{
+      const yaActivo = b.classList.contains('active');
+      grid.querySelectorAll('.voc-term').forEach(x=>x.classList.remove('active'));
+      if(yaActivo){
+        defBox.classList.remove('show');
+        setTimeout(()=>{ defBox.innerHTML=''; }, 500);
+        return;
+      }
+      b.classList.add('active');
+      defBox.innerHTML = `<h4>${v.ico} ${v.t}</h4><p>${v.d}</p>`;
+      defBox.classList.add('show');
+    });
+    grid.appendChild(b);
+  });
+})();
+
+/* ================================================================
+   12. QUIZ FINAL (respuestas reformuladas: la correcta no siempre es la más larga)
+================================================================ */
+const preguntasQuiz = [
+  {
+    q:'¿Qué representa el símbolo en zigzag en un esquema eléctrico?',
+    o:['Un condensador que almacena carga','Una batería recargable','Un motor de corriente continua','Una resistencia'],
+    c:3,
+    e:'El símbolo en zigzag representa una resistencia. Se usa para limitar o dividir la corriente en un circuito.'
+  },
+  {
+    q:'¿Qué significa la sigla CAD?',
+    o:['Central de Adquisición de Datos','Control Automático Digital','Computer Aided Design','Circuito de Alta Densidad'],
+    c:2,
+    e:'CAD = Computer Aided Design (Diseño Asistido por Ordenador). Son los programas que permiten diseñar piezas, planos y modelos 3D antes de fabricarlos.'
+  },
+  {
+    q:'¿Qué significa IoT?',
+    o:['Internet of Things','Internet de las Oficinas','Interconexión de Ordenadores y Teléfonos','Interfaz Óptica Técnica'],
+    c:0,
+    e:'IoT = Internet of Things (Internet de las Cosas). Se refiere a los objetos cotidianos conectados a internet que intercambian datos y automatizan acciones.'
+  },
+  {
+    q:'¿Qué herramienta digital es más adecuada para organizar las tareas del equipo con estados (pendiente / en curso / hecho)?',
+    o:['Figma (diseño)','Trello','Zoom','GitHub'],
+    c:1,
+    e:'Los tableros Kanban (Trello, Asana, etc.) organizan visualmente las tareas en columnas según su estado. Perfectos para el seguimiento del equipo.'
+  },
+  {
+    q:'¿Para qué sirve GitHub en un proyecto tecnológico?',
+    o:['Para hacer videollamadas con el equipo','Para diseñar interfaces gráficas','Para controlar versiones del código','Para compartir vídeos tutoriales'],
+    c:2,
+    e:'GitHub es un repositorio que usa Git para el control de versiones. Permite coordinar las aportaciones de varias personas sobre el mismo código sin perder cambios.'
+  },
+  {
+    q:'En un esquema de bloques de un sistema de control, ¿qué representa la flecha que va de la salida a la entrada?',
+    o:['La realimentación','La alimentación eléctrica del sistema','La señal de error calculada','El bloque de control principal'],
+    c:0,
+    e:'La flecha que vuelve de la salida a la entrada representa la realimentación: la información del resultado vuelve al sistema para corregir su comportamiento.'
+  },
+  {
+    q:'En un esquema de bloques, ¿cuál es el orden típico del flujo de información en un sistema de control?',
+    o:['Salida → Actuador → Controlador → Sensor → Alimentación','Sensor → Procesamiento → Controlador → Actuador → Salida','Sensor → Actuador → Salida → Controlador → Realimentación','Controlador → Sensor → Salida → Actuador → Procesamiento'],
+    c:1,
+    e:'El flujo típico es: un sensor mide (entrada), se procesa y compara con el valor deseado, el controlador genera una señal de mando, el actuador actúa y se produce la salida. Después la realimentación cierra el lazo.'
+  },
+  {
+    q:'En un mensaje técnico al equipo, ¿qué característica es más importante?',
+    o:['Usar muchas palabras para que se note el esfuerzo realizado','Incluir emojis para hacerlo más divertido','Ser claro y concreto','Escribirlo todo en mayúsculas para que destaque'],
+    c:2,
+    e:'Un mensaje técnico eficaz es claro, conciso y contiene datos verificables. Así el equipo puede tomar decisiones bien fundamentadas.'
+  },
+  {
+    q:'Si necesitas mantener una reunión a distancia con alguien de otra isla y mostrarle planos, ¿qué herramienta usarías?',
+    o:['Un mensaje de texto con las fotos adjuntas','Un correo electrónico con los planos adjuntos','Un tablero Kanban compartido','Una videoconferencia con compartir pantalla'],
+    c:3,
+    e:'Las plataformas de videoconferencia permiten ver y oír a la otra persona, compartir pantalla y grabar la reunión. Son las herramientas adecuadas para reuniones técnicas a distancia.'
+  },
+  {
+    q:'Un compañero propone una idea que no te convence. ¿Cuál es la actitud más profesional?',
+    o:['Decirle directamente que su idea es mala y pasar a otra cosa','Quejarte al profesor para que decida por vosotros','Ignorar su propuesta y hacer lo que tú pensabas desde el principio','Escuchar sus argumentos y proponer comprobar los datos'],
+    c:3,
+    e:'Escuchar, argumentar con datos y buscar la mejor solución conjunta es la actitud más profesional. La crítica constructiva se centra en ideas, no en personas.'
+  }
+];
+
+let quizRespondidas = 0, quizAciertos = 0;
+
+(function initQuiz(){
+  const cont = document.getElementById('quizContainer');
+  if(!cont) return;
+  cont.innerHTML = '';
+  quizRespondidas = 0;
+  quizAciertos = 0;
+  preguntasQuiz.forEach((p, i)=>{
+    const div = document.createElement('div');
+    div.className = 'q reveal';
+    div.innerHTML = `
+      <span class="q-num">PREGUNTA ${i+1}</span>
+      <h4>${p.q}</h4>
+      <div class="opts">
+        ${p.o.map((o,j)=>`
+          <button class="opt" data-i="${i}" data-j="${j}">
+            <span class="letter">${String.fromCharCode(65+j)}</span>
+            <span>${o}</span>
+          </button>`).join('')}
+      </div>
+      <div class="expl"></div>
+    `;
+    cont.appendChild(div);
+    io.observe(div);
+    const btns = div.querySelectorAll('.opt');
+    const expl = div.querySelector('.expl');
+
+    // --- RESTAURAR ---
+    const guardado = estado.detalle.quiz[i];
+    if(guardado){
+      btns.forEach(x=>{
+        x.disabled = true;
+        if(parseInt(x.dataset.j, 10) === p.c) x.classList.add('correct');
+      });
+      if(!guardado.acierto){
+        btns.forEach(x=>{
+          if(parseInt(x.dataset.j, 10) === guardado.elegido) x.classList.add('wrong');
+        });
+      }
+      expl.innerHTML = (guardado.acierto ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>Respuesta incorrecta.</strong> ') + p.e;
+      expl.classList.add('show');
+      quizRespondidas++;
+      if(guardado.acierto) quizAciertos++;
+    }
+
+    btns.forEach(b=>{
+      b.addEventListener('click', ()=>{
+        if(guardado) return;
+        const j = parseInt(b.dataset.j,10);
+        btns.forEach(x=>x.disabled = true);
+        btns.forEach(x=>{ if(parseInt(x.dataset.j,10) === p.c) x.classList.add('correct'); });
+        if(j !== p.c) b.classList.add('wrong');
+        else quizAciertos++;
+        expl.innerHTML = (j === p.c ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>Respuesta incorrecta.</strong> ') + p.e;
+        expl.classList.add('show');
+        quizRespondidas++;
+
+        estado.detalle.quiz[i] = { elegido: j, acierto: j === p.c };
+        guardarEstado();
+
+        if(quizRespondidas === preguntasQuiz.length) mostrarResultadoQuiz();
+      });
+    });
+  });
+
+  if(quizRespondidas === preguntasQuiz.length){
+    mostrarResultadoQuiz(true);
+  }
+})();
+
+function mostrarResultadoQuiz(silencioso){
+  const res = document.getElementById('quizResult');
+  document.getElementById('quizScore').textContent = quizAciertos + '/' + preguntasQuiz.length;
+  const pct = Math.round(quizAciertos / preguntasQuiz.length * 100);
+  let titulo, msg;
+  if(pct === 100){ titulo = '🏆 ¡Perfecto!'; msg = 'Dominas el lenguaje técnico, las herramientas digitales y la comunicación en equipo.'; }
+  else if(pct >= 75){ titulo = '🌟 ¡Muy bien!'; msg = 'Tienes una comprensión sólida. Repasa las preguntas falladas para afinar los detalles.'; }
+  else if(pct >= 50){ titulo = '👍 Buen intento'; msg = 'Vas por el camino correcto. Vuelve a las secciones de símbolos, abreviaturas, herramientas y esquemas.'; }
+  else { titulo = '📚 A seguir aprendiendo'; msg = 'Revisa con calma cada sección y vuelve a intentarlo.'; }
+  document.getElementById('quizTitle').textContent = titulo;
+  document.getElementById('quizMsg').textContent = msg;
+  res.style.display = 'block';
+  if(!silencioso){
+    res.scrollIntoView({behavior:'smooth', block:'center'});
+  }
+  if(quizAciertos > estado.scores.quiz){
+    estado.scores.quiz = quizAciertos;
+    guardarEstado();
+    actualizarCertificado();
+  }
+  completarReto('quiz', silencioso ? null : '¡Cuestionario final completado! ' + quizAciertos + '/' + preguntasQuiz.length);
+}
+
+/* ================================================================
+   13. CERTIFICADO Y PDF RASTERIZADO
+================================================================ */
+function actualizarCertificado(){
+  const stats = document.getElementById('certStats');
+  const nombreEl = document.getElementById('certNombre');
+  const warn = document.getElementById('certWarn');
+  const btn = document.getElementById('btnCertificado');
+
+  nombreEl.textContent = estado.nombre || '—';
+
+  const s = estado.scores;
+  const nRetos = estado.retos.length;
+
+  const items = [
+    {num: (s.simbolos>0 ? s.simbolos + '/8' : '—'), lbl:'Símbolos'},
+    {num: (s.abreviaturas>0 ? s.abreviaturas + '/8' : '—'), lbl:'Abreviaturas'},
+    {num: (s.herramientas>0 ? s.herramientas + '/6' : '—'), lbl:'Herramientas'},
+    {num: (s.esquemas>0 ? s.esquemas + '/5' : '—'), lbl:'Esquemas'},
+    {num: (s.conversacion>0 ? s.conversacion + '/5' : '—'), lbl:'Conversación'},
+    {num: (s.quiz>0 ? s.quiz + '/10' : '—'), lbl:'Cuestionario'},
+    {num: nRetos + '/' + RETOS_TOTALES, lbl:'Retos totales'}
+  ];
+
+  stats.innerHTML = items.map(it=>`
+    <div class="cert-stat">
+      <div class="num">${it.num}</div>
+      <div class="lbl">${it.lbl}</div>
+    </div>
+  `).join('');
+
+  if(nRetos === 0){
+    warn.style.display = 'block';
+    btn.disabled = true;
+    btn.style.opacity = .55;
+    btn.style.cursor = 'not-allowed';
+  } else {
+    warn.style.display = 'none';
+    btn.disabled = false;
+    btn.style.opacity = 1;
+    btn.style.cursor = 'pointer';
+  }
+}
+
+document.getElementById('btnCertificado').addEventListener('click', ()=>{
+  if(!estado.nombre){ toast('Introduce tu nombre primero'); return; }
+  if(estado.retos.length === 0){ toast('Completa al menos un reto para obtener el certificado'); return; }
+  generarPDFRasterizado();
+});
+
+function generarPDFRasterizado(){
+  if(!(window.jspdf && window.jspdf.jsPDF)){
+    toast('No se ha podido cargar la librería PDF. Inténtalo de nuevo.');
+    return;
+  }
+  try{
+    const DPI = 300;
+    const W_MM = 297, H_MM = 210;
+    const W = Math.round(W_MM / 25.4 * DPI);
+    const H = Math.round(H_MM / 25.4 * DPI);
+    const mm = v => v / 25.4 * DPI;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = '#f0fdfa';
+    ctx.fillRect(0,0,W,H);
+
+    ctx.strokeStyle = '#115e59';
+    ctx.lineWidth = mm(2);
+    ctx.strokeRect(mm(10), mm(10), W-mm(20), H-mm(20));
+    ctx.lineWidth = mm(0.5);
+    ctx.strokeRect(mm(14), mm(14), W-mm(28), H-mm(28));
+
+    ctx.fillStyle = '#115e59';
+    ctx.fillRect(mm(14), mm(14), mm(20), mm(3));
+    ctx.fillRect(mm(14), mm(14), mm(3), mm(20));
+    ctx.fillRect(W-mm(34), mm(14), mm(20), mm(3));
+    ctx.fillRect(W-mm(17), mm(14), mm(3), mm(20));
+    ctx.fillRect(mm(14), H-mm(17), mm(20), mm(3));
+    ctx.fillRect(mm(14), H-mm(34), mm(3), mm(20));
+    ctx.fillRect(W-mm(34), H-mm(17), mm(20), mm(3));
+    ctx.fillRect(W-mm(17), H-mm(34), mm(3), mm(20));
+
+    ctx.fillStyle = '#115e59';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = `bold ${mm(9)}px Arial, sans-serif`;
+    ctx.fillText('CERTIFICADO DE APROVECHAMIENTO', W/2, mm(38));
+
+    ctx.fillStyle = '#64748b';
+    ctx.font = `${mm(4)}px Arial, sans-serif`;
+    ctx.fillText('Comunicación Técnica · Símbolos, vocabulario, herramientas y esquemas', W/2, mm(48));
+
+    ctx.strokeStyle = '#4f46e5';
+    ctx.lineWidth = mm(0.8);
+    ctx.beginPath();
+    ctx.moveTo(W/2 - mm(60), mm(53));
+    ctx.lineTo(W/2 + mm(60), mm(53));
+    ctx.stroke();
+
+    ctx.fillStyle = '#475569';
+    ctx.font = `${mm(4.5)}px Arial, sans-serif`;
+    ctx.fillText('Se certifica que', W/2, mm(68));
+
+    ctx.fillStyle = '#0f172a';
+    ctx.font = `bold ${mm(14)}px Arial, sans-serif`;
+    ctx.fillText(estado.nombre, W/2, mm(85));
+
+    ctx.fillStyle = '#334155';
+    ctx.font = `${mm(4)}px Arial, sans-serif`;
+    ctx.fillText('ha completado las actividades interactivas de la aplicación educativa sobre comunicación', W/2, mm(97));
+    ctx.fillText('técnica, símbolos, vocabulario y trabajo en equipo, obteniendo:', W/2, mm(104));
+
+    const s = estado.scores;
+    const resultados = [
+      ['Símbolos técnicos', s.simbolos>0 ? s.simbolos + ' / 8 aciertos' : 'No realizado'],
+      ['Abreviaturas y siglas', s.abreviaturas>0 ? s.abreviaturas + ' / 8 parejas' : 'No realizado'],
+      ['Herramienta digital adecuada', s.herramientas>0 ? s.herramientas + ' / 6 aciertos' : 'No realizado'],
+      ['Esquema de bloques', s.esquemas>0 ? s.esquemas + ' / 5 bloques' : 'No completado'],
+      ['Conversación técnica en equipo', s.conversacion>0 ? s.conversacion + ' / 5 aciertos' : 'No realizado'],
+      ['Cuestionario final', s.quiz>0 ? s.quiz + ' / 10' : 'No realizado'],
+      ['Retos completados', estado.retos.length + ' / ' + RETOS_TOTALES]
+    ];
+
+    const tableX = mm(60);
+    const tableY = mm(116);
+    const rowH = mm(9);
+    const colW1 = mm(110), colW2 = mm(70);
+    const totalW = colW1 + colW2;
+
+    ctx.fillStyle = '#115e59';
+    ctx.fillRect(tableX, tableY, totalW, mm(9));
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `bold ${mm(3.6)}px Arial, sans-serif`;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('ACTIVIDAD', tableX + mm(4), tableY + mm(4.5));
+    ctx.fillText('RESULTADO', tableX + colW1 + mm(4), tableY + mm(4.5));
+
+    resultados.forEach((row, i)=>{
+      const y = tableY + mm(9) + i * rowH;
+      if(i % 2 === 0){
+        ctx.fillStyle = '#ccfbf1';
+        ctx.fillRect(tableX, y, totalW, rowH);
+      }
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = mm(0.2);
+      ctx.strokeRect(tableX, y, totalW, rowH);
+      ctx.fillStyle = '#1e293b';
+      ctx.font = `${mm(3.6)}px Arial, sans-serif`;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(row[0], tableX + mm(4), y + rowH/2);
+      ctx.font = `bold ${mm(3.6)}px Arial, sans-serif`;
+      ctx.fillText(row[1], tableX + colW1 + mm(4), y + rowH/2);
+    });
+
+    const fecha = new Date().toLocaleDateString('es-ES', {day:'numeric', month:'long', year:'numeric'});
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#64748b';
+    ctx.font = `${mm(3.5)}px Arial, sans-serif`;
+    ctx.fillText('Fecha de emisión: ' + fecha, W/2, H - mm(24));
+    ctx.font = `${mm(3)}px Arial, sans-serif`;
+    ctx.fillText('Este certificado acredita la realización de las actividades interactivas de la aplicación educativa.', W/2, H - mm(17));
+
+    const imgData = canvas.toDataURL('image/png');
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
+    doc.addImage(imgData, 'PNG', 0, 0, W_MM, H_MM, undefined, 'FAST');
+    doc.save('Certificado_ComunicacionTecnica_' + estado.nombre.replace(/[^a-zA-Z0-9]/g,'_') + '.pdf');
+    toast('¡Certificado descargado!');
+  } catch(err){
+    console.error(err);
+    toast('No se pudo generar el PDF.');
+  }
+}
+
+/* ================================================================
+   14. INICIALIZACIÓN FINAL (el estado ya se cargó al principio)
+================================================================ */
+mostrarLogin();
+actualizarProgreso();
+</script>
+</body>
+</html>
