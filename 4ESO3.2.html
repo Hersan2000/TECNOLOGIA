@@ -1,0 +1,2929 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Presenta y Difunde · Formatos, discurso y lenguaje inclusivo</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --oliva:#65a30d; --oliva-claro:#ecfccb; --oliva-oscuro:#365314;
+  --teal:#14b8a6; --teal-claro:#ccfbf1; --teal-oscuro:#115e59;
+  --coral:#f43f5e; --coral-claro:#ffe4e6; --coral-oscuro:#881337;
+  --azul:#0284c7; --azul-claro:#e0f2fe; --azul-oscuro:#0c4a6e;
+  --violeta:#8b5cf6; --violeta-claro:#ede9fe; --violeta-oscuro:#5b21b6;
+  --rojo:#dc2626; --rojo-claro:#fee2e2;
+  --gris:#64748b; --gris-claro:#f1f5f9; --gris-oscuro:#1e293b;
+  --blanco:#fff; --negro:#0f172a;
+  --sombra:0 10px 30px rgba(15,23,42,.08);
+  --sombra-lg:0 20px 50px rgba(15,23,42,.14);
+  --radio:20px;
+  --fuente:'Segoe UI',system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+  --mono:'Consolas','Monaco','Courier New',monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0; font-family:var(--fuente); background:var(--gris-claro); color:var(--negro); line-height:1.7; -webkit-font-smoothing:antialiased;}
+body.locked{overflow:hidden}
+h1,h2,h3,h4{line-height:1.2; margin:0 0 .5rem}
+p{margin:0 0 1rem}
+
+/* LOGIN */
+#loginOverlay{
+  position:fixed; inset:0; z-index:2000;
+  background:radial-gradient(1000px 600px at 20% 10%,#365314 0%,transparent 60%),
+             radial-gradient(900px 500px at 85% 90%,#115e59 0%,transparent 55%),
+             linear-gradient(160deg,#1a2e05,#0f172a);
+  display:grid; place-items:center; padding:1.2rem;
+  transition:opacity .6s, visibility .6s;
+}
+#loginOverlay.hidden{opacity:0; visibility:hidden; pointer-events:none}
+.login-card{
+  background:#fff; border-radius:26px; padding:2.2rem 2rem;
+  max-width:500px; width:100%; box-shadow:0 30px 70px rgba(0,0,0,.4);
+  text-align:center; position:relative; overflow:hidden;
+  animation:aparecer .6s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes aparecer{from{opacity:0;transform:translateY(24px) scale(.96)}to{opacity:1;transform:none}}
+.login-card::before{content:""; position:absolute; top:0; left:0; right:0; height:6px;
+  background:linear-gradient(90deg,var(--oliva),var(--teal),var(--coral));}
+.login-emoji{font-size:3.4rem; line-height:1; margin-bottom:.5rem; display:block}
+.login-card h1{font-size:1.55rem; color:var(--oliva-oscuro); letter-spacing:-.4px}
+.login-card p.sub{font-size:.94rem; color:var(--gris); margin-bottom:1.5rem}
+.login-card input{width:100%; font-family:inherit; font-size:1.02rem; padding:.95rem 1.1rem;
+  border-radius:14px; border:2px solid #e2e8f0; background:#f8fafc; color:var(--negro);
+  transition:.2s; text-align:center; font-weight:600; margin-bottom:1rem;}
+.login-card input:focus{outline:none; border-color:var(--oliva); background:#fff; box-shadow:0 0 0 5px rgba(101,163,13,.14);}
+.login-card .btn{width:100%; justify-content:center}
+.login-error{font-size:.82rem; color:var(--rojo); margin-top:.7rem; min-height:1.2em; font-weight:700}
+.welcome-back{background:var(--oliva-claro); border:1.5px solid #d9f99d; border-radius:14px;
+  padding:1rem; margin-bottom:1.2rem; font-size:.92rem; color:var(--oliva-oscuro);}
+.welcome-back strong{font-size:1.05rem}
+.login-btns{display:flex; gap:.6rem; flex-wrap:wrap; justify-content:center}
+.login-btns .btn{flex:1; min-width:130px; justify-content:center}
+
+/* PROGRESO */
+#progresoGlobal{position:fixed; top:0; left:0; right:0; height:5px; background:rgba(255,255,255,.2); z-index:1000;}
+#progresoBarra{height:100%; width:0%; transition:width .6s cubic-bezier(.2,.8,.2,1);
+  background:linear-gradient(90deg,var(--oliva),var(--teal),var(--coral));
+  box-shadow:0 0 12px rgba(101,163,13,.6);}
+
+/* NAV */
+nav{position:sticky; top:0; z-index:900; background:rgba(255,255,255,.9); backdrop-filter:blur(14px);
+  border-bottom:1px solid #e2e8f0; padding:.55rem .8rem;}
+.nav-inner{max-width:1200px; margin:0 auto; display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;}
+.nav-brand{font-weight:800; font-size:.92rem; letter-spacing:.5px; color:var(--oliva-oscuro);
+  display:flex; align-items:center; gap:.45rem; margin-right:auto;}
+.nav-brand .dot{width:11px;height:11px;border-radius:50%;background:linear-gradient(135deg,var(--oliva),var(--coral));}
+.nav-user{font-size:.8rem; font-weight:800; color:var(--oliva-oscuro);
+  background:var(--oliva-claro); padding:.3rem .8rem; border-radius:999px;
+  display:flex; align-items:center; gap:.35rem;}
+.nav-links{display:flex; gap:.3rem; flex-wrap:wrap}
+.nav-links a{font-size:.8rem; font-weight:600; text-decoration:none; color:var(--gris-oscuro);
+  padding:.35rem .7rem; border-radius:999px; transition:.25s; white-space:nowrap;}
+.nav-links a:hover{background:var(--oliva-claro); color:var(--oliva-oscuro)}
+.nav-links a.active{background:var(--oliva-oscuro); color:#fff}
+#progresoPill{font-size:.72rem; font-weight:800; color:var(--oliva-oscuro); background:var(--oliva-claro);
+  padding:.3rem .7rem; border-radius:999px; white-space:nowrap;}
+
+/* HERO */
+header.hero{position:relative; overflow:hidden; color:#fff;
+  background:radial-gradient(1200px 600px at 15% -10%,#365314 0%,transparent 60%),
+             radial-gradient(900px 500px at 90% 10%,#115e59 0%,transparent 55%),
+             linear-gradient(160deg,#1a2e05,#0f172a);
+  padding:4.5rem 1.2rem 4rem;}
+.blob{position:absolute; border-radius:50%; filter:blur(70px); opacity:.4; animation:flotar 14s ease-in-out infinite}
+.blob.b1{width:340px;height:340px;background:#65a30d;top:-90px;left:-60px}
+.blob.b2{width:280px;height:280px;background:#14b8a6;bottom:-110px;right:-40px;animation-delay:-5s}
+.blob.b3{width:220px;height:220px;background:#f43f5e;top:40%;right:25%;animation-delay:-9s}
+@keyframes flotar{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(28px,-32px) scale(1.12)}}
+.hero-inner{position:relative; max-width:1000px; margin:0 auto; text-align:center}
+.badge-top{display:inline-flex; align-items:center; gap:.5rem; font-size:.76rem; font-weight:800;
+  letter-spacing:1.4px; text-transform:uppercase; color:#bef264;
+  background:rgba(101,163,13,.18); border:1px solid rgba(190,242,100,.4);
+  padding:.42rem 1rem; border-radius:999px; margin-bottom:1.2rem;}
+header.hero h1{font-size:clamp(1.85rem,5.2vw,3.3rem); font-weight:900; letter-spacing:-1px; margin-bottom:.7rem;}
+header.hero h1 span{background:linear-gradient(90deg,#bef264,#5eead4,#fda4af);
+  -webkit-background-clip:text; background-clip:text; color:transparent;}
+.hero-sub{max-width:800px; margin:0 auto 1.6rem; color:#cbd5e1; font-size:clamp(.95rem,2.2vw,1.1rem)}
+.hero-sub strong{color:#bef264}
+.hero-chips{display:flex; gap:.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:2rem}
+.chip{font-size:.74rem; font-weight:800; letter-spacing:.6px; padding:.34rem .8rem; border-radius:999px;
+  background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.22); color:#e2e8f0;}
+.hero-cta{display:flex; gap:.7rem; justify-content:center; flex-wrap:wrap}
+.btn{display:inline-flex; align-items:center; gap:.45rem; cursor:pointer; border:none;
+  font-family:inherit; font-size:.92rem; font-weight:800; padding:.8rem 1.5rem; border-radius:999px;
+  text-decoration:none; transition:transform .2s, box-shadow .2s, background .2s;}
+.btn-primary{background:linear-gradient(135deg,var(--oliva),var(--oliva-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(101,163,13,.4)}
+.btn-primary:hover{transform:translateY(-3px); box-shadow:0 16px 34px rgba(101,163,13,.5)}
+.btn-ghost{background:rgba(255,255,255,.1); color:#fff; border:1.5px solid rgba(255,255,255,.3)}
+.btn-ghost:hover{background:rgba(255,255,255,.2); transform:translateY(-3px)}
+.btn-teal{background:linear-gradient(135deg,var(--teal),var(--teal-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(20,184,166,.4)}
+.btn-teal:hover{transform:translateY(-3px)}
+.btn-coral{background:linear-gradient(135deg,var(--coral),var(--coral-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(244,63,94,.4)}
+.btn-coral:hover{transform:translateY(-3px)}
+.btn-azul{background:linear-gradient(135deg,var(--azul),var(--azul-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(2,132,199,.4)}
+.btn-azul:hover{transform:translateY(-3px)}
+.btn-violeta{background:linear-gradient(135deg,var(--violeta),var(--violeta-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(139,92,246,.4)}
+.btn-violeta:hover{transform:translateY(-3px)}
+
+/* LAYOUT */
+main{max-width:1200px; margin:0 auto; padding:0 1.1rem 5rem}
+section{padding:3.2rem 0 1rem; scroll-margin-top:70px}
+.sec-head{margin-bottom:1.8rem}
+.kicker{display:inline-block; font-size:.72rem; font-weight:900; letter-spacing:1.6px; text-transform:uppercase;
+  color:var(--oliva-oscuro); background:var(--oliva-claro); padding:.3rem .75rem; border-radius:999px; margin-bottom:.7rem;}
+.kicker.teal{color:var(--teal-oscuro); background:var(--teal-claro)}
+.kicker.coral{color:var(--coral-oscuro); background:var(--coral-claro)}
+.kicker.azul{color:var(--azul-oscuro); background:var(--azul-claro)}
+.kicker.violeta{color:var(--violeta-oscuro); background:var(--violeta-claro)}
+.sec-head h2{font-size:clamp(1.5rem,3.6vw,2.15rem); font-weight:900; letter-spacing:-.6px}
+.sec-head p.lead{color:var(--gris); max-width:900px; font-size:1rem}
+.card{background:var(--blanco); border-radius:var(--radio); padding:1.6rem; box-shadow:var(--sombra); border:1px solid #e2e8f0;}
+.grid{display:grid; gap:1.1rem}
+.g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.reveal{opacity:0; transform:translateY(26px); transition:opacity .7s cubic-bezier(.2,.8,.2,1), transform .7s cubic-bezier(.2,.8,.2,1)}
+.reveal.in{opacity:1; transform:none}
+
+/* PILARES */
+.pilar{background:#fff; border-radius:16px; padding:1.3rem; border:1px solid #e2e8f0;
+  border-top:5px solid var(--oliva); box-shadow:var(--sombra); transition:.3s;}
+.pilar:hover{transform:translateY(-6px); box-shadow:var(--sombra-lg)}
+.pilar .ico{font-size:2rem; display:block; margin-bottom:.5rem}
+.pilar h4{font-size:1.05rem; color:var(--oliva-oscuro)}
+.pilar p{font-size:.9rem; color:var(--gris); margin:0}
+
+/* ========== TEORÍA EXPANDIDA ========== */
+.teoria{
+  background:#fff; border-radius:var(--radio); padding:1.6rem; box-shadow:var(--sombra);
+  border:1px solid #e2e8f0; margin-bottom:1.4rem;
+}
+.teoria h3{
+  color:var(--oliva-oscuro); font-size:1.15rem; margin-bottom:.8rem;
+  display:flex; align-items:center; gap:.5rem;
+}
+.teoria h3 .th-ico{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:34px; height:34px; border-radius:10px;
+  background:var(--oliva-claro); color:var(--oliva-oscuro);
+  font-size:1rem;
+}
+.teoria h4{
+  color:var(--oliva-oscuro); font-size:1rem; margin-top:1.2rem; margin-bottom:.5rem;
+  padding-left:.6rem; border-left:4px solid var(--oliva);
+}
+.teoria p{font-size:.94rem; color:var(--gris-oscuro); margin-bottom:.8rem}
+.teoria ul, .teoria ol{font-size:.92rem; color:var(--gris-oscuro); margin:0 0 1rem; padding-left:1.3rem}
+.teoria li{margin-bottom:.35rem}
+.teoria li strong{color:var(--oliva-oscuro)}
+.teoria .destacado{
+  background:linear-gradient(150deg,var(--oliva-claro),#fff);
+  border-left:4px solid var(--oliva); border-radius:0 12px 12px 0;
+  padding:.9rem 1.1rem; margin:1rem 0; font-size:.92rem;
+  color:var(--oliva-oscuro);
+}
+.teoria .destacado strong{color:var(--oliva-oscuro); font-weight:900}
+.teoria.teal .th-ico{background:var(--teal-claro); color:var(--teal-oscuro)}
+.teoria.teal h3{color:var(--teal-oscuro)}
+.teoria.teal h4{color:var(--teal-oscuro); border-color:var(--teal)}
+.teoria.teal li strong{color:var(--teal-oscuro)}
+.teoria.teal .destacado{background:linear-gradient(150deg,var(--teal-claro),#fff); border-color:var(--teal); color:var(--teal-oscuro)}
+.teoria.coral .th-ico{background:var(--coral-claro); color:var(--coral-oscuro)}
+.teoria.coral h3{color:var(--coral-oscuro)}
+.teoria.coral h4{color:var(--coral-oscuro); border-color:var(--coral)}
+.teoria.coral li strong{color:var(--coral-oscuro)}
+.teoria.coral .destacado{background:linear-gradient(150deg,var(--coral-claro),#fff); border-color:var(--coral); color:var(--coral-oscuro)}
+.teoria.azul .th-ico{background:var(--azul-claro); color:var(--azul-oscuro)}
+.teoria.azul h3{color:var(--azul-oscuro)}
+.teoria.azul h4{color:var(--azul-oscuro); border-color:var(--azul)}
+.teoria.azul li strong{color:var(--azul-oscuro)}
+.teoria.azul .destacado{background:linear-gradient(150deg,var(--azul-claro),#fff); border-color:var(--azul); color:var(--azul-oscuro)}
+.teoria.violeta .th-ico{background:var(--violeta-claro); color:var(--violeta-oscuro)}
+.teoria.violeta h3{color:var(--violeta-oscuro)}
+.teoria.violeta h4{color:var(--violeta-oscuro); border-color:var(--violeta)}
+.teoria.violeta li strong{color:var(--violeta-oscuro)}
+.teoria.violeta .destacado{background:linear-gradient(150deg,var(--violeta-claro),#fff); border-color:var(--violeta); color:var(--violeta-oscuro)}
+.teoria .ejemplo{
+  background:#f8fafc; border-radius:10px; padding:.7rem .9rem;
+  font-size:.85rem; color:var(--gris-oscuro); margin:.5rem 0;
+  border-left:3px solid var(--gris);
+}
+.teoria .ejemplo strong{color:var(--gris-oscuro)}
+.teoria .tabla-tipos{
+  width:100%; border-collapse:collapse; margin:.8rem 0 1rem;
+  font-size:.86rem;
+}
+.teoria .tabla-tipos th, .teoria .tabla-tipos td{
+  padding:.6rem .7rem; text-align:left;
+  border-bottom:1px solid #e2e8f0;
+}
+.teoria .tabla-tipos th{
+  background:var(--oliva-claro); color:var(--oliva-oscuro);
+  font-weight:900; font-size:.78rem; text-transform:uppercase; letter-spacing:.4px;
+}
+.teoria.teal .tabla-tipos th{background:var(--teal-claro); color:var(--teal-oscuro)}
+.teoria.coral .tabla-tipos th{background:var(--coral-claro); color:var(--coral-oscuro)}
+.teoria.azul .tabla-tipos th{background:var(--azul-claro); color:var(--azul-oscuro)}
+.teoria.violeta .tabla-tipos th{background:var(--violeta-claro); color:var(--violeta-oscuro)}
+.teoria .tabla-tipos tr:nth-child(even) td{background:#f8fafc}
+.teoria .grid-teoria{
+  display:grid; gap:.8rem; grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  margin:1rem 0;
+}
+.teoria .bloque-teoria{
+  background:#f8fafc; border-radius:12px; padding:.9rem 1rem;
+  border-top:3px solid var(--oliva);
+}
+.teoria.teal .bloque-teoria{border-color:var(--teal)}
+.teoria.coral .bloque-teoria{border-color:var(--coral)}
+.teoria.azul .bloque-teoria{border-color:var(--azul)}
+.teoria.violeta .bloque-teoria{border-color:var(--violeta)}
+.teoria .bloque-teoria h5{
+  font-size:.88rem; font-weight:900; color:var(--oliva-oscuro);
+  margin:0 0 .4rem;
+}
+.teoria.teal .bloque-teoria h5{color:var(--teal-oscuro)}
+.teoria.coral .bloque-teoria h5{color:var(--coral-oscuro)}
+.teoria.azul .bloque-teoria h5{color:var(--azul-oscuro)}
+.teoria.violeta .bloque-teoria h5{color:var(--violeta-oscuro)}
+.teoria .bloque-teoria p{font-size:.85rem; margin:0; color:var(--gris)}
+.teoria .fases{
+  display:grid; gap:.6rem; grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  margin:1rem 0;
+}
+.teoria .fase{
+  background:#fff; border:2px solid var(--oliva-claro); border-radius:12px;
+  padding:.75rem; text-align:center; position:relative;
+}
+.teoria .fase .fase-num{
+  display:inline-block; font-size:.72rem; font-weight:900; background:var(--oliva);
+  color:#fff; padding:.15rem .55rem; border-radius:999px; margin-bottom:.35rem;
+}
+.teoria .fase h6{font-size:.85rem; font-weight:900; color:var(--oliva-oscuro); margin:.2rem 0}
+.teoria .fase p{font-size:.75rem; color:var(--gris); margin:0; line-height:1.35}
+
+/* ACTIVIDADES */
+.actividad{background:#fff; border-radius:var(--radio); padding:1.6rem; box-shadow:var(--sombra);
+  border:1px solid #e2e8f0; margin-top:1.6rem;}
+.actividad h3{color:var(--oliva-oscuro); font-size:1.15rem; margin-bottom:.3rem}
+.actividad .intro{font-size:.93rem; color:var(--gris); margin-bottom:1rem}
+
+/* ========== RETO 1: FORMATO Y CANAL ========== */
+.formato-wrap{display:grid; gap:1rem; grid-template-columns:repeat(auto-fit,minmax(300px,1fr));}
+.formato-card{
+  background:#fff; border:2px solid #e2e8f0; border-radius:16px; padding:1rem 1.1rem;
+  transition:.3s; display:flex; flex-direction:column; gap:.7rem;
+}
+.formato-card.done{border-color:var(--oliva); background:#f7fee7}
+.fc-head{display:flex; gap:.6rem; align-items:flex-start}
+.fc-ico{font-size:1.8rem; flex-shrink:0}
+.fc-titulo{font-size:.95rem; font-weight:900; color:var(--oliva-oscuro); margin:0 0 .15rem}
+.fc-desc{font-size:.83rem; color:var(--gris-oscuro); margin:0; line-height:1.5}
+.fc-requisitos{
+  display:flex; flex-wrap:wrap; gap:.35rem; margin-top:.3rem;
+}
+.fc-req{
+  font-size:.7rem; font-weight:800; padding:.2rem .55rem; border-radius:999px;
+  background:var(--oliva-claro); color:var(--oliva-oscuro);
+}
+.fc-opciones{display:grid; grid-template-columns:1fr; gap:.4rem;}
+.fc-btn{
+  font-family:inherit; font-size:.83rem; font-weight:700; cursor:pointer; text-align:left;
+  padding:.6rem .85rem; border-radius:10px; border:2px solid #e2e8f0; background:#f8fafc;
+  color:var(--gris-oscuro); transition:.2s; display:flex; gap:.5rem; align-items:center;
+}
+.fc-btn:hover:not(:disabled){border-color:var(--oliva); background:var(--oliva-claro); color:var(--oliva-oscuro)}
+.fc-btn:disabled{cursor:default; opacity:.55}
+.fc-btn .fco-ico{font-size:1.1rem}
+.fc-btn.correct{background:#dcfce7; border-color:#16a34a; color:#15803d; opacity:1}
+.fc-btn.wrong{background:#fee2e2; border-color:#dc2626; color:#b91c1c; opacity:1}
+.fc-fb{
+  font-size:.8rem; border-radius:10px; padding:0; max-height:0; overflow:hidden;
+  transition:.35s; color:var(--gris-oscuro);
+}
+.fc-fb.show{max-height:240px; padding:.6rem .75rem; background:#fff; border-left:3px solid var(--oliva)}
+#formatoMsg{text-align:center; margin-top:1.2rem; font-weight:800; color:var(--oliva-oscuro); min-height:1.4em}
+
+/* ========== RETO 2: PITCH ========== */
+.pitch-progreso{
+  display:flex; gap:.4rem; justify-content:center; flex-wrap:wrap; margin-bottom:1.2rem;
+}
+.pitch-slot{
+  flex:1; min-width:100px; max-width:140px; text-align:center;
+  background:#f8fafc; border:2px dashed #cbd5e1; border-radius:12px; padding:.7rem .5rem;
+  font-size:.72rem; font-weight:800; color:var(--gris); letter-spacing:.3px;
+  transition:.3s; min-height:80px; display:flex; flex-direction:column; justify-content:center; gap:.25rem;
+}
+.pitch-slot.activo{border-color:var(--teal); background:var(--teal-claro); color:var(--teal-oscuro); border-style:solid}
+.pitch-slot.lleno{border-style:solid; border-color:var(--oliva); background:var(--oliva-claro); color:var(--oliva-oscuro)}
+.pitch-slot .ps-num{font-size:.95rem; font-weight:900}
+.pitch-slot .ps-txt{font-size:.68rem; font-weight:800}
+.pitch-cards{
+  display:grid; gap:.6rem; grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+  margin-bottom:1rem;
+}
+.pitch-card{
+  background:#fff; border:2px solid #e2e8f0; border-radius:14px; padding:.85rem 1rem;
+  cursor:pointer; transition:.2s; font-size:.85rem; color:var(--gris-oscuro);
+  display:flex; gap:.6rem; align-items:flex-start;
+}
+.pitch-card:hover:not(.usado){border-color:var(--teal); background:var(--teal-claro); color:var(--teal-oscuro); transform:translateY(-2px)}
+.pitch-card.usado{opacity:.35; cursor:default; border-style:dashed}
+.pitch-card .pc-ico{font-size:1.4rem; flex-shrink:0}
+.pitch-card .pc-info{flex:1}
+.pitch-card .pc-nombre{font-weight:900; font-size:.9rem; margin-bottom:.15rem; color:var(--teal-oscuro)}
+.pitch-card .pc-desc{font-size:.78rem; color:var(--gris); line-height:1.35}
+#pitchMsg{text-align:center; margin-top:1rem; font-weight:800; color:var(--teal-oscuro); min-height:1.4em}
+
+/* ========== RETO 3: LENGUAJE INCLUSIVO ========== */
+.inclusivo-wrap{display:grid; gap:.9rem; grid-template-columns:repeat(auto-fit,minmax(320px,1fr));}
+.inclusivo-card{
+  background:#fff; border:2px solid #e2e8f0; border-radius:16px; padding:1rem 1.1rem;
+  transition:.3s; display:flex; flex-direction:column; gap:.7rem;
+}
+.inclusivo-card.done{border-color:var(--coral); background:#fff1f2}
+.inc-frase{
+  font-size:.92rem; font-weight:700; color:var(--gris-oscuro); padding:.7rem .9rem;
+  background:#f8fafc; border-radius:12px; border-left:4px solid var(--coral);
+  font-style:italic;
+}
+.inc-btns{display:flex; gap:.5rem;}
+.inc-btn{
+  flex:1; font-family:inherit; font-size:.78rem; font-weight:800; cursor:pointer;
+  padding:.6rem .5rem; border-radius:10px; border:2px solid #e2e8f0; background:#f8fafc;
+  color:var(--gris-oscuro); transition:.2s;
+}
+.inc-btn:hover:not(:disabled){border-color:var(--coral); background:var(--coral-claro); color:var(--coral-oscuro)}
+.inc-btn:disabled{cursor:default; opacity:.55}
+.inc-btn.correct{background:#dcfce7; border-color:#16a34a; color:#15803d; opacity:1}
+.inc-btn.wrong{background:#fee2e2; border-color:#dc2626; color:#b91c1c; opacity:1}
+.inc-fb{
+  font-size:.8rem; border-radius:10px; padding:0; max-height:0; overflow:hidden;
+  transition:.35s; color:var(--gris-oscuro);
+}
+.inc-fb.show{max-height:240px; padding:.6rem .75rem; background:#fff; border-left:3px solid var(--coral)}
+#incMsg{text-align:center; margin-top:1.2rem; font-weight:800; color:var(--coral-oscuro); min-height:1.4em}
+
+/* ========== RETO 4: GESTOR DEL TIEMPO ========== */
+.tiempo-wrap{
+  background:linear-gradient(150deg,#e0f2fe,#fff); border-radius:18px; padding:1.3rem;
+  border:2px solid var(--azul); margin-bottom:1.3rem;
+}
+.tiempo-total{
+  display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;
+  padding:.7rem 1rem; background:#fff; border-radius:12px; border:1px solid #bae6fd;
+}
+.tiempo-total .tt-lbl{font-size:.85rem; font-weight:800; color:var(--azul-oscuro)}
+.tiempo-total .tt-num{
+  font-family:var(--mono); font-size:1.2rem; font-weight:900; color:var(--azul-oscuro);
+}
+.tiempo-total .tt-num.over{color:var(--rojo)}
+.tiempo-total .tt-num.ok{color:#16a34a}
+.tiempo-seccion{
+  display:grid; grid-template-columns:1fr 110px; gap:.6rem; align-items:center;
+  padding:.75rem 1rem; background:#fff; border-radius:12px; margin-bottom:.55rem;
+  border:1px solid #e2e8f0; transition:.3s;
+}
+.tiempo-seccion.ok{border-color:#16a34a; background:#f0fdf4}
+.tiempo-seccion.err{border-color:var(--rojo); background:#fef2f2}
+.tiempo-seccion .ts-info{display:flex; flex-direction:column}
+.tiempo-seccion .ts-nombre{font-size:.9rem; font-weight:900; color:var(--azul-oscuro)}
+.tiempo-seccion .ts-desc{font-size:.78rem; color:var(--gris); line-height:1.35}
+.tiempo-seccion .ts-val{
+  font-family:var(--mono); font-size:1rem; font-weight:900; color:var(--azul-oscuro);
+  text-align:center; padding:.3rem .5rem; background:var(--azul-claro); border-radius:8px;
+}
+.tiempo-seccion.ok .ts-val{background:#bbf7d0; color:#15803d}
+.tiempo-seccion.err .ts-val{background:#fecaca; color:#991b1b}
+.tiempo-slider{
+  grid-column:1 / -1; width:100%; accent-color:var(--azul);
+}
+.tiempo-seccion.err .tiempo-slider{accent-color:var(--rojo)}
+.tiempo-seccion.ok .tiempo-slider{accent-color:#16a34a}
+#tiempoMsg{
+  text-align:center; margin-top:1rem; font-weight:800; color:var(--azul-oscuro); min-height:1.4em;
+  font-size:.95rem;
+}
+
+/* ========== RETO 5: ADAPTA TU MENSAJE ========== */
+.adaptar-wrap{display:grid; gap:1rem; grid-template-columns:repeat(auto-fit,minmax(320px,1fr));}
+.adaptar-card{
+  background:#fff; border:2px solid #e2e8f0; border-radius:16px; padding:1.1rem;
+  transition:.3s; display:flex; flex-direction:column; gap:.75rem;
+}
+.adaptar-card.done{border-color:var(--violeta); background:#f5f3ff}
+.adaptar-audiencia{
+  display:flex; gap:.6rem; align-items:center;
+  padding:.7rem .9rem; background:var(--violeta-claro); border-radius:12px;
+}
+.adaptar-audiencia .aa-ico{font-size:1.8rem}
+.adaptar-audiencia .aa-txt{font-size:.88rem; font-weight:700; color:var(--violeta-oscuro)}
+.adaptar-mensaje{
+  background:#f8fafc; border-radius:10px; padding:.7rem .85rem;
+  font-size:.82rem; color:var(--gris-oscuro); border-left:3px solid var(--violeta);
+}
+.adaptar-mensaje strong{color:var(--violeta-oscuro)}
+.adaptar-pregunta{font-size:.85rem; font-weight:800; color:var(--violeta-oscuro); margin:0}
+.adaptar-opciones{display:grid; gap:.4rem}
+.adaptar-op{
+  font-family:inherit; font-size:.82rem; font-weight:600; cursor:pointer; text-align:left;
+  padding:.6rem .85rem; border-radius:10px; border:2px solid #e2e8f0; background:#f8fafc;
+  color:var(--gris-oscuro); transition:.2s; display:flex; gap:.5rem; align-items:flex-start;
+}
+.adaptar-op:hover:not(:disabled){border-color:var(--violeta); background:var(--violeta-claro); color:var(--violeta-oscuro); transform:translateX(3px)}
+.adaptar-op:disabled{cursor:default}
+.adaptar-op .ao-letra{
+  flex:0 0 22px; height:22px; border-radius:6px; background:#e2e8f0; color:var(--gris-oscuro);
+  display:grid; place-items:center; font-size:.7rem; font-weight:900;
+}
+.adaptar-op.correct{background:#dcfce7; border-color:#16a34a; color:#15803d}
+.adaptar-op.correct .ao-letra{background:#16a34a; color:#fff}
+.adaptar-op.wrong{background:#fee2e2; border-color:#dc2626; color:#b91c1c}
+.adaptar-op.wrong .ao-letra{background:#dc2626; color:#fff}
+.adaptar-fb{
+  font-size:.8rem; border-radius:10px; padding:0; max-height:0; overflow:hidden;
+  transition:.35s; color:var(--gris-oscuro);
+}
+.adaptar-fb.show{max-height:240px; padding:.6rem .75rem; background:#fff; border-left:3px solid var(--violeta)}
+#adaptarMsg{text-align:center; margin-top:1.2rem; font-weight:800; color:var(--violeta-oscuro); min-height:1.4em}
+
+/* QUIZ */
+.q{background:#fff; border-radius:16px; padding:1.3rem 1.4rem; box-shadow:var(--sombra);
+  border:1px solid #e2e8f0; margin-bottom:1rem;}
+.q-num{display:inline-block; font-size:.72rem; font-weight:900; letter-spacing:1px; color:#fff;
+  background:var(--oliva-oscuro); padding:.2rem .6rem; border-radius:8px; margin-bottom:.6rem;}
+.q h4{font-size:1rem; margin-bottom:.9rem}
+.opts{display:grid; gap:.5rem}
+.opt{text-align:left; font-family:inherit; font-size:.9rem; font-weight:600; cursor:pointer;
+  padding:.7rem .9rem; border-radius:12px; border:2px solid #e2e8f0; background:#f8fafc; color:var(--gris-oscuro);
+  transition:.2s; display:flex; gap:.6rem; align-items:flex-start;}
+.opt:hover:not(:disabled){border-color:var(--oliva); background:var(--oliva-claro); color:var(--oliva-oscuro); transform:translateX(4px)}
+.opt:disabled{cursor:default}
+.opt .letter{flex:0 0 24px; height:24px; border-radius:7px; background:#e2e8f0; color:var(--gris-oscuro);
+  display:grid; place-items:center; font-size:.75rem; font-weight:900;}
+.opt.correct{background:#dcfce7; border-color:#16a34a; color:#14532d}
+.opt.correct .letter{background:#16a34a; color:#fff}
+.opt.wrong{background:#fee2e2; border-color:#dc2626; color:#7f1d1d}
+.opt.wrong .letter{background:#dc2626; color:#fff}
+.expl{margin-top:.85rem; font-size:.86rem; background:#f7fee7; border-left:4px solid var(--oliva);
+  padding:.7rem .9rem; border-radius:0 10px 10px 0; color:var(--gris-oscuro); display:none;}
+.expl.show{display:block}
+
+/* VOCABULARIO */
+.voc-grid{display:grid; gap:.6rem; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); margin-bottom:1rem}
+.voc-term{text-align:left; font-family:inherit; font-size:.88rem; font-weight:800; cursor:pointer;
+  padding:.85rem 1rem; border-radius:14px; border:2px solid #e2e8f0; background:#fff;
+  color:var(--gris-oscuro); transition:.25s; display:flex; align-items:center; gap:.5rem;}
+.voc-term:hover{border-color:var(--oliva); background:var(--oliva-claro); color:var(--oliva-oscuro); transform:translateY(-3px)}
+.voc-term.active{background:var(--oliva-oscuro); color:#fff; border-color:var(--oliva-oscuro)}
+#vocDef{max-height:0; overflow:hidden; transition:max-height .5s cubic-bezier(.2,.8,.2,1), padding .3s;
+  background:linear-gradient(150deg,#365314,#1a2e05); color:#fff; border-radius:16px; padding:0 1.4rem;}
+#vocDef.show{max-height:440px; padding:1.3rem 1.4rem}
+#vocDef h4{color:#bef264; font-size:1.05rem; margin-bottom:.5rem}
+#vocDef p{color:#d9f99d; font-size:.92rem; margin:0}
+
+/* CERTIFICADO */
+#certificado{background:linear-gradient(150deg,#365314,#1a2e05); color:#fff; border-radius:26px;
+  padding:2.4rem 1.8rem; box-shadow:var(--sombra-lg); text-align:center; position:relative; overflow:hidden;}
+#certificado::before{content:""; position:absolute; inset:14px; border:2px solid rgba(190,242,100,.35);
+  border-radius:18px; pointer-events:none;}
+#certificado h2{color:#bef264; font-size:1.5rem; margin-bottom:.3rem}
+#certificado p.sub{color:#d9f99d; font-size:.95rem; max-width:560px; margin:0 auto 1.4rem}
+.cert-name{font-size:clamp(1.6rem,5vw,2.4rem); font-weight:900; letter-spacing:-.5px; margin:.6rem 0 1rem;
+  background:linear-gradient(90deg,#bef264,#5eead4,#fda4af); -webkit-background-clip:text; background-clip:text; color:transparent;}
+.cert-stats{display:grid; gap:.7rem; grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  max-width:820px; margin:0 auto 1.6rem;}
+.cert-stat{background:rgba(255,255,255,.09); border:1px solid rgba(190,242,100,.3);
+  border-radius:14px; padding:.8rem .6rem; text-align:center;}
+.cert-stat .num{font-size:1.35rem; font-weight:900; color:#fbbf24; line-height:1}
+.cert-stat .lbl{font-size:.7rem; color:#d9f99d; text-transform:uppercase; letter-spacing:.9px; font-weight:800; margin-top:.3rem}
+.cert-warn{background:rgba(251,191,36,.14); border:1px solid rgba(251,191,36,.4);
+  color:#fde68a; font-size:.86rem; padding:.7rem 1rem; border-radius:12px;
+  max-width:600px; margin:0 auto 1.2rem;}
+.cert-note{font-size:.78rem; color:#94a3b8; margin-top:1rem; max-width:560px; margin-left:auto; margin-right:auto;}
+
+/* Toast */
+#toast{position:fixed; bottom:1.4rem; left:50%; transform:translate(-50%,140%); z-index:1200;
+  background:var(--negro); color:#fff; font-weight:700; font-size:.88rem; padding:.85rem 1.4rem;
+  border-radius:999px; box-shadow:var(--sombra-lg); transition:transform .45s cubic-bezier(.2,.8,.2,1);
+  display:flex; align-items:center; gap:.55rem; max-width:92vw; text-align:center;}
+#toast.show{transform:translate(-50%,0)}
+
+footer{background:var(--negro); color:#94a3b8; text-align:center; padding:2.6rem 1.2rem; font-size:.85rem;}
+footer strong{color:#bef264}
+
+@media(max-width:640px){
+  .card{padding:1.2rem}
+  .nav-brand span.txt{display:none}
+  .pitch-slot{min-width:70px; font-size:.6rem}
+  .tiempo-seccion{grid-template-columns:1fr 90px}
+}
+</style>
+</head>
+<body class="locked">
+
+<div id="loginOverlay">
+  <div class="login-card" id="loginCard"></div>
+</div>
+
+<div id="progresoGlobal"><div id="progresoBarra"></div></div>
+
+<nav>
+  <div class="nav-inner">
+    <div class="nav-brand"><span class="dot"></span><span class="txt">Presenta y Difunde</span></div>
+    <div class="nav-user">👤 <span id="navUserName">—</span></div>
+    <div class="nav-links">
+      <a href="#intro">Inicio</a>
+      <a href="#formato">Formatos</a>
+      <a href="#pitch">Pitch</a>
+      <a href="#inclusivo">Lenguaje</a>
+      <a href="#tiempo">Tiempo</a>
+      <a href="#audiencia">Audiencia</a>
+      <a href="#quiz">Quiz</a>
+      <a href="#certificado">Certificado</a>
+    </div>
+    <div id="progresoPill">0 / 6 retos</div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+  <div class="hero-inner">
+    <div class="badge-top">🎤 Presenta con impacto</div>
+    <h1>Comunica, presenta y <span>difunde</span> tus ideas</h1>
+    <p class="hero-sub">
+      Hola, <strong id="heroNombre">amigo/a</strong>. Aprende a <strong>presentar y difundir</strong>
+      tus soluciones tecnológicas de manera <strong>creativa y efectiva</strong>: elegir el formato
+      adecuado, estructurar el discurso, gestionar el tiempo, adaptarte a cada audiencia y usar un
+      <strong>lenguaje inclusivo</strong> y una <strong>ciudadanía digital activa</strong>.
+    </p>
+    <div class="hero-chips">
+      <span class="chip">🎯 Formato</span>
+      <span class="chip">📢 Pitch</span>
+      <span class="chip">⏱️ Tiempo</span>
+      <span class="chip">🌈 Lenguaje inclusivo</span>
+      <span class="chip">👥 Audiencia</span>
+    </div>
+    <div class="hero-cta">
+      <a href="#intro" class="btn btn-primary">🚀 Empezar</a>
+      <a href="#certificado" class="btn btn-ghost">🏆 Mi certificado</a>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============ INTRO ============ -->
+  <section id="intro">
+    <div class="sec-head reveal">
+      <span class="kicker">Punto de partida</span>
+      <h2>No basta con tener una buena solución: hay que saber comunicarla</h2>
+      <p class="lead">
+        Un proyecto tecnológico solo genera impacto cuando <strong>llega a las personas</strong>.
+        Y para llegar bien hay que saber <strong>elegir el formato</strong>, <strong>estructurar
+        el discurso</strong>, <strong>gestionar el tiempo</strong>, <strong>adaptarse a la
+        audiencia</strong> y <strong>usar un lenguaje inclusivo</strong> que respete a todas las
+        personas y favorezca una ciudadanía digital activa y reflexiva.
+      </p>
+    </div>
+
+    <!-- TEORÍA AMPLIADA: INTRO -->
+    <div class="teoria reveal">
+      <h3><span class="th-ico">📘</span> ¿Qué es presentar y difundir una solución tecnológica?</h3>
+      <p>
+        <strong>Presentar</strong> una solución tecnológica es explicarla de forma clara,
+        estructurada y persuasiva ante una audiencia concreta. <strong>Difundirla</strong> es
+        hacerla llegar al mayor número de personas posible a través de distintos canales:
+        presentaciones orales, vídeos, redes sociales, publicaciones, ferias o congresos.
+      </p>
+
+      <h4>¿Por qué es tan importante difundir bien?</h4>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>🎯 Para que la solución llegue a quien la necesita</h5>
+          <p>Un proyecto que nadie conoce no puede resolver ningún problema. Difundir es hacer que llegue.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>💰 Para conseguir recursos</h5>
+          <p>Financiación, apoyos, colaboraciones y oportunidades dependen de saber comunicar el valor del proyecto.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🌍 Para generar impacto real</h5>
+          <p>Cuanta más gente conozca y use la solución, mayor será su impacto social y ambiental.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🧠 Para aprender a comunicar</h5>
+          <p>La comunicación es una competencia transversal que sirve en cualquier ámbito profesional y personal.</p>
+        </div>
+      </div>
+
+      <h4>Los 5 pilares de una buena difusión</h4>
+      <div class="fases">
+        <div class="fase">
+          <span class="fase-num">PILAR 1</span>
+          <h6>📽️ Formato</h6>
+          <p>Elegir el canal adecuado: oral, vídeo, infografía, póster, blog…</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">PILAR 2</span>
+          <h6>📢 Estructura</h6>
+          <p>Organizar el discurso con lógica: gancho, problema, solución, valor, cierre.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">PILAR 3</span>
+          <h6>🌈 Lenguaje</h6>
+          <p>Usar términos inclusivos y respetuosos que lleguen a todas las personas.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">PILAR 4</span>
+          <h6>⏱️ Tiempo</h6>
+          <p>Ajustar la duración y repartir el tiempo entre las partes del discurso.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">PILAR 5</span>
+          <h6>👥 Audiencia</h6>
+          <p>Adaptar el mensaje al público: no se habla igual a un tribunal que a vecinos.</p>
+        </div>
+      </div>
+
+      <h4>Presentar no es solo "hablar bien"</h4>
+      <p>
+        La idea popular de que presentar bien es cuestión de "tener labia" es un error. Presentar
+        bien es una <strong>competencia entrenable</strong> que incluye:
+      </p>
+      <ul>
+        <li><strong>Conocer el contenido:</strong> dominar el proyecto que se presenta.</li>
+        <li><strong>Conocer a la audiencia:</strong> saber qué sabe, qué necesita y qué espera.</li>
+        <li><strong>Estructurar:</strong> organizar el mensaje en partes claras con un hilo conductor.</li>
+        <li><strong>Expresar:</strong> modular la voz, controlar el ritmo, usar el lenguaje no verbal.</li>
+        <li><strong>Gestionar el tiempo:</strong> ajustarse a la duración prevista sin desbordarse.</li>
+        <li><strong>Adaptar el registro:</strong> usar el lenguaje adecuado a cada contexto.</li>
+        <li><strong>Presentar soportes visuales:</strong> diapositivas, carteles, vídeos, prototipos.</li>
+        <li><strong>Gestionar preguntas:</strong> responder con seguridad y honestidad.</li>
+      </ul>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> en el mundo profesional, una gran solución mal comunicada
+        pierde valor; una solución modesta bien comunicada puede tener un impacto enorme. La
+        <strong>comunicación es parte del proyecto</strong>, no un añadido al final.
+      </div>
+
+      <h4>La difusión digital: nuevas oportunidades y responsabilidades</h4>
+      <p>
+        Internet ha multiplicado las posibilidades de difusión: cualquier persona puede publicar
+        un vídeo, un artículo o una infografía y llegar a miles de personas. Pero con esa
+        oportunidad vienen nuevas responsabilidades:
+      </p>
+      <ul>
+        <li><strong>Veracidad:</strong> no difundir información sin verificarla.</li>
+        <li><strong>Respeto:</strong> no atacar, no discriminar, no difundir discurso de odio.</li>
+        <li><strong>Propiedad intelectual:</strong> citar las fuentes y respetar las licencias.</li>
+        <li><strong>Privacidad:</strong> no publicar datos personales sin consentimiento.</li>
+        <li><strong>Sostenibilidad:</strong> no contribuir a la contaminación digital innecesaria.</li>
+      </ul>
+      <p>
+        A esto se le llama <strong>ciudadanía digital responsable</strong>: usar los canales
+        digitales de forma ética, crítica y constructiva.
+      </p>
+    </div>
+
+    <div class="grid g4">
+      <div class="pilar reveal" style="border-top-color:var(--oliva)">
+        <span class="ico">📽️</span>
+        <h4>Formatos y canales</h4>
+        <p>Vídeo, infografía, podcast, presentación oral, blog, póster... Cada uno tiene su público y su momento.</p>
+      </div>
+      <div class="pilar reveal" style="border-top-color:var(--teal)">
+        <span class="ico">📢</span>
+        <h4>Estructura del discurso</h4>
+        <p>Un pitch eficaz tiene gancho, problema, solución, valor y llamada a la acción.</p>
+      </div>
+      <div class="pilar reveal" style="border-top-color:var(--coral)">
+        <span class="ico">🌈</span>
+        <h4>Lenguaje inclusivo</h4>
+        <p>Usar términos que respeten a todas las personas, sin estereotipos ni exclusiones.</p>
+      </div>
+      <div class="pilar reveal" style="border-top-color:var(--violeta)">
+        <span class="ico">👥</span>
+        <h4>Adaptación a la audiencia</h4>
+        <p>No es lo mismo hablar a un tribunal, a tus compañeros o a un grupo de personas mayores.</p>
+      </div>
+    </div>
+
+    <div class="card reveal" style="margin-top:1.5rem; border-left:6px solid var(--oliva)">
+      <h3 style="color:var(--oliva-oscuro)">🎯 Ciudadanía digital activa y reflexiva</h3>
+      <p style="font-size:.95rem; color:var(--gris-oscuro)">
+        Cuando difundes un proyecto tecnológico en internet estás ejerciendo una forma de
+        <strong>ciudadanía digital</strong>. Eso implica responsabilidades: usar un lenguaje
+        respetuoso, respetar la propiedad intelectual de las fuentes que usas, ser claro sobre los
+        límites de tu solución y no contribuir a la desinformación. Un buen proyecto tecnológico
+        también es un acto de <strong>ciudadanía responsable</strong>.
+      </p>
+    </div>
+  </section>
+
+  <!-- ========== RETO 1: FORMATO Y CANAL ========== -->
+  <section id="formato">
+    <div class="sec-head reveal">
+      <span class="kicker">Bloque 1</span>
+      <h2>📽️ Elige el formato y el canal adecuados</h2>
+      <p class="lead">
+        Cada situación de comunicación exige un formato distinto. Una <strong>infografía</strong>
+        no sirve para explicar un proceso complejo, y una <strong>presentación oral</strong> no
+        funciona bien como documento para leer en solitario. Elegir bien marca la diferencia.
+      </p>
+    </div>
+
+    <div class="teoria reveal">
+      <h3><span class="th-ico">📽️</span> Formatos y canales de difusión</h3>
+      <p>
+        El <strong>formato</strong> es la manera concreta en que se presenta la información. El
+        <strong>canal</strong> es el medio por el que llega a la audiencia. Elegir bien la
+        combinación formato-canal es una de las decisiones más importantes de cualquier difusión.
+      </p>
+
+      <h4>Los principales formatos de difusión</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Formato</th>
+          <th>Ventajas</th>
+          <th>Limitaciones</th>
+          <th>Cuándo usarlo</th>
+        </tr>
+        <tr>
+          <td><strong>🎤 Presentación oral</strong></td>
+          <td>Permite argumentar, interactuar, responder preguntas.</td>
+          <td>Requiere presencia física o conexión, no perdura en el tiempo.</td>
+          <td>Pitch, defensa, feria, congreso.</td>
+        </tr>
+        <tr>
+          <td><strong>🎬 Vídeo</strong></td>
+          <td>Visual, dinámico, se comparte fácilmente.</td>
+          <td>Requiere edición, puede ser largo de producir.</td>
+          <td>Demostraciones, tutoriales, redes sociales.</td>
+        </tr>
+        <tr>
+          <td><strong>📊 Infografía</strong></td>
+          <td>Comunica datos de un vistazo, muy visual.</td>
+          <td>Poco espacio para matices o explicaciones profundas.</td>
+          <td>Resúmenes de datos, carteles, redes sociales.</td>
+        </tr>
+        <tr>
+          <td><strong>🎙️ Podcast / audio</strong></td>
+          <td>Íntimo, narrativo, se escucha mientras se hacen otras cosas.</td>
+          <td>No permite mostrar imágenes o datos visuales.</td>
+          <td>Entrevistas, historias, divulgación.</td>
+        </tr>
+        <tr>
+          <td><strong>📝 Artículo / blog</strong></td>
+          <td>Detallado, buscable en internet, perdura en el tiempo.</td>
+          <td>Requiere lectura, menos inmediato.</td>
+          <td>Documentación técnica, tutoriales, análisis.</td>
+        </tr>
+        <tr>
+          <td><strong>🖼️ Póster</strong></td>
+          <td>Autónomo, visual, ideal para ferias y pasillos.</td>
+          <td>Limitado en espacio, requiere presencia para explicar.</td>
+          <td>Feria científica, congreso, exposición.</td>
+        </tr>
+        <tr>
+          <td><strong>📱 Redes sociales</strong></td>
+          <td>Rápido, masivo, muy visual.</td>
+          <td>Muy breve, poco espacio para detalles.</td>
+          <td>Difusión rápida, captación de atención.</td>
+        </tr>
+        <tr>
+          <td><strong>💻 Web / repositorio</strong></td>
+          <td>Centraliza toda la información, referenciable.</td>
+          <td>Requiere mantenimiento y tráfico.</td>
+          <td>Documentación completa, proyectos open source.</td>
+        </tr>
+      </table>
+
+      <h4>¿Cómo elegir el mejor formato?</h4>
+      <p>
+        No existe un formato "mejor" universal. La elección depende de cinco factores:
+      </p>
+      <ol>
+        <li><strong>El objetivo:</strong> ¿informar, convencer, formar, entretener, documentar?</li>
+        <li><strong>La audiencia:</strong> ¿quién va a recibir el mensaje? ¿Qué consume habitualmente?</li>
+        <li><strong>El contenido:</strong> ¿es visual, narrativo, técnico, datos?</li>
+        <li><strong>El contexto:</strong> ¿es presencial o a distancia? ¿Cuánto tiempo hay?</li>
+        <li><strong>Los recursos:</strong> ¿qué herramientas, tiempo y habilidades tengo?</li>
+      </ol>
+
+      <h4>Los canales de difusión</h4>
+      <p>
+        El canal es el medio por el que el mensaje llega a la audiencia. Los principales son:
+      </p>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>🏫 Presencial</h5>
+          <p>Aula, feria, congreso, sala de actos. Contacto directo con la audiencia.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🌐 Digital abierto</h5>
+          <p>Web propia, blog, repositorio. Accesible a cualquiera en cualquier momento.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>📱 Redes sociales</h5>
+          <p>Instagram, TikTok, YouTube, X. Difusión rápida y masiva.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>📧 Comunicación directa</h5>
+          <p>Email, mensajería. Para audiencias concretas e identificadas.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>📺 Medios tradicionales</h5>
+          <p>Prensa, radio, TV. Mayor alcance pero menos control sobre el mensaje.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🎓 Académicos</h5>
+          <p>Congresos, revistas, jornadas. Audiencia especializada.</p>
+        </div>
+      </div>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> la mejor combinación suele ser
+        <strong>varios formatos complementarios</strong> en distintos canales: por ejemplo, un
+        póster para la feria, un vídeo para redes, un artículo para la web y una presentación oral
+        para el tribunal. Cada formato refuerza a los demás.
+      </div>
+
+      <h4>Errores frecuentes al elegir el formato</h4>
+      <ul>
+        <li><strong>Usar siempre el mismo formato:</strong> un informe para todo, aunque la audiencia no lea informes.</li>
+        <li><strong>Ignorar al público:</strong> elegir un formato que el público objetivo no consume.</li>
+        <li><strong>Sobrecargar el formato:</strong> meter demasiada información en un póster o redes sociales.</li>
+        <li><strong>No adaptarse al contexto:</strong> hacer una presentación oral donde se espera un documento escrito.</li>
+        <li><strong>No combinar formatos:</strong> pensar que con un solo formato se llega a todos.</li>
+      </ul>
+    </div>
+
+    <div class="actividad reveal" style="border-top:6px solid var(--oliva)">
+      <span class="kicker">🎮 Reto 1 · Formato y canal</span>
+      <h3>¿Cuál es el formato más adecuado en cada caso?</h3>
+      <p class="intro">
+        Lee cada situación de difusión y elige el formato/canal más adecuado. Recibirás feedback
+        con la explicación. Hay 6 casos.
+      </p>
+
+      <div class="formato-wrap" id="formatoWrap"></div>
+      <div id="formatoMsg"></div>
+    </div>
+  </section>
+
+  <!-- ========== RETO 2: PITCH ========== -->
+  <section id="pitch">
+    <div class="sec-head reveal">
+      <span class="kicker teal">Bloque 2</span>
+      <h2>📢 Estructura un pitch tecnológico eficaz</h2>
+      <p class="lead">
+        Un <strong>pitch</strong> es una presentación breve y persuasiva de una idea o proyecto.
+        Tiene una estructura muy concreta: <strong>gancho → problema → solución → propuesta de
+        valor → demostración → llamada a la acción</strong>. Ordenar bien esos elementos es la
+        diferencia entre captar la atención y perderla.
+      </p>
+    </div>
+
+    <div class="teoria teal reveal">
+      <h3><span class="th-ico">📢</span> El arte del pitch: estructura y persuasión</h3>
+      <p>
+        Un <strong>pitch</strong> es una presentación breve, oral o escrita, cuyo objetivo es
+        <strong>despertar interés</strong> por una idea, proyecto o producto y conseguir una
+        respuesta concreta de la audiencia (invertir, colaborar, comprar, votar, apoyar…).
+      </p>
+
+      <h4>¿Qué caracteriza a un buen pitch?</h4>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>⏱️ Breve</h5>
+          <p>Entre 30 segundos y 5 minutos. Lo bueno, si breve, dos veces bueno.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🎯 Claro</h5>
+          <p>Una idea por frase. Nada de rodeos ni tecnicismos innecesarios.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>💡 Persuasivo</h5>
+          <p>No solo informa: convence de que merece la pena.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🎣 Con gancho</h5>
+          <p>Capta la atención en los primeros 10-15 segundos.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>📊 Basado en datos</h5>
+          <p>Los números concretos convencen mucho más que las palabras vacías.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>📣 Con cierre</h5>
+          <p>Termina siempre con una llamada a la acción clara y concreta.</p>
+        </div>
+      </div>
+
+      <h4>La estructura del pitch perfecto</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Fase</th>
+          <th>Duración típica</th>
+          <th>Objetivo</th>
+        </tr>
+        <tr>
+          <td><strong>🎣 Gancho inicial</strong></td>
+          <td>10-30 seg</td>
+          <td>Captar la atención con un dato, pregunta o historia impactante.</td>
+        </tr>
+        <tr>
+          <td><strong>⚠️ Problema</strong></td>
+          <td>30-60 seg</td>
+          <td>Explicar el problema real y a quién afecta.</td>
+        </tr>
+        <tr>
+          <td><strong>💡 Solución</strong></td>
+          <td>1-2 min</td>
+          <td>Presentar la solución y cómo resuelve el problema.</td>
+        </tr>
+        <tr>
+          <td><strong>💎 Propuesta de valor</strong></td>
+          <td>30-60 seg</td>
+          <td>Qué te diferencia: por qué es mejor que las alternativas.</td>
+        </tr>
+        <tr>
+          <td><strong>📽️ Demostración</strong></td>
+          <td>30-90 seg</td>
+          <td>Mostrar la solución funcionando, con datos reales.</td>
+        </tr>
+        <tr>
+          <td><strong>📣 Llamada a la acción</strong></td>
+          <td>15-30 seg</td>
+          <td>Decir claramente qué quieres que haga la audiencia.</td>
+        </tr>
+      </table>
+
+      <h4>El gancho: cómo captar la atención en 10 segundos</h4>
+      <p>
+        El gancho es la parte más importante del pitch. Si no captas la atención al principio, el
+        resto no se escuchará. Tipos de gancho:
+      </p>
+      <ul>
+        <li><strong>Dato impactante:</strong> "Cada año se tiran 50 millones de toneladas de residuos electrónicos".</li>
+        <li><strong>Pregunta retadora:</strong> "¿Sabías que el 80% de la huella de tu móvil se genera antes de encenderlo?"</li>
+        <li><strong>Historia personal:</strong> "Hace un año, mi abuela no pudo pedir cita médica porque no sabía usar la app".</li>
+        <li><strong>Analogía:</strong> "Imagina tener que buscar herramientas en 5 casas distintas cada vez que quieres colgar un cuadro".</li>
+        <li><strong>Contraste:</strong> "Un móvil tarda 3 años en quedar obsoleto, pero 400 años en descomponerse".</li>
+      </ul>
+
+      <h4>La propuesta de valor en un pitch</h4>
+      <p>
+        La <strong>propuesta de valor</strong> es la respuesta a la pregunta "¿por qué tú y no
+        otro?". Debe ser breve, concreta y memorable. Una buena fórmula es:
+      </p>
+      <div class="ejemplo">
+        <strong>Fórmula:</strong> "Para [audiencia] que necesita [necesidad], nuestra [solución]
+        ofrece [beneficio clave], a diferencia de [alternativas] que [limitación]".<br><br>
+        <strong>Ejemplo:</strong> "Para <em>personas mayores</em> que necesitan <em>pedir cita
+        médica</em>, nuestra app ofrece <em>hacerlo en 2 clics con la voz</em>, a diferencia de
+        las apps actuales que <em>requieren escribir y navegar por muchos menús</em>".
+      </div>
+
+      <h4>La llamada a la acción</h4>
+      <p>
+        Un pitch sin llamada a la acción es un pitch inútil. La llamada a la acción debe ser:
+      </p>
+      <ul>
+        <li><strong>Concreta:</strong> no "apóyanos", sino "vota por nosotros en el concurso" o "invierte 5.000 € en el prototipo".</li>
+        <li><strong>Realizable:</strong> algo que la audiencia pueda hacer de verdad.</li>
+        <li><strong>Con plazo:</strong> mejor con fecha límite que sin él.</li>
+        <li><strong>Única:</strong> una sola acción clara, no tres.</li>
+      </ul>
+
+      <h4>Los 5 pecados capitales de un pitch</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Pecado</th>
+          <th>Por qué es malo</th>
+          <th>Qué hacer en su lugar</th>
+        </tr>
+        <tr>
+          <td><strong>Empezar por la solución</strong></td>
+          <td>Si no explicas antes el problema, la audiencia no entiende por qué tu solución importa.</td>
+          <td>Empezar por un gancho y por el problema.</td>
+        </tr>
+        <tr>
+          <td><strong>Saturar de tecnicismos</strong></td>
+          <td>Si la audiencia no entiende los términos, desconecta.</td>
+          <td>Adaptar el lenguaje a la audiencia.</td>
+        </tr>
+        <tr>
+          <td><strong>Hablar solo de características</strong></td>
+          <td>Las características no venden: los beneficios sí.</td>
+          <td>Traducir cada característica en un beneficio.</td>
+        </tr>
+        <tr>
+          <td><strong>No mencionar la competencia</strong></td>
+          <td>Si no diferencias tu solución de las demás, parecerá una más.</td>
+          <td>Destacar la propuesta de valor diferencial.</td>
+        </tr>
+        <tr>
+          <td><strong>Terminar sin pedir nada</strong></td>
+          <td>Sin llamada a la acción, la audiencia no sabe qué hacer.</td>
+          <td>Cerrar con una petición concreta.</td>
+        </tr>
+      </table>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> un pitch no es un resumen del proyecto: es una
+        <strong>herramienta para conseguir algo</strong>. Cada palabra debe estar al servicio del
+        objetivo. Y como toda herramienta, se mejora con la práctica.
+      </div>
+    </div>
+
+    <div class="actividad reveal" style="border-top:6px solid var(--teal)">
+      <span class="kicker teal">🎮 Reto 2 · Ordena el pitch</span>
+      <h3>Coloca los 6 elementos en el orden correcto</h3>
+      <p class="intro">
+        Pulsa cada elemento del pitch en el orden en que debería aparecer en la presentación. Se
+        irán colocando en la línea temporal. Si te equivocas, la app te dará una pista.
+      </p>
+
+      <div class="pitch-progreso" id="pitchProgreso"></div>
+      <div class="pitch-cards" id="pitchCards"></div>
+      <div id="pitchMsg"></div>
+    </div>
+  </section>
+
+  <!-- ========== RETO 3: LENGUAJE INCLUSIVO ========== -->
+  <section id="inclusivo">
+    <div class="sec-head reveal">
+      <span class="kicker coral">Bloque 3</span>
+      <h2>🌈 Detecta el lenguaje inclusivo y no sexista</h2>
+      <p class="lead">
+        El <strong>lenguaje inclusivo</strong> busca nombrar a todas las personas sin excluir ni
+        reforzar estereotipos. En una presentación técnica, cuidar las palabras transmite respeto
+        y hace que más personas se identifiquen con el proyecto.
+      </p>
+    </div>
+
+    <div class="teoria coral reveal">
+      <h3><span class="th-ico">🌈</span> El lenguaje inclusivo y no sexista</h3>
+      <p>
+        El <strong>lenguaje inclusivo</strong> es el conjunto de estrategias lingüísticas que
+        buscan <strong>nombrar a todas las personas sin excluir a ninguna</strong>, evitando
+        estereotipos de género y otras formas de discriminación. No es una cuestión de moda: es
+        una cuestión de <strong>precisión, respeto y calidad comunicativa</strong>.
+      </p>
+
+      <h4>¿Por qué usar lenguaje inclusivo?</h4>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>🎯 Precisión</h5>
+          <p>Nombrar a todas las personas con exactitud, sin que unas queden invisibilizadas.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🤝 Respeto</h5>
+          <p>Tratar a todas las personas con la misma dignidad, sin estereotipos ni exclusiones.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🌍 Representación</h5>
+          <p>Que todas las personas se sientan interpeladas por el mensaje.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>📈 Calidad</h5>
+          <p>Un texto inclusivo es un texto más elaborado y profesional.</p>
+        </div>
+      </div>
+
+      <h4>Estrategias para un lenguaje inclusivo</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Estrategia</th>
+          <th>Ejemplo no inclusivo</th>
+          <th>Alternativa inclusiva</th>
+        </tr>
+        <tr>
+          <td><strong>Usar términos colectivos</strong></td>
+          <td>"Los alumnos"</td>
+          <td>"El alumnado"</td>
+        </tr>
+        <tr>
+          <td><strong>Nombres de profesión sin género</strong></td>
+          <td>"El técnico encargado"</td>
+          <td>"El equipo técnico encargado" / "La persona técnica encargada"</td>
+        </tr>
+        <tr>
+          <td><strong>Estructuras neutras</strong></td>
+          <td>"Los interesados deben…"</td>
+          <td>"Quien esté interesado debe…" / "Las personas interesadas deben…"</td>
+        </tr>
+        <tr>
+          <td><strong>Evitar el masculino genérico</strong></td>
+          <td>"Los usuarios avanzados"</td>
+          <td>"Las personas usuarias avanzadas" / "Quien tenga experiencia"</td>
+        </tr>
+        <tr>
+          <td><strong>Uso de "se" impersonal</strong></td>
+          <td>"El usuario puede configurar…"</td>
+          <td>"Se puede configurar…"</td>
+        </tr>
+        <tr>
+          <td><strong>Dirigirse al grupo</strong></td>
+          <td>"Chicos, ¿habéis terminado?"</td>
+          <td>"Equipo, ¿habéis terminado?"</td>
+        </tr>
+      </table>
+
+      <h4>Estereotipos de género en el lenguaje técnico</h4>
+      <p>
+        Los <strong>estereotipos de género</strong> son ideas preconcebidas que asignan
+        características o roles a las personas según su género. En el lenguaje técnico aparecen
+        de formas muy sutiles:
+      </p>
+      <ul>
+        <li><strong>Asignar género a roles profesionales:</strong> "los programadores" o "las enfermeras".</li>
+        <li><strong>Presuponer género por defecto:</strong> "cuando el ingeniero llegue, dile que…".</li>
+        <li><strong>Usar diminutivos o tratamientos desiguales:</strong> "la ingeniera" como excepción.</li>
+        <li><strong>Destacar la condición de mujer:</strong> "una gran ingeniera, para ser mujer".</li>
+        <li><strong>Nombres de profesión feminizados con carga negativa:</strong> "la jefa" en lugar de "la responsable".</li>
+      </ul>
+
+      <h4>El lenguaje inclusivo va más allá del género</h4>
+      <p>
+        Aunque el debate público se centra en el género, el lenguaje inclusivo abarca más
+        dimensiones:
+      </p>
+      <ul>
+        <li><strong>Diversidad funcional:</strong> decir "persona con discapacidad" en lugar de "discapacitado".</li>
+        <li><strong>Origen y cultura:</strong> evitar generalizaciones sobre nacionalidades o etnias.</li>
+        <li><strong>Edad:</strong> no infantilizar a las personas mayores ni tratarlas como un colectivo homogéneo.</li>
+        <li><strong>Orientación sexual e identidad:</strong> usar términos que respeten todas las identidades.</li>
+        <li><strong>Situación socioeconómica:</strong> no estigmatizar a personas en riesgo de exclusión.</li>
+      </ul>
+
+      <h4>Errores frecuentes al intentar ser inclusivo</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Error</th>
+          <th>Por qué es un error</th>
+        </tr>
+        <tr>
+          <td><strong>Usar "todos y todas" en exceso</strong></td>
+          <td>Cansa la lectura y excluye a personas no binarias. Mejor buscar términos colectivos.</td>
+        </tr>
+        <tr>
+          <td><strong>Usar la "x" o la "e" sistemáticamente</strong></td>
+          <td>Puede dificultar la lectura y la accesibilidad para algunas personas.</td>
+        </tr>
+        <tr>
+          <td><strong>Priorizar la forma sobre el contenido</strong></td>
+          <td>El lenguaje inclusivo no debe hacer el mensaje incomprensible.</td>
+        </tr>
+        <tr>
+          <td><strong>Corregir a otras personas en público</strong></td>
+          <td>Puede generar rechazo. Mejor predicar con el ejemplo.</td>
+        </tr>
+      </table>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> el lenguaje inclusivo no es una imposición ni una moda:
+        es una forma de <strong>usar el lenguaje con precisión y respeto</strong>. Un mensaje
+        técnico bien elaborado cuida el lenguaje porque cuida a las personas.
+      </div>
+    </div>
+
+    <div class="actividad reveal" style="border-top:6px solid var(--coral)">
+      <span class="kicker coral">🎮 Reto 3 · ¿Inclusivo o no inclusivo?</span>
+      <h3>Clasifica cada frase</h3>
+      <p class="intro">
+        Lee cada frase y decide si usa un lenguaje inclusivo o si debería reformularse. Recibirás
+        una propuesta de mejora cuando corresponda. Hay 8 frases.
+      </p>
+
+      <div class="inclusivo-wrap" id="inclusivoWrap"></div>
+      <div id="incMsg"></div>
+    </div>
+  </section>
+
+  <!-- ========== RETO 4: GESTOR DEL TIEMPO ========== -->
+  <section id="tiempo">
+    <div class="sec-head reveal">
+      <span class="kicker azul">Bloque 4</span>
+      <h2>⏱️ Gestiona el tiempo de tu presentación</h2>
+      <p class="lead">
+        En una presentación, <strong>el tiempo es limitado</strong>. Hay que repartirlo de forma
+        inteligente entre las distintas partes para no pasarse ni quedarse corto. La gestión del
+        tiempo es una de las habilidades más valoradas al presentar.
+      </p>
+    </div>
+
+    <div class="teoria azul reveal">
+      <h3><span class="th-ico">⏱️</span> Gestión del tiempo en presentaciones</h3>
+      <p>
+        En una presentación, el tiempo es un recurso tan importante como el contenido. Pasarse del
+        tiempo asignado es una falta de respeto hacia la audiencia y hacia los demás ponentes.
+        Quedarse muy corto tampoco es bueno: transmite improvisación y deja huecos sin cubrir.
+      </p>
+
+      <h4>¿Por qué es tan importante gestionar el tiempo?</h4>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>🤝 Respeto a la audiencia</h5>
+          <p>Las personas que escuchan tienen su propio tiempo. Pasarse es no respetarlo.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🎯 Rigor profesional</h5>
+          <p>Un profesional sabe ajustar su mensaje al tiempo disponible.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>📊 Cobertura del contenido</h5>
+          <p>Si te pasas, cortas partes esenciales. Si te quedas corto, no dices todo lo importante.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🧠 Control emocional</h5>
+          <p>Saber que controlas el tiempo reduce los nervios y mejora la presentación.</p>
+        </div>
+      </div>
+
+      <h4>La regla del 90%</h4>
+      <p>
+        Una regla muy útil: <strong>prepara siempre el contenido para cubrir un 90% del tiempo
+        asignado</strong>. Así te queda un margen del 10% para:
+      </p>
+      <ul>
+        <li>Imprevistos técnicos (que el proyector no funcione).</li>
+        <li>Preguntas del público que alarguen la sesión.</li>
+        <li>Improvisaciones o cambios de última hora.</li>
+        <li>Respirar y no ir con prisa.</li>
+      </ul>
+
+      <h4>Cómo repartir el tiempo entre las partes</h4>
+      <p>
+        Para una presentación estándar de <strong>5 minutos</strong>, un reparto razonable podría
+        ser:
+      </p>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Parte</th>
+          <th>Duración</th>
+          <th>% del total</th>
+        </tr>
+        <tr>
+          <td><strong>Apertura y gancho</strong></td>
+          <td>30 segundos</td>
+          <td>10%</td>
+        </tr>
+        <tr>
+          <td><strong>Problema y contexto</strong></td>
+          <td>50 segundos</td>
+          <td>17%</td>
+        </tr>
+        <tr>
+          <td><strong>Solución y demostración</strong></td>
+          <td>2 minutos</td>
+          <td>40%</td>
+        </tr>
+        <tr>
+          <td><strong>Valor diferencial e impacto</strong></td>
+          <td>1 minuto</td>
+          <td>20%</td>
+        </tr>
+        <tr>
+          <td><strong>Cierre y llamada a la acción</strong></td>
+          <td>40 segundos</td>
+          <td>13%</td>
+        </tr>
+      </table>
+
+      <h4>La regla del 40% para la solución</h4>
+      <p>
+        En cualquier presentación técnica, <strong>la solución debe ocupar alrededor del 40% del
+        tiempo</strong>. Es la parte que más interesa a la audiencia. Si dedicas menos, parecerá
+        que no has trabajado lo suficiente en la solución. Si dedicas más, desequilibras el
+        discurso.
+      </p>
+
+      <h4>Técnicas para no pasarse del tiempo</h4>
+      <ul>
+        <li><strong>Ensayar en voz alta</strong> con cronómetro. Es la única forma de saber cuánto duras de verdad.</li>
+        <li><strong>Marcar puntos de control:</strong> "a los 2 minutos debería estar hablando de la solución".</li>
+        <li><strong>Preparar versiones reducidas:</strong> si te quedas sin tiempo, tener preparada una versión de 3 minutos.</li>
+        <li><strong>Cronómetro visible:</strong> si puedes, tener un reloj a la vista durante la presentación.</li>
+        <li><strong>Cortar por lo accesorio:</strong> si vas justo, elimina anécdotas y ejemplos secundarios.</li>
+        <li><strong>Simplificar diapositivas:</strong> una idea por diapositiva, no saturar.</li>
+      </ul>
+
+      <h4>Qué hacer si te has pasado del tiempo</h4>
+      <ol>
+        <li><strong>No aceleres:</strong> hablar más rápido es peor que saltarse contenido.</li>
+        <li><strong>Prioriza:</strong> salta directamente a la parte más importante del cierre.</li>
+        <li><strong>Anuncia:</strong> "Voy a ir directamente al cierre para no pasarme del tiempo".</li>
+        <li><strong>No te disculpes en exceso:</strong> reconocer el desfase y seguir es suficiente.</li>
+        <li><strong>En la siguiente, ajusta:</strong> aprende de la experiencia.</li>
+      </ol>
+
+      <h4>Qué hacer si te has quedado corto</h4>
+      <ul>
+        <li><strong>No te pongas nervioso:</strong> el público no sabe cuánto ibas a durar.</li>
+        <li><strong>Amplía con ejemplos:</strong> un ejemplo bien contado añade valor.</li>
+        <li><strong>Da espacio a preguntas:</strong> si has terminado pronto, ofrece un turno de preguntas.</li>
+        <li><strong>Reflexiona:</strong> en la siguiente presentación, añade algo más de contenido.</li>
+      </ul>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> gestionar el tiempo no es mirar el reloj constantemente:
+        es <strong>ensayar</strong> hasta que la duración sea natural. Una presentación que dura
+        justo lo previsto transmite dominio y profesionalidad.
+      </div>
+
+      <h4>El ritmo de la presentación</h4>
+      <p>
+        Además del tiempo total, hay que cuidar el <strong>ritmo</strong>. Un buen ritmo:
+      </p>
+      <ul>
+        <li>Alterna momentos más densos con otros más ligeros.</li>
+        <li>Hace pausas después de las ideas clave.</li>
+        <li>No va siempre a la misma velocidad: modula el tempo.</li>
+        <li>Respeta el silencio: una pausa breve refuerza el mensaje.</li>
+      </ul>
+    </div>
+
+    <div class="actividad reveal" style="border-top:6px solid var(--azul)">
+      <span class="kicker azul">🎮 Reto 4 · Reparte 5 minutos</span>
+      <h3>Distribuye el tiempo entre las 5 partes de tu presentación</h3>
+      <p class="intro">
+        Tienes <strong>5 minutos</strong> para presentar tu proyecto tecnológico al claustro de
+        profesores. Ajusta los deslizadores de cada sección. El tiempo total no puede pasar de
+        5 minutos y cada sección tiene una recomendación orientativa.
+      </p>
+
+      <div class="tiempo-wrap">
+        <div class="tiempo-total">
+          <span class="tt-lbl">⏱️ Tiempo total asignado</span>
+          <span class="tt-num" id="tiempoTotal">0 / 5:00</span>
+        </div>
+        <div id="tiempoSecciones"></div>
+        <div id="tiempoMsg"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== RETO 5: ADAPTA TU MENSAJE ========== -->
+  <section id="audiencia">
+    <div class="sec-head reveal">
+      <span class="kicker violeta">Bloque 5</span>
+      <h2>👥 Adapta tu mensaje a cada audiencia</h2>
+      <p class="lead">
+        El <strong>mismo proyecto</strong> no se presenta igual a un tribunal técnico, a tus
+        compañeros de clase o a un grupo de personas mayores del barrio. El <strong>registro</strong>,
+        los <strong>ejemplos</strong> y el <strong>nivel técnico</strong> deben adaptarse al
+        público que tienes delante.
+      </p>
+    </div>
+
+    <div class="teoria violeta reveal">
+      <h3><span class="th-ico">👥</span> Adaptación del discurso a la audiencia</h3>
+      <p>
+        La <strong>adaptación a la audiencia</strong> es la capacidad de ajustar el mensaje,
+        el registro, los ejemplos y el nivel técnico al público concreto que tienes delante. Es
+        una de las habilidades más importantes de la comunicación profesional.
+      </p>
+
+      <h4>¿Por qué hay que adaptarse a la audiencia?</h4>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>🎯 Para que entiendan</h5>
+          <p>Si usas un lenguaje inadecuado, la audiencia no entiende el mensaje.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>💡 Para que les interese</h5>
+          <p>Si no conectas con sus inquietudes, desconectan en los primeros 30 segundos.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🤝 Para que confíen</h5>
+          <p>Una audiencia bien tratada confía más en quien habla.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>📢 Para conseguir algo</h5>
+          <p>La llamada a la acción solo funciona si la audiencia entiende por qué es relevante para ella.</p>
+        </div>
+      </div>
+
+      <h4>Las 5 variables a adaptar</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Variable</th>
+          <th>Qué ajustar</th>
+          <th>Ejemplo</th>
+        </tr>
+        <tr>
+          <td><strong>Registro lingüístico</strong></td>
+          <td>Coloquial, divulgativo, técnico, formal.</td>
+          <td>A un tribunal técnico: registro formal y preciso. A vecinos: divulgativo.</td>
+        </tr>
+        <tr>
+          <td><strong>Nivel técnico</strong></td>
+          <td>Profundidad en los detalles técnicos.</td>
+          <td>A ingenieros: especificar sensores y algoritmos. A público general: hablar de "lo que hace".</td>
+        </tr>
+        <tr>
+          <td><strong>Ejemplos y analogías</strong></td>
+          <td>Referencias cercanas al público.</td>
+          <td>A personas mayores: ejemplos cotidianos. A compañeros: ejemplos del instituto.</td>
+        </tr>
+        <tr>
+          <td><strong>Datos y métricas</strong></td>
+          <td>Qué datos interesan a cada audiencia.</td>
+          <td>A financiadores: usuarios, mercado, costes. A usuarios: beneficios concretos.</td>
+        </tr>
+        <tr>
+          <td><strong>Tono y estilo</strong></td>
+          <td>Formalidad, emotividad, humor.</td>
+          <td>A un concurso: entusiasta y convincente. A un informe técnico: sobrio y riguroso.</td>
+        </tr>
+      </table>
+
+      <h4>Tipos de audiencia y cómo adaptarse</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Audiencia</th>
+          <th>Qué le interesa</th>
+          <th>Cómo hablarle</th>
+        </tr>
+        <tr>
+          <td><strong>⚖️ Tribunal técnico</strong></td>
+          <td>Rigor, datos, viabilidad técnica.</td>
+          <td>Formal, preciso, con argumentos y datos.</td>
+        </tr>
+        <tr>
+          <td><strong>💰 Financiadores</strong></td>
+          <td>Mercado, usuarios, retorno, tracción.</td>
+          <td>Con números concretos y datos de impacto.</td>
+        </tr>
+        <tr>
+          <td><strong>🧑‍🎓 Compañeros/as</strong></td>
+          <td>Cercanía, ejemplos prácticos, valor para ellos.</td>
+          <td>Cercano, con ejemplos cotidianos y humor.</td>
+        </tr>
+        <tr>
+          <td><strong>👵 Personas mayores</strong></td>
+          <td>Beneficio directo, sencillez, utilidad.</td>
+          <td>Claro, con lenguaje sencillo y ejemplos prácticos.</td>
+        </tr>
+        <tr>
+          <td><strong>👩‍🏫 Profesorado</strong></td>
+          <td>Valor educativo, organización, aprendizajes.</td>
+          <td>Profesional pero cercano, destacando el aprendizaje.</td>
+        </tr>
+        <tr>
+          <td><strong>📱 Audiencia en redes</strong></td>
+          <td>Impacto rápido, dato curioso, gancho visual.</td>
+          <td>Breve, con emojis, hashtags y llamada a la acción clara.</td>
+        </tr>
+      </table>
+
+      <h4>Cómo conocer a tu audiencia</h4>
+      <p>
+        Antes de presentar, conviene hacerse algunas preguntas básicas:
+      </p>
+      <ol>
+        <li><strong>¿Quiénes son?</strong> Edad, formación, intereses, contexto.</li>
+        <li><strong>¿Qué saben ya?</strong> Cuánto conocen del tema.</li>
+        <li><strong>¿Qué necesitan?</strong> Qué buscan en tu presentación.</li>
+        <li><strong>¿Qué esperan?</strong> Qué formato, qué duración, qué tono.</li>
+        <li><strong>¿Qué les puede molestar?</strong> Qué temas evitar o tratar con cuidado.</li>
+      </ol>
+
+      <h4>Errores frecuentes al adaptar el mensaje</h4>
+      <ul>
+        <li><strong>No adaptarse en absoluto:</strong> usar el mismo discurso para cualquier público.</li>
+        <li><strong>Infravalorar a la audiencia:</strong> explicar cosas demasiado básicas.</li>
+        <li><strong>Sobrevalorarla:</strong> dar por supuesto conocimiento que no tiene.</li>
+        <li><strong>Perder rigor por adaptar:</strong> simplificar tanto que se digan cosas incorrectas.</li>
+        <li><strong>Adaptar solo al principio:</strong> empezar adaptado y luego ignorar al público.</li>
+      </ul>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> no existe un discurso universal. El mismo proyecto requiere
+        versiones distintas según quién escuche. <strong>Adaptar el mensaje no es rebajar su
+        calidad</strong>: es hacerlo llegar a donde tiene que llegar.
+      </div>
+    </div>
+
+    <div class="actividad reveal" style="border-top:6px solid var(--violeta)">
+      <span class="kicker violeta">🎮 Reto 5 · Adapta el discurso</span>
+      <h3>¿Qué versión del mensaje usarías con cada audiencia?</h3>
+      <p class="intro">
+        Cada situación te presenta una audiencia distinta. Elige la versión del mensaje más
+        adecuada para esa audiencia en concreto.
+      </p>
+
+      <div class="adaptar-wrap" id="adaptarWrap"></div>
+      <div id="adaptarMsg"></div>
+    </div>
+
+    <!-- VOCABULARIO -->
+    <div class="actividad reveal" style="border-top:6px solid var(--oliva-oscuro)">
+      <span class="kicker">📚 Vocabulario clave</span>
+      <h3>Diccionario interactivo</h3>
+      <p class="intro">Pulsa sobre cualquier término para ver su explicación detallada.</p>
+      <div class="voc-grid" id="vocGrid"></div>
+      <div id="vocDef"></div>
+    </div>
+  </section>
+
+  <!-- ========== QUIZ ========== -->
+  <section id="quiz">
+    <div class="sec-head reveal">
+      <span class="kicker coral">🎯 Reto 6 · Cuestionario final</span>
+      <h2>Comprueba lo que has aprendido</h2>
+      <p class="lead">10 preguntas sobre formatos, pitch, lenguaje inclusivo, gestión del tiempo y adaptación a la audiencia.</p>
+    </div>
+    <div id="quizContainer"></div>
+    <div id="quizResult" style="display:none;text-align:center;padding:1.8rem;border-radius:var(--radio);color:#fff;background:linear-gradient(135deg,#365314,#1a2e05);box-shadow:var(--sombra-lg)">
+      <div id="quizScore" style="font-size:3rem;font-weight:900;line-height:1;margin-bottom:.4rem">0/10</div>
+      <h3 id="quizTitle" style="color:#fff">¡Buen trabajo!</h3>
+      <p id="quizMsg" style="color:#d9f99d;max-width:560px;margin:0 auto"></p>
+    </div>
+  </section>
+
+  <!-- ========== CERTIFICADO ========== -->
+  <section id="certificado">
+    <div id="certificado">
+      <h2>🏆 Tu certificado de aprovechamiento</h2>
+      <p class="sub">Al completar las actividades obtendrás un certificado personalizado con tus resultados, que podrás descargar en PDF.</p>
+
+      <div class="cert-name" id="certNombre">—</div>
+
+      <div class="cert-stats" id="certStats"></div>
+
+      <div class="cert-warn" id="certWarn" style="display:none">
+        ⚠️ Aún no has completado ninguna actividad. Termina al menos una para generar tu certificado.
+      </div>
+
+      <button class="btn btn-coral" id="btnCertificado" style="font-size:1rem;padding:.95rem 2rem;background:linear-gradient(135deg,#65a30d,#365314);box-shadow:0 10px 26px rgba(101,163,13,.4)">
+        📄 Descargar certificado en PDF
+      </button>
+      <p class="cert-note">El PDF se genera como imagen rasterizada: el texto no es editable ni seleccionable, garantizando su integridad.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p style="margin-bottom:.4rem"><strong>Presenta y Difunde</strong> · Formatos · Pitch · Lenguaje inclusivo · Audiencia</p>
+  <p style="margin:0;font-size:.8rem">Aplicación educativa interactiva · Tu progreso se guarda en este navegador</p>
+</footer>
+
+<div id="toast"></div>
+
+<script>
+/* ================================================================
+   1. ESTADO PERSISTENTE (extendido con detalles de actividades)
+================================================================ */
+const LS_KEY = 'presentaDifunde_v2';
+const RETOS_TOTALES = 6;
+
+function estadoVacio(){
+  return {
+    nombre: '',
+    retos: [],
+    scores: { formato:0, pitch:0, inclusivo:0, tiempo:0, audiencia:0, quiz:0 },
+    iniciado: null,
+    detalles: {
+      formato: {},
+      pitch: { colocados: [] },
+      inclusivo: {},
+      tiempo: { valores: {}, completado: false },
+      adaptar: {},
+      quiz: {}
+    }
+  };
+}
+
+let estado = estadoVacio();
+
+function guardarEstado(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(estado)); }catch(e){} }
+
+function cargarEstado(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(!raw) return;
+    const d = JSON.parse(raw);
+    if(!d || typeof d !== 'object') return;
+
+    estado.nombre   = d.nombre || '';
+    estado.retos    = Array.isArray(d.retos) ? d.retos : [];
+    estado.scores   = Object.assign({formato:0,pitch:0,inclusivo:0,tiempo:0,audiencia:0,quiz:0}, d.scores || {});
+    estado.iniciado = d.iniciado || null;
+
+    const det = d.detalles || {};
+    estado.detalles = {
+      formato:  (det.formato && typeof det.formato === 'object') ? det.formato : {},
+      pitch:    (det.pitch && typeof det.pitch === 'object') ? det.pitch : { colocados: [] },
+      inclusivo:(det.inclusivo && typeof det.inclusivo === 'object') ? det.inclusivo : {},
+      tiempo:   (det.tiempo && typeof det.tiempo === 'object') ? det.tiempo : { valores: {}, completado: false },
+      adaptar:  (det.adaptar && typeof det.adaptar === 'object') ? det.adaptar : {},
+      quiz:     (det.quiz && typeof det.quiz === 'object') ? det.quiz : {}
+    };
+    if(!Array.isArray(estado.detalles.pitch.colocados)) estado.detalles.pitch.colocados = [];
+    if(!estado.detalles.tiempo.valores) estado.detalles.tiempo.valores = {};
+  }catch(e){}
+}
+
+/* ================================================================
+   2. PROGRESO
+================================================================ */
+function actualizarProgreso(){
+  const n = estado.retos.length;
+  document.getElementById('progresoPill').textContent = n + ' / ' + RETOS_TOTALES + ' retos';
+  document.getElementById('progresoBarra').style.width = (n / RETOS_TOTALES * 100) + '%';
+}
+function completarReto(id, msg){
+  const isNew = !estado.retos.includes(id);
+  if(isNew) estado.retos.push(id);
+  guardarEstado();
+  actualizarProgreso();
+  actualizarCertificado();
+  if(msg && isNew) toast(msg);
+}
+let toastTimer;
+function toast(texto){
+  const t = document.getElementById('toast');
+  t.innerHTML = '🏅 ' + texto;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 3500);
+}
+
+/* ================================================================
+   3. LOGIN
+================================================================ */
+const overlay = document.getElementById('loginOverlay');
+const card = document.getElementById('loginCard');
+
+function mostrarLogin(){
+  if(estado.nombre){
+    card.innerHTML = `
+      <span class="login-emoji">🎤</span>
+      <h1>¡Hola de nuevo!</h1>
+      <p class="sub">Hemos guardado tu progreso y tus respuestas en este navegador.</p>
+      <div class="welcome-back">
+        Continuar como <strong>${escaparHTML(estado.nombre)}</strong><br>
+        <span style="font-size:.82rem">Retos completados: ${estado.retos.length} / ${RETOS_TOTALES}</span>
+      </div>
+      <div class="login-btns">
+        <button class="btn btn-primary" id="btnContinuar">▶ Continuar</button>
+        <button class="btn btn-ghost" id="btnCambiar" style="background:#f1f5f9;color:#0f172a;border-color:#e2e8f0">👤 Cambiar nombre</button>
+      </div>
+    `;
+    document.getElementById('btnContinuar').addEventListener('click', iniciarApp);
+    document.getElementById('btnCambiar').addEventListener('click', ()=>{
+      estado = estadoVacio();
+      guardarEstado();
+      resetearActividades();
+      renderLoginForm();
+    });
+  } else {
+    renderLoginForm();
+  }
+}
+
+function renderLoginForm(){
+  card.innerHTML = `
+    <span class="login-emoji">🎤</span>
+    <h1>Bienvenido/a a Presenta y Difunde</h1>
+    <p class="sub">Antes de empezar, dinos cómo te llamas. Tu progreso y tus respuestas se guardarán en este navegador para que puedas continuar cuando quieras.</p>
+    <input type="text" id="inputNombre" placeholder="Escribe tu nombre" maxlength="40" autocomplete="off">
+    <button class="btn btn-primary" id="btnEntrar">🚀 Comenzar la aventura</button>
+    <div class="login-error" id="loginError"></div>
+  `;
+  const inp = document.getElementById('inputNombre');
+  const btn = document.getElementById('btnEntrar');
+  const err = document.getElementById('loginError');
+  const submit = ()=>{
+    const v = inp.value.trim();
+    if(v.length < 2){ err.textContent = 'Por favor, introduce al menos 2 caracteres.'; inp.focus(); return; }
+    estado.nombre = v;
+    estado.iniciado = new Date().toISOString();
+    guardarEstado();
+    iniciarApp();
+  };
+  btn.addEventListener('click', submit);
+  inp.addEventListener('keydown', e=>{ if(e.key === 'Enter') submit(); });
+  setTimeout(()=>inp.focus(), 200);
+}
+
+function iniciarApp(){
+  overlay.classList.add('hidden');
+  document.body.classList.remove('locked');
+  document.getElementById('navUserName').textContent = estado.nombre;
+  document.getElementById('heroNombre').textContent = estado.nombre;
+  actualizarProgreso();
+  actualizarCertificado();
+}
+
+function escaparHTML(s){
+  return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ================================================================
+   4. REVEAL
+================================================================ */
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach((e,i)=>{
+    if(e.isIntersecting){
+      setTimeout(()=>e.target.classList.add('in'), i*70);
+      io.unobserve(e.target);
+    }
+  });
+},{threshold:.12, rootMargin:'0px 0px -40px 0px'});
+
+/* ================================================================
+   5. NAV ACTIVO
+================================================================ */
+const secciones = [...document.querySelectorAll('section[id]')];
+const navLinks = [...document.querySelectorAll('.nav-links a')];
+window.addEventListener('scroll', ()=>{
+  let actual = '';
+  secciones.forEach(s=>{ if(window.scrollY >= s.offsetTop - 120) actual = s.id; });
+  navLinks.forEach(a=>a.classList.toggle('active', a.getAttribute('href') === '#'+actual));
+});
+
+/* ================================================================
+   6. RETO 1 · FORMATO Y CANAL (con restauración de estado)
+================================================================ */
+const formatoData = [
+  {
+    id:'f1', ico:'📊', titulo:'Explicar de un vistazo los datos de tu proyecto',
+    desc:'Has analizado los datos de contaminación acústica de tu barrio durante 3 meses. Necesitas que cualquier persona vea la conclusión en 10 segundos.',
+    requisitos:['Visual','Rápida de leer','Compartible'],
+    opciones:[
+      {v:'infografia', t:'Infografía digital', ok:true, why:'Una infografía organiza visualmente los datos con gráficos, iconos y colores. Perfecta para comunicar una conclusión en pocos segundos.'},
+      {v:'informe', t:'Informe técnico de 20 páginas', ok:false, why:'Un informe extenso es útil para documentar, pero no permite "ver de un vistazo". No es adecuado para este objetivo.'},
+      {v:'podcast', t:'Podcast de audio de 15 minutos', ok:false, why:'Un podcast es buen formato para explicar, pero no permite ver datos de un vistazo: solo se oyen.'}
+    ]
+  },
+  {
+    id:'f2', ico:'🎬', titulo:'Mostrar cómo funciona tu robot paso a paso',
+    desc:'Has construido un robot que clasifica residuos. Quieres mostrar su funcionamiento real, con movimiento, y explicar cómo lo hiciste.',
+    requisitos:['Visual y dinámico','Explicativo','Compartible en redes'],
+    opciones:[
+      {v:'video', t:'Vídeo corto (2-3 min) con narración', ok:true, why:'El vídeo permite ver el robot en acción y escuchar la explicación. Ideal para demostrar funcionamiento y compartir por redes o web.'},
+      {v:'texto', t:'Artículo escrito en blog', ok:false, why:'El texto puede explicar, pero no permite "ver cómo funciona" con movimiento. Menos efectivo para demostrar un robot.'},
+      {v:'presentacion', t:'Presentación con diapositivas estáticas', ok:false, why:'Las diapositivas estáticas no muestran movimiento. No es el mejor formato para demostrar funcionamiento.'}
+    ]
+  },
+  {
+    id:'f3', ico:'🎤', titulo:'Convencer a un tribunal de que tu solución merece financiación',
+    desc:'Participas en un concurso escolar de emprendimiento. Tienes que convencer al jurado en 5 minutos y responder a sus preguntas.',
+    requisitos:['Persuasivo','Interactivo','Limitado en tiempo'],
+    opciones:[
+      {v:'oral', t:'Presentación oral en directo con apoyo visual', ok:true, why:'La presentación oral permite argumentar, ver la reacción del jurado y responder preguntas en directo. Es el formato estándar de los pitch.'},
+      {v:'email', t:'Enviar un correo al jurado', ok:false, why:'El correo no permite convencer en directo ni responder preguntas. Además, el jurado espera una presentación en vivo.'},
+      {v:'poster', t:'Un póster que el jurado leerá por su cuenta', ok:false, why:'El póster es útil para ferias, pero no permite argumentar ni responder preguntas.'}
+    ]
+  },
+  {
+    id:'f4', ico:'📻', titulo:'Contar la historia de cómo surgió el proyecto',
+    desc:'Quieres difundir la historia del equipo que creó la solución: cómo se conocieron, cómo superaron obstáculos y qué aprendieron.',
+    requisitos:['Narrativo','Íntimo','Personal'],
+    opciones:[
+      {v:'podcast', t:'Podcast o audio con entrevista', ok:true, why:'El podcast es perfecto para contar historias: la voz transmite emociones y permite una narración profunda con detalles personales.'},
+      {v:'infografia', t:'Infografía con líneas temporales', ok:false, why:'Una infografía puede mostrar la cronología, pero no permite desarrollar el relato personal y emocional.'},
+      {v:'tabla', t:'Tabla comparativa de hitos', ok:false, why:'Una tabla es muy fría para contar una historia humana. No es el formato adecuado.'}
+    ]
+  },
+  {
+    id:'f5', ico:'🌐', titulo:'Publicar los detalles técnicos para que otros puedan replicarlo',
+    desc:'Tu solución es un sistema de riego inteligente con Arduino. Quieres que otras personas o centros puedan construirlo y mejorarlo.',
+    requisitos:['Detallado','Replicable','Buscable en internet'],
+    opciones:[
+      {v:'blog', t:'Artículo en blog o repositorio abierto con esquemas y código', ok:true, why:'Un artículo técnico con esquemas, materiales y código es lo más útil para que otras personas puedan replicar el proyecto. Además, es buscable en internet.'},
+      {v:'video', t:'Solo un vídeo sin documentación escrita', ok:false, why:'Un vídeo puede complementar, pero sin documentación escrita (materiales, esquemas, código) la replicación se vuelve muy difícil.'},
+      {v:'charla', t:'Charla informal en el bar', ok:false, why:'La charla informal no deja rastro buscable. Quien quiera replicarlo después no podrá encontrar la información.'}
+    ]
+  },
+  {
+    id:'f6', ico:'🎨', titulo:'Presentar el proyecto en la feria científica del centro',
+    desc:'La feria dura un día completo. Los visitantes van pasando por los puestos, se detienen pocos minutos y hacen preguntas.',
+    requisitos:['Autónomo','Visual','Con contacto directo'],
+    opciones:[
+      {v:'poster', t:'Póster grande + maqueta + presentación breve en persona', ok:true, why:'En una feria, el póster y la maqueta captan la atención y permiten que el equipo explique de viva voz a quien se detiene.'},
+      {v:'informe', t:'Informe de 30 páginas para leer', ok:false, why:'Nadie va a leer 30 páginas en una feria. El formato debe ser visual y rápido de entender.'},
+      {v:'email', t:'Enviar el proyecto por email a los visitantes', ok:false, why:'El email no tiene sentido en una feria presencial. El contacto es directo.'}
+    ]
+  }
+];
+
+let formatoRespondidas = 0, formatoAciertos = 0;
+
+function initFormato(){
+  const cont = document.getElementById('formatoWrap');
+  if(!cont) return;
+  cont.innerHTML = '';
+  formatoRespondidas = 0; formatoAciertos = 0;
+
+  formatoData.forEach((item)=>{
+    const div = document.createElement('div');
+    div.className = 'formato-card';
+
+    const saved = estado.detalles.formato[item.id] || {};
+    let orden = saved.orden;
+    if(!Array.isArray(orden) || orden.length !== item.opciones.length){
+      orden = [...item.opciones].sort(()=>Math.random()-0.5).map(o=>o.v);
+      if(!estado.detalles.formato[item.id]) estado.detalles.formato[item.id] = {};
+      estado.detalles.formato[item.id].orden = orden;
+      guardarEstado();
+    }
+    const opsOrdered = orden.map(v => item.opciones.find(o => o.v === v)).filter(Boolean);
+    const iconos = {infografia:'📊', informe:'📄', podcast:'🎙️', video:'🎬', texto:'📝', presentacion:'🖥️', oral:'🎤', email:'📧', poster:'🖼️', blog:'🌐', charla:'🗣️', tabla:'📋'};
+
+    div.innerHTML = `
+      <div class="fc-head">
+        <span class="fc-ico">${item.ico}</span>
+        <div>
+          <p class="fc-titulo">${item.titulo}</p>
+          <p class="fc-desc">${item.desc}</p>
+          <div class="fc-requisitos">
+            ${item.requisitos.map(r=>`<span class="fc-req">${r}</span>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div class="fc-opciones">
+        ${opsOrdered.map(o=>`
+          <button class="fc-btn" data-id="${item.id}" data-v="${o.v}">
+            <span class="fco-ico">${iconos[o.v] || '▶️'}</span>
+            <span>${o.t}</span>
+          </button>
+        `).join('')}
+      </div>
+      <div class="fc-fb"></div>
+    `;
+    cont.appendChild(div);
+
+    const btns = div.querySelectorAll('.fc-btn');
+    const fb = div.querySelector('.fc-fb');
+
+    const aplicarEstado = (seleccion, acierto) => {
+      btns.forEach(x=>{
+        x.disabled = true;
+        const ox = item.opciones.find(o=>o.v === x.dataset.v);
+        if(ox && ox.ok) x.classList.add('correct');
+      });
+      if(!acierto){
+        const selBtn = [...btns].find(x => x.dataset.v === seleccion);
+        if(selBtn) selBtn.classList.add('wrong');
+      }
+      const op = item.opciones.find(o => o.v === seleccion);
+      fb.innerHTML = (acierto ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>No es el mejor formato.</strong> ') + (op ? op.why : '');
+      fb.classList.add('show');
+      div.classList.add('done');
+    };
+
+    if(saved.respondido){
+      aplicarEstado(saved.seleccion, saved.acierto);
+      formatoRespondidas++;
+      if(saved.acierto) formatoAciertos++;
+    } else {
+      btns.forEach(b=>{
+        b.addEventListener('click', ()=>{
+          const op = item.opciones.find(o=>o.v === b.dataset.v);
+          const acierto = !!(op && op.ok);
+
+          estado.detalles.formato[item.id] = Object.assign({}, estado.detalles.formato[item.id], {
+            respondido: true,
+            seleccion: b.dataset.v,
+            acierto: acierto
+          });
+          guardarEstado();
+
+          aplicarEstado(b.dataset.v, acierto);
+          formatoRespondidas++;
+          if(acierto) formatoAciertos++;
+
+          if(formatoRespondidas === formatoData.length){
+            if(formatoAciertos > estado.scores.formato){
+              estado.scores.formato = formatoAciertos;
+              guardarEstado();
+              actualizarCertificado();
+            }
+            mostrarMsgFormato();
+            completarReto('formato', '¡Selección de formato y canal completada!');
+          }
+        });
+      });
+    }
+  });
+
+  if(formatoRespondidas === formatoData.length){
+    if(formatoAciertos > estado.scores.formato){
+      estado.scores.formato = formatoAciertos;
+      guardarEstado();
+      actualizarCertificado();
+    }
+    mostrarMsgFormato();
+  }
+}
+
+function mostrarMsgFormato(){
+  document.getElementById('formatoMsg').innerHTML =
+    `Has acertado <strong>${formatoAciertos} de ${formatoData.length}</strong> casos. ` +
+    (formatoAciertos >= 5 ? '¡Sabes elegir el formato y canal adecuados!' : 'Repasa los casos fallados.');
+}
+
+/* ================================================================
+   7. RETO 2 · PITCH (con restauración de estado)
+================================================================ */
+const pitchData = [
+  {id:'p1', nombre:'1. Gancho inicial', ico:'🎣',
+   desc:'Frase o dato impactante que capta la atención en los primeros 10 segundos. Ejemplo: "Cada año se tiran 50 millones de toneladas de residuos electrónicos."'},
+  {id:'p2', nombre:'2. Problema', ico:'⚠️',
+   desc:'Descripción clara y concreta del problema real que existe. ¿A quién afecta? ¿Cuánto? ¿Por qué es importante?'},
+  {id:'p3', nombre:'3. Solución', ico:'💡',
+   desc:'Presentación de tu propuesta: qué has creado y cómo resuelve exactamente el problema planteado.'},
+  {id:'p4', nombre:'4. Propuesta de valor', ico:'💎',
+   desc:'Qué te diferencia: por qué tu solución es mejor, más barata, más accesible o más sostenible que las alternativas.'},
+  {id:'p5', nombre:'5. Demostración', ico:'📽️',
+   desc:'Mostrar la solución funcionando: vídeo, demo en vivo, prototipo, datos reales de pruebas.'},
+  {id:'p6', nombre:'6. Llamada a la acción', ico:'📣',
+   desc:'Qué quieres que haga tu audiencia: financiar, colaborar, usar la solución, difundirla, votarla...'}
+];
+
+let pitchActualIdx = 0;
+
+function initPitch(){
+  const prog = document.getElementById('pitchProgreso');
+  const cards = document.getElementById('pitchCards');
+  if(!prog || !cards) return;
+  prog.innerHTML = '';
+  cards.innerHTML = '';
+
+  const colocados = estado.detalles.pitch.colocados || [];
+  pitchActualIdx = colocados.length;
+
+  pitchData.forEach((p, i)=>{
+    const slot = document.createElement('div');
+    slot.className = 'pitch-slot';
+    if(i < colocados.length){
+      slot.classList.add('lleno');
+      const placedP = pitchData.find(x => x.id === colocados[i]);
+      slot.innerHTML = `<div class="ps-num">${i+1}</div><div class="ps-txt">${placedP ? placedP.nombre.replace(/^\d+\.\s*/, '') : '—'}</div>`;
+    } else if(i === colocados.length){
+      slot.classList.add('activo');
+      slot.innerHTML = `<div class="ps-num">${i+1}</div><div class="ps-txt">—</div>`;
+    } else {
+      slot.innerHTML = `<div class="ps-num">${i+1}</div><div class="ps-txt">—</div>`;
+    }
+    prog.appendChild(slot);
+  });
+
+  const mezcla = [...pitchData].sort(()=>Math.random()-0.5);
+  mezcla.forEach(p=>{
+    const el = document.createElement('div');
+    el.className = 'pitch-card';
+    el.dataset.id = p.id;
+    if(colocados.includes(p.id)) el.classList.add('usado');
+    el.innerHTML = `
+      <span class="pc-ico">${p.ico}</span>
+      <div class="pc-info">
+        <div class="pc-nombre">${p.nombre.replace(/^\d+\.\s*/, '')}</div>
+        <div class="pc-desc">${p.desc}</div>
+      </div>
+    `;
+    el.addEventListener('click', ()=>clickPitch(el));
+    cards.appendChild(el);
+  });
+
+  const msg = document.getElementById('pitchMsg');
+  if(pitchActualIdx === pitchData.length){
+    msg.innerHTML = '🎉 ¡Has construido un pitch perfectamente estructurado!';
+    completarReto('pitch', '¡Pitch ordenado correctamente!');
+  } else if(pitchActualIdx > 0){
+    msg.textContent = `✅ Llevas ${pitchActualIdx}/6. Continúa donde lo dejaste.`;
+  } else {
+    msg.textContent = '';
+  }
+}
+
+function clickPitch(el){
+  if(el.classList.contains('usado')) return;
+  const idx = pitchActualIdx;
+  const esperada = pitchData[idx];
+  const clicked = el.dataset.id;
+  const msg = document.getElementById('pitchMsg');
+
+  if(clicked === esperada.id){
+    el.classList.add('usado');
+    const slot = document.querySelectorAll('.pitch-slot')[idx];
+    slot.classList.remove('activo');
+    slot.classList.add('lleno');
+    slot.querySelector('.ps-txt').textContent = esperada.nombre.replace(/^\d+\.\s*/, '');
+
+    estado.detalles.pitch.colocados.push(esperada.id);
+    guardarEstado();
+
+    pitchActualIdx++;
+    if(pitchActualIdx < pitchData.length){
+      document.querySelectorAll('.pitch-slot')[pitchActualIdx].classList.add('activo');
+      msg.textContent = `✅ ¡Bien! Llevas ${pitchActualIdx}/6. Continúa.`;
+    }
+
+    if(pitchActualIdx > estado.scores.pitch){
+      estado.scores.pitch = pitchActualIdx;
+      guardarEstado();
+      actualizarCertificado();
+    }
+
+    if(pitchActualIdx === pitchData.length){
+      msg.innerHTML = '🎉 ¡Has construido un pitch perfectamente estructurado!';
+      completarReto('pitch', '¡Pitch ordenado correctamente!');
+    }
+  } else {
+    el.style.animation = 'none';
+    el.offsetHeight;
+    el.style.animation = 'shake .4s';
+    msg.innerHTML = `❌ Ese elemento no va en la posición ${idx + 1}.<br><span style="font-size:.82rem;color:var(--gris)">Pista: el elemento ${idx + 1} tiene que ver con <em>${esperada.desc.toLowerCase().split('.')[0]}</em></span>`;
+    setTimeout(()=>{ el.style.animation = ''; }, 500);
+  }
+}
+
+/* ================================================================
+   8. RETO 3 · LENGUAJE INCLUSIVO (con restauración de estado)
+================================================================ */
+const inclusivoData = [
+  {id:'i1', frase:'"Los alumnos interesados pueden apuntarse al taller de robótica."',
+   inclusivo:false,
+   mejora:'Mejor: "El alumnado interesado puede apuntarse al taller de robótica." Usar "alumnado" incluye a todas las personas sin marcar género.'},
+  {id:'i2', frase:'"El equipo de desarrollo está formado por tres personas: Ana, Javier y Lucía."',
+   inclusivo:true,
+   mejora:'Frase inclusiva. Nombra a las personas por su nombre sin necesidad de marcar género ni usar términos genéricos.'},
+  {id:'i3', frase:'"El técnico encargado de la instalación revisará el sistema mañana."',
+   inclusivo:false,
+   mejora:'Mejor: "El equipo técnico encargado de la instalación revisará el sistema mañana" o "La persona técnica encargada...".'},
+  {id:'i4', frase:'"Necesitamos un programador y una diseñadora para el proyecto."',
+   inclusivo:false,
+   mejora:'Mejor: "Necesitamos personal de programación y de diseño para el proyecto." Evita asignar géneros a roles profesionales.'},
+  {id:'i5', frase:'"Podéis consultar el manual para más información."',
+   inclusivo:true,
+   mejora:'Frase inclusiva. "Podéis" es la forma verbal adecuada para dirigirse a cualquier grupo.'},
+  {id:'i6', frase:'"Los usuarios avanzados pueden configurar la app a su gusto."',
+   inclusivo:false,
+   mejora:'Mejor: "Las personas usuarias avanzadas pueden configurar la app a su gusto" o "El usuario o la usuaria...". Alternativa: "Quien tenga experiencia..."'},
+  {id:'i7', frase:'"Chicos, ¿habéis terminado ya la parte de programación?"',
+   inclusivo:false,
+   mejora:'Mejor: "Equipo, ¿habéis terminado ya la parte de programación?" El término "chicos" excluye a las chicas del grupo.'},
+  {id:'i8', frase:'"El jurado valorará la originalidad, la viabilidad y el impacto social de cada propuesta."',
+   inclusivo:true,
+   mejora:'Frase inclusiva. "Jurado" y "propuesta" no marcan género y son términos adecuados para dirigirse a todas las personas.'}
+];
+
+let incRespondidas = 0, incAciertos = 0;
+
+function initInclusivo(){
+  const cont = document.getElementById('inclusivoWrap');
+  if(!cont) return;
+  cont.innerHTML = '';
+  incRespondidas = 0; incAciertos = 0;
+
+  const mezcla = [...inclusivoData].sort(()=>Math.random()-0.5);
+  mezcla.forEach((item)=>{
+    const div = document.createElement('div');
+    div.className = 'inclusivo-card';
+    div.innerHTML = `
+      <div class="inc-frase">${item.frase}</div>
+      <div class="inc-btns">
+        <button class="inc-btn" data-id="${item.id}" data-v="1">✅ Inclusivo</button>
+        <button class="inc-btn" data-id="${item.id}" data-v="0">🌈 Mejorable</button>
+      </div>
+      <div class="inc-fb"></div>
+    `;
+    cont.appendChild(div);
+
+    const btns = div.querySelectorAll('.inc-btn');
+    const fb = div.querySelector('.inc-fb');
+    const saved = estado.detalles.inclusivo[item.id] || {};
+
+    const aplicarEstado = (seleccion, acierto) => {
+      btns.forEach(x=>{
+        x.disabled = true;
+        if((x.dataset.v === '1') === item.inclusivo) x.classList.add('correct');
+      });
+      if(!acierto){
+        const selBtn = [...btns].find(x => x.dataset.v === seleccion);
+        if(selBtn) selBtn.classList.add('wrong');
+      }
+      fb.innerHTML = (acierto ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>No exactamente.</strong> ') + item.mejora;
+      fb.classList.add('show');
+      div.classList.add('done');
+    };
+
+    if(saved.respondido){
+      aplicarEstado(saved.seleccion, saved.acierto);
+      incRespondidas++;
+      if(saved.acierto) incAciertos++;
+    } else {
+      btns.forEach(b=>{
+        b.addEventListener('click', ()=>{
+          const elegido = b.dataset.v === '1';
+          const acierto = elegido === item.inclusivo;
+
+          estado.detalles.inclusivo[item.id] = { respondido: true, seleccion: b.dataset.v, acierto: acierto };
+          guardarEstado();
+
+          aplicarEstado(b.dataset.v, acierto);
+          incRespondidas++;
+          if(acierto) incAciertos++;
+
+          if(incRespondidas === inclusivoData.length){
+            if(incAciertos > estado.scores.inclusivo){
+              estado.scores.inclusivo = incAciertos;
+              guardarEstado();
+              actualizarCertificado();
+            }
+            mostrarMsgInclusivo();
+            completarReto('inclusivo', '¡Lenguaje inclusivo dominado!');
+          }
+        });
+      });
+    }
+  });
+
+  if(incRespondidas === inclusivoData.length){
+    if(incAciertos > estado.scores.inclusivo){
+      estado.scores.inclusivo = incAciertos;
+      guardarEstado();
+      actualizarCertificado();
+    }
+    mostrarMsgInclusivo();
+  }
+}
+
+function mostrarMsgInclusivo(){
+  document.getElementById('incMsg').innerHTML =
+    `Has acertado <strong>${incAciertos} de ${inclusivoData.length}</strong> frases. ` +
+    (incAciertos >= 6 ? '¡Sabes detectar y mejorar el lenguaje inclusivo!' : 'Repasa las frases falladas.');
+}
+
+/* ================================================================
+   9. RETO 4 · GESTOR DEL TIEMPO (con restauración de estado)
+================================================================ */
+const tiempoSeccionesData = [
+  {id:'ts1', nombre:'Apertura y gancho', ico:'🎣',
+   desc:'Saludo breve y dato impactante que capte la atención.', min:0.3, max:0.7, ideal:0.5},
+  {id:'ts2', nombre:'Problema y contexto', ico:'⚠️',
+   desc:'Explicar el problema real que resuelve el proyecto.', min:0.6, max:1.2, ideal:0.9},
+  {id:'ts3', nombre:'Solución y demostración', ico:'💡',
+   desc:'Presentar la solución y mostrar cómo funciona.', min:1.5, max:2.5, ideal:2.0},
+  {id:'ts4', nombre:'Valor diferencial e impacto', ico:'💎',
+   desc:'Qué te diferencia y qué impacto genera tu solución.', min:0.7, max:1.3, ideal:1.0},
+  {id:'ts5', nombre:'Cierre y llamada a la acción', ico:'📣',
+   desc:'Conclusión y petición concreta al público.', min:0.4, max:0.8, ideal:0.6}
+];
+
+let tiempoValores = {};
+
+function initTiempo(){
+  const cont = document.getElementById('tiempoSecciones');
+  if(!cont) return;
+  cont.innerHTML = '';
+  tiempoValores = {};
+
+  const savedVals = estado.detalles.tiempo.valores || {};
+
+  tiempoSeccionesData.forEach(s=>{
+    const val = (typeof savedVals[s.id] === 'number') ? savedVals[s.id] : 1;
+    tiempoValores[s.id] = val;
+
+    const div = document.createElement('div');
+    div.className = 'tiempo-seccion';
+    div.dataset.id = s.id;
+    const sliderVal = Math.round(val * 10);
+    div.innerHTML = `
+      <div class="ts-info">
+        <span class="ts-nombre">${s.ico} ${s.nombre}</span>
+        <span class="ts-desc">${s.desc}</span>
+      </div>
+      <span class="ts-val" id="tsval_${s.id}">${formatoMMSS(val)}</span>
+      <input class="tiempo-slider" type="range" min="0" max="30" step="1" value="${sliderVal}" data-id="${s.id}">
+    `;
+    cont.appendChild(div);
+    const slider = div.querySelector('input');
+    slider.addEventListener('input', ()=>{
+      const seg = parseInt(slider.value, 10) * 6;
+      tiempoValores[s.id] = seg / 60;
+      estado.detalles.tiempo.valores[s.id] = seg / 60;
+      guardarEstado();
+      actualizarTiempo();
+    });
+  });
+
+  actualizarTiempo();
+}
+
+function formatoMMSS(min){
+  const total = Math.round(min * 60);
+  const m = Math.floor(total / 60);
+  const s = total % 60;
+  return m + ':' + String(s).padStart(2, '0');
+}
+
+function actualizarTiempo(){
+  let total = 0;
+  tiempoSeccionesData.forEach(s=>{
+    const min = tiempoValores[s.id] || 0;
+    total += min;
+    const seccion = document.querySelector(`.tiempo-seccion[data-id="${s.id}"]`);
+    const valEl = document.getElementById(`tsval_${s.id}`);
+    if(valEl) valEl.textContent = formatoMMSS(min);
+    if(seccion){
+      seccion.classList.remove('ok','err');
+      const dentroRango = min >= s.min && min <= s.max;
+      seccion.classList.add(dentroRango ? 'ok' : 'err');
+    }
+  });
+
+  const totalEl = document.getElementById('tiempoTotal');
+  totalEl.textContent = formatoMMSS(total) + ' / 5:00';
+  totalEl.classList.remove('ok','over');
+  if(total > 5.01) totalEl.classList.add('over');
+  else if(Math.abs(total - 5) < 0.05) totalEl.classList.add('ok');
+
+  const msg = document.getElementById('tiempoMsg');
+  const todosOK = tiempoSeccionesData.every(s => tiempoValores[s.id] >= s.min && tiempoValores[s.id] <= s.max);
+  if(total > 5.01){
+    msg.innerHTML = `❌ Te has pasado de tiempo: llevas ${formatoMMSS(total)} de 5:00. Reduce alguna sección.`;
+  } else if(!todosOK){
+    msg.innerHTML = `🟡 Cada sección debería estar dentro de su rango orientativo (mira las que están en rojo). Total actual: ${formatoMMSS(total)}.`;
+  } else if(Math.abs(total - 5) > 0.05){
+    msg.innerHTML = `🟢 Todas las secciones están en rango. Ahora ajusta para que el total llegue a 5:00 (actualmente ${formatoMMSS(total)}).`;
+  } else {
+    msg.innerHTML = `🏆 ¡Perfecto! Tiempo total exactamente 5:00 y cada sección en su rango. ¡Presentación bien gestionada!`;
+    estado.detalles.tiempo.completado = true;
+    if(estado.scores.tiempo === 0){
+      estado.scores.tiempo = 1;
+      guardarEstado();
+      actualizarCertificado();
+      completarReto('tiempo', '¡Tiempo de presentación optimizado!');
+    }
+  }
+}
+
+/* ================================================================
+   10. RETO 5 · ADAPTA TU MENSAJE (con restauración de estado)
+================================================================ */
+const adaptarData = [
+  {
+    id:'ad1',
+    audiencia:'🧑‍🎓 Tus compañeros/as de clase',
+    ico:'🧑‍🎓',
+    mensajeBase:'Tu proyecto es una app para compartir apuntes entre estudiantes.',
+    pregunta:'¿Qué versión del mensaje usarías con tus compañeros?',
+    opciones:[
+      {t:'"Nuestra app usa un algoritmo de indexación semántica basado en procesamiento del lenguaje natural que optimiza la recuperación documental."', ok:false,
+       why:'Con tus compañeros no necesitas tecnicismos tan elevados. Perderías su atención y no entenderían el valor real del proyecto.'},
+      {t:'"Imagina dejar de perder apuntes y encontrarlos en 2 clics cuando los necesites. Esta app lo hace posible."', ok:true,
+       why:'¡Correcto! Con tus compañeros funciona mejor un lenguaje cercano, con ejemplos concretos y hablando del beneficio directo: no perder apuntes.'},
+      {t:'"El proyecto consiste en un sistema digital de almacenamiento descentralizado de documentación académica."', ok:false,
+       why:'El lenguaje es demasiado formal y distante. Con compañeros conviene un tono más cercano.'}
+    ]
+  },
+  {
+    id:'ad2',
+    audiencia:'⚖️ Tribunal técnico del concurso',
+    ico:'⚖️',
+    mensajeBase:'Tu proyecto es un sistema de riego inteligente con Arduino.',
+    pregunta:'¿Qué versión usarías ante un tribunal técnico?',
+    opciones:[
+      {t:'"Es un riego que se activa solo cuando la planta lo necesita, ¡mola mucho!"', ok:false,
+       why:'Demasiado informal y sin datos. Un tribunal técnico espera información rigurosa: cómo mide, con qué sensores, qué resultados obtiene.'},
+      {t:'"Nuestro sistema usa un sensor capacitivo de humedad del suelo calibrado, con control por umbral y registro en tarjeta SD. Reduce el consumo de agua un 40% respecto al riego por goteo tradicional."', ok:true,
+       why:'¡Correcto! Un tribunal técnico valora los detalles concretos: tipo de sensor, método de control, resultados medibles. Así demuestras rigor.'},
+      {t:'"Es un proyecto chulo que hemos hecho en clase con unas cosas electrónicas."', ok:false,
+       why:'Esta versión no aporta información técnica ni datos. No convence a un tribunal especializado.'}
+    ]
+  },
+  {
+    id:'ad3',
+    audiencia:'👵 Personas mayores del barrio',
+    ico:'👵',
+    mensajeBase:'Tu proyecto es una app para pedir cita médica sin colas.',
+    pregunta:'¿Qué versión usarías con personas mayores?',
+    opciones:[
+      {t:'"La aplicación optimiza la gestión de citas médicas mediante un backend en la nube con autenticación OAuth 2.0."', ok:false,
+       why:'Los términos técnicos no ayudan a este público. Hay que explicar el beneficio con palabras que entiendan todas las personas.'},
+      {t:'"Con esta app, en lugar de esperar en la cola, podrá pedir su cita desde casa con el móvil en 2 minutos, sin moverse."', ok:true,
+       why:'¡Correcto! Con este público funciona hablar del beneficio concreto y con lenguaje claro. Palabras cotidianas: "sin cola", "desde casa", "en 2 minutos".'},
+      {t:'"Es una solución digital disruptiva para el sector salud."', ok:false,
+       why:'Demasiado abstracto y con palabras de moda que no explican nada útil para este público.'}
+    ]
+  },
+  {
+    id:'ad4',
+    audiencia:'💰 Posibles financiadores del proyecto',
+    ico:'💰',
+    mensajeBase:'Tu proyecto es una plataforma para conectar vecinos que comparten herramientas.',
+    pregunta:'¿Qué versión usarías con posibles financiadores?',
+    opciones:[
+      {t:'"Es una plataforma P2P con sistema de reputación y microtransacciones que aprovecha la economía colaborativa."', ok:false,
+       why:'Los financiadores valoran más los datos concretos: usuarios potenciales, modelo, resultados. Los términos de moda sin datos no convencen.'},
+      {t:'"En nuestro barrio hay 3.000 hogares. El 78% tiene herramientas que usan menos de una vez al año. Con nuestra plataforma hemos conseguido 200 usuarios activos en 2 meses."', ok:true,
+       why:'¡Correcto! Los financiadores quieren datos: tamaño de mercado, problema cuantificado, tracción demostrada. Esa es la información que convence.'},
+      {t:'"Creemos que puede funcionar muy bien y ayudar a mucha gente."', ok:false,
+       why:'Sin datos, no hay argumento. Los financiadores necesitan números, no intenciones.'}
+    ]
+  },
+  {
+    id:'ad5',
+    audiencia:'👩‍🏫 Profesorado del centro educativo',
+    ico:'👩‍🏫',
+    mensajeBase:'Tu proyecto es una app para reservar espacios del centro (aulas, patio cubierto, sala de ordenadores).',
+    pregunta:'¿Qué versión usarías con el claustro de profesores?',
+    opciones:[
+      {t:'"La app usa arquitectura microservicios desplegada en contenedores Docker para alta disponibilidad."', ok:false,
+       why:'Los detalles de infraestructura no son lo más relevante para el profesorado. Necesitan entender el impacto educativo y organizativo.'},
+      {t:'"Con esta app se reduce el tiempo perdido buscando aula libre, se evitan conflictos de reserva y se registra todo automáticamente para las guardias."', ok:true,
+       why:'¡Correcto! El profesorado valora los beneficios organizativos concretos: menos tiempo perdido, menos conflictos, mejor gestión de guardias.'},
+      {t:'"Es una solución digital integral para la gestión eficiente de espacios."', ok:false,
+       why:'Demasiado genérico y sin datos concretos. No responde a "¿qué problema resuelve exactamente?"'}
+    ]
+  },
+  {
+    id:'ad6',
+    audiencia:'📱 Audiencia en redes sociales',
+    ico:'📱',
+    mensajeBase:'Tu proyecto es un robot que clasifica residuos automáticamente.',
+    pregunta:'¿Qué versión usarías en redes sociales?',
+    opciones:[
+      {t:'"Presentación del proyecto de clasificación automatizada de residuos sólidos urbanos mediante visión artificial y aprendizaje profundo supervisado."', ok:false,
+       why:'En redes el lenguaje debe ser breve, visual y con gancho. Un titular largo y formal no genera interacción.'},
+      {t:'"🤖 Este robot clasifica basura SOLO en 0,3 segundos. ¡Y lo hemos construido con Arduino y una cámara! ¿Te atreves a probarlo? 👇"', ok:true,
+       why:'¡Correcto! En redes funciona un lenguaje breve, con emojis, datos curiosos, un gancho visual y una llamada a la interacción.'},
+      {t:'"Nuestro sistema es muy bueno y funciona bien. Aquí tenéis el enlace al informe."', ok:false,
+       why:'Sin gancho, sin datos y sin formato visual, este mensaje no destaca en redes. No genera interés.'}
+    ]
+  }
+];
+
+let adaptarRespondidas = 0, adaptarAciertos = 0;
+
+function initAdaptar(){
+  const cont = document.getElementById('adaptarWrap');
+  if(!cont) return;
+  cont.innerHTML = '';
+  adaptarRespondidas = 0; adaptarAciertos = 0;
+
+  adaptarData.forEach((item)=>{
+    const div = document.createElement('div');
+    div.className = 'adaptar-card';
+    div.innerHTML = `
+      <div class="adaptar-audiencia">
+        <span class="aa-ico">${item.ico}</span>
+        <span class="aa-txt">${item.audiencia}</span>
+      </div>
+      <div class="adaptar-mensaje"><strong>Proyecto:</strong> ${item.mensajeBase}</div>
+      <p class="adaptar-pregunta">${item.pregunta}</p>
+      <div class="adaptar-opciones">
+        ${item.opciones.map((o,i)=>`
+          <button class="adaptar-op" data-id="${item.id}" data-v="${i}">
+            <span class="ao-letra">${String.fromCharCode(65+i)}</span>
+            <span>${o.t}</span>
+          </button>
+        `).join('')}
+      </div>
+      <div class="adaptar-fb"></div>
+    `;
+    cont.appendChild(div);
+
+    const btns = div.querySelectorAll('.adaptar-op');
+    const fb = div.querySelector('.adaptar-fb');
+    const saved = estado.detalles.adaptar[item.id] || {};
+
+    const aplicarEstado = (seleccionIdx, acierto) => {
+      btns.forEach(x=>{
+        x.disabled = true;
+        const xi = parseInt(x.dataset.v, 10);
+        if(item.opciones[xi].ok) x.classList.add('correct');
+      });
+      if(!acierto){
+        const selBtn = [...btns].find(x => parseInt(x.dataset.v, 10) === seleccionIdx);
+        if(selBtn) selBtn.classList.add('wrong');
+      }
+      const op = item.opciones[seleccionIdx];
+      fb.innerHTML = (acierto ? '✅ <strong>¡Buena adaptación!</strong> ' : '❌ <strong>No es la versión más adecuada.</strong> ') + (op ? op.why : '');
+      fb.classList.add('show');
+      div.classList.add('done');
+    };
+
+    if(saved.respondido){
+      aplicarEstado(saved.seleccion, saved.acierto);
+      adaptarRespondidas++;
+      if(saved.acierto) adaptarAciertos++;
+    } else {
+      btns.forEach(b=>{
+        b.addEventListener('click', ()=>{
+          const i = parseInt(b.dataset.v, 10);
+          const op = item.opciones[i];
+          const acierto = !!op.ok;
+
+          estado.detalles.adaptar[item.id] = { respondido: true, seleccion: i, acierto: acierto };
+          guardarEstado();
+
+          aplicarEstado(i, acierto);
+          adaptarRespondidas++;
+          if(acierto) adaptarAciertos++;
+
+          if(adaptarRespondidas === adaptarData.length){
+            if(adaptarAciertos > estado.scores.audiencia){
+              estado.scores.audiencia = adaptarAciertos;
+              guardarEstado();
+              actualizarCertificado();
+            }
+            mostrarMsgAdaptar();
+            completarReto('audiencia', '¡Adaptación a la audiencia dominada!');
+          }
+        });
+      });
+    }
+  });
+
+  if(adaptarRespondidas === adaptarData.length){
+    if(adaptarAciertos > estado.scores.audiencia){
+      estado.scores.audiencia = adaptarAciertos;
+      guardarEstado();
+      actualizarCertificado();
+    }
+    mostrarMsgAdaptar();
+  }
+}
+
+function mostrarMsgAdaptar(){
+  document.getElementById('adaptarMsg').innerHTML =
+    `Has adaptado correctamente <strong>${adaptarAciertos} de ${adaptarData.length}</strong> mensajes. ` +
+    (adaptarAciertos >= 5 ? '¡Sabes adaptar el discurso a cada audiencia!' : 'Repasa los casos fallados.');
+}
+
+/* ================================================================
+   11. VOCABULARIO
+================================================================ */
+const vocabulario = [
+  {ico:'🎯', t:'Formato de comunicación', d:'Manera concreta de presentar información a una audiencia: vídeo, infografía, póster, presentación oral, artículo, podcast, etc. Cada uno tiene ventajas y limitaciones según el objetivo.'},
+  {ico:'📡', t:'Canal de difusión', d:'Medio por el que se hace llegar el mensaje a la audiencia: web, redes sociales, correo, feria presencial, televisión, radio, etc.'},
+  {ico:'📢', t:'Pitch', d:'Presentación breve y persuasiva de una idea, producto o proyecto. Suele durar entre 30 segundos y 5 minutos y sigue una estructura preparada: gancho, problema, solución, valor, demostración y llamada a la acción.'},
+  {ico:'🎣', t:'Gancho (hook)', d:'Primera frase o dato impactante de una presentación cuyo objetivo es captar la atención de la audiencia en los primeros segundos.'},
+  {ico:'📣', t:'Llamada a la acción', d:'Cierre de un discurso en el que se pide a la audiencia una acción concreta: financiar, colaborar, probar, votar, difundir, etc.'},
+  {ico:'📽️', t:'Demostración', d:'Parte del pitch en la que se muestra la solución funcionando (vídeo, prototipo, demo en vivo) para que la audiencia la vea en acción.'},
+  {ico:'🎨', t:'Storyboard', d:'Secuencia ordenada de viñetas o bocetos que representa los planos de un vídeo o de una animación. Ayuda a planificar visualmente antes de grabar.'},
+  {ico:'🗣️', t:'Entonación y expresión', d:'Variación de tono, ritmo y volumen al hablar. Una buena entonación mantiene el interés de la audiencia; una monótona la adormece.'},
+  {ico:'⏱️', t:'Gestión del tiempo', d:'Capacidad de repartir el tiempo disponible de una presentación entre sus partes para no pasarse ni quedarse corto, respetando el ritmo del discurso.'},
+  {ico:'👥', t:'Adaptación a la audiencia', d:'Ajustar el registro, el nivel técnico y los ejemplos al público concreto al que se dirige el mensaje. No se habla igual a un tribunal que a personas mayores.'},
+  {ico:'📚', t:'Registro lingüístico', d:'Nivel de formalidad del lenguaje empleado: coloquial, formal, técnico, divulgativo. Debe elegirse según el contexto y la audiencia.'},
+  {ico:'🌈', t:'Lenguaje inclusivo', d:'Uso del lenguaje de forma que todas las personas se sientan representadas, sin marcar género innecesariamente ni reforzar estereotipos. Ejemplos: "alumnado", "personas usuarias", "el equipo técnico".'},
+  {ico:'🚫', t:'Estereotipo de género', d:'Idea preconcebida que asigna características o roles a las personas por su género. Ejemplo: "los programadores" para referirse a hombres o "las enfermeras" para referirse a mujeres.'},
+  {ico:'🎙️', t:'Divulgación', d:'Acción de hacer llegar el conocimiento técnico o científico a un público amplio, usando un lenguaje claro y accesible sin perder rigor.'},
+  {ico:'🌐', t:'Ciudadanía digital', d:'Ejercicio activo, cívico y responsable de la participación en el entorno digital: respetar a los demás, citar fuentes, no difundir desinformación, tratar los datos con cuidado.'},
+  {ico:'📝', t:'Citación de fuentes', d:'Mención explícita del origen de la información que se usa en un trabajo o presentación. Es una obligación ética y legal y forma parte de la ciudadanía digital responsable.'},
+  {ico:'🎤', t:'Ensayo previo', d:'Práctica de una presentación antes de realizarla en público. Permite ajustar tiempos, mejorar la expresión y detectar problemas del discurso.'},
+  {ico:'🎯', t:'Mensaje clave', d:'Idea principal y única que el público debe recordar de una presentación. Si el discurso no tiene un mensaje clave claro, el público sale sin saber qué se le ha querido transmitir.'},
+  {ico:'🎨', t:'Storytelling', d:'Técnica de comunicación que consiste en transmitir el mensaje a través de una historia o relato. Es más memorable y emotiva que la mera enumeración de datos.'},
+  {ico:'📊', t:'Regla del 90%', d:'Técnica de gestión del tiempo que consiste en preparar el contenido para cubrir solo el 90% del tiempo asignado, dejando un margen para imprevistos.'},
+  {ico:'🎬', t:'Lenguaje no verbal', d:'Conjunto de señales que acompañan al discurso oral: gestos, postura, mirada, expresión facial, movimiento. Puede reforzar o contradecir el mensaje verbal.'},
+  {ico:'🔊', t:'Modulación de la voz', d:'Variación consciente del volumen, el tono y el ritmo de la voz para mantener el interés y enfatizar las ideas clave.'}
+];
+
+(function initVoc(){
+  const grid = document.getElementById('vocGrid');
+  const defBox = document.getElementById('vocDef');
+  if(!grid) return;
+  grid.innerHTML = '';
+  vocabulario.forEach((v)=>{
+    const b = document.createElement('button');
+    b.className = 'voc-term';
+    b.innerHTML = `<span style="font-size:1.1rem">${v.ico}</span><span>${v.t}</span>`;
+    b.addEventListener('click', ()=>{
+      const yaActivo = b.classList.contains('active');
+      grid.querySelectorAll('.voc-term').forEach(x=>x.classList.remove('active'));
+      if(yaActivo){
+        defBox.classList.remove('show');
+        setTimeout(()=>{ defBox.innerHTML=''; }, 500);
+        return;
+      }
+      b.classList.add('active');
+      defBox.innerHTML = `<h4>${v.ico} ${v.t}</h4><p>${v.d}</p>`;
+      defBox.classList.add('show');
+    });
+    grid.appendChild(b);
+  });
+})();
+
+/* ================================================================
+   12. QUIZ FINAL (opciones reescritas + restauración de estado)
+================================================================ */
+const preguntasQuiz = [
+  {q:'¿Cuál es el formato MÁS adecuado para mostrar el funcionamiento de un robot paso a paso?',
+   o:[
+     'Un informe escrito con fotos detalladas del proceso de construcción paso a paso',
+     'Un vídeo con narración',
+     'Un póster estático',
+     'Un podcast de audio'
+   ],
+   c:1, e:'El vídeo permite ver el robot en acción y escuchar la explicación al mismo tiempo. Es el formato ideal para demostrar funcionamiento.'},
+
+  {q:'¿Cuál es el orden correcto de los elementos de un pitch eficaz?',
+   o:[
+     'Gancho → Problema → Solución → Valor → Demostración → Llamada a la acción',
+     'Problema → Solución → Valor → Gancho → Demostración → Cierre',
+     'Gancho → Solución → Problema → Demostración → Valor → Cierre con petición final',
+     'Gancho → Problema → Demostración → Solución → Cierre'
+   ],
+   c:0, e:'Un buen pitch capta la atención primero (gancho), luego expone el problema, presenta la solución, destaca el valor diferencial, muestra una demostración y termina con una llamada a la acción.'},
+
+  {q:'¿Qué es la "llamada a la acción" en un pitch?',
+   o:[
+     'El saludo con el que empiezas la presentación',
+     'El cierre en el que pides algo concreto',
+     'El resumen de los datos del proyecto',
+     'El título y la lista completa de características del proyecto'
+   ],
+   c:1, e:'La llamada a la acción es el cierre del discurso: qué quieres que haga tu público (financiar, colaborar, difundir, votar, probar...). Debe ser concreta.'},
+
+  {q:'¿Cuál de estas frases usa lenguaje INCLUSIVO?',
+   o:[
+     '"Los alumnos interesados pueden apuntarse."',
+     '"El alumnado interesado puede apuntarse."',
+     '"Los técnicos encargados revisarán el sistema con atención."',
+     '"Los usuarios podrán configurar la aplicación."'
+   ],
+   c:1, e:'"Alumnado" es un término inclusivo que engloba a todas las personas sin marcar género. Los otros usan el masculino genérico, que excluye simbólicamente a una parte del grupo.'},
+
+  {q:'¿Por qué es importante el lenguaje inclusivo en una presentación técnica?',
+   o:[
+     'Porque queda más moderno y profesional en cualquier contexto',
+     'Porque respeta a todas las personas',
+     'Porque lo exige la ley',
+     'Porque es más fácil de escribir y memorizar'
+   ],
+   c:1, e:'El lenguaje inclusivo transmite respeto y evita excluir simbólicamente a parte de la audiencia. Es una cuestión de ciudadanía y de calidad comunicativa.'},
+
+  {q:'Tienes 5 minutos para presentar un proyecto. ¿Cómo repartirías el tiempo de forma más eficaz?',
+   o:[
+     '4 minutos de introducción y 1 minuto de conclusión',
+     'Repartir proporcionalmente: más tiempo a la solución y demostración, menos al resto',
+     'Los 5 minutos íntegros al problema',
+     'Dedicar los primeros 3 minutos a presentar al equipo, 1:30 al problema y solo 30 segundos a la solución'
+   ],
+   c:1, e:'Un reparto eficaz dedica más tiempo a la solución y demostración (el núcleo), deja tiempo al gancho y cierre, y no descompensa el discurso.'},
+
+  {q:'Vas a presentar tu proyecto a personas mayores del barrio. ¿Qué lenguaje usarías?',
+   o:[
+     'Términos técnicos precisos para demostrar rigor',
+     'Lenguaje claro y centrado en el beneficio',
+     'Un lenguaje muy informal con muchas bromas',
+     'Siglas y abreviaturas en inglés, junto con referencias a estándares técnicos internacionales'
+   ],
+   c:1, e:'Con cada audiencia debes adaptar el registro. Con personas mayores conviene un lenguaje claro, cercano y centrado en beneficios concretos.'},
+
+  {q:'¿Por qué es importante ensayar antes una presentación?',
+   o:[
+     'Para memorizarla palabra por palabra',
+     'Para ajustar tiempos y mejorar la expresión',
+     'Para impresionar al profesorado',
+     'Para tener una grabación de referencia que puedas subir a redes sociales como contenido extra'
+   ],
+   c:1, e:'El ensayo previo permite comprobar la duración real, mejorar la entonación y corregir problemas del discurso. Es una práctica imprescindible.'},
+
+  {q:'Has usado datos de un informe para tu presentación. ¿Qué debes hacer como ciudadano/a digital responsable?',
+   o:[
+     'No decir de dónde vienen, así parecen tuyos',
+     'Citar la fuente correctamente',
+     'Cambiar los datos para que impacten más',
+     'Publicarlos como si fueran propios, mencionando al autor original en los créditos finales'
+   ],
+   c:1, e:'Citar las fuentes es una obligación ética y legal. Forma parte de la ciudadanía digital responsable: reconocer el trabajo de otras personas y no difundir información sin verificarla.'},
+
+  {q:'¿Qué es un "mensaje clave" en una presentación?',
+   o:[
+     'Una contraseña secreta',
+     'La idea central que debe recordar el público',
+     'El primer dato que dices',
+     'El título de la presentación junto con el nombre de todos los miembros del equipo que han participado'
+   ],
+   c:1, e:'El mensaje clave es la idea principal que debe quedar clara. Si tu presentación no tiene un mensaje clave claro, el público terminará sin saber qué le has querido transmitir.'}
+];
+
+let quizRespondidas = 0, quizAciertos = 0;
+
+function initQuiz(){
+  const cont = document.getElementById('quizContainer');
+  if(!cont) return;
+  cont.innerHTML = '';
+  quizRespondidas = 0; quizAciertos = 0;
+
+  const res = document.getElementById('quizResult');
+  if(res) res.style.display = 'none';
+
+  preguntasQuiz.forEach((p, i)=>{
+    const div = document.createElement('div');
+    div.className = 'q reveal';
+    div.innerHTML = `
+      <span class="q-num">PREGUNTA ${i+1}</span>
+      <h4>${p.q}</h4>
+      <div class="opts">
+        ${p.o.map((o,j)=>`
+          <button class="opt" data-i="${i}" data-j="${j}">
+            <span class="letter">${String.fromCharCode(65+j)}</span>
+            <span>${o}</span>
+          </button>`).join('')}
+      </div>
+      <div class="expl"></div>
+    `;
+    cont.appendChild(div);
+    io.observe(div);
+
+    const btns = div.querySelectorAll('.opt');
+    const expl = div.querySelector('.expl');
+    const saved = estado.detalles.quiz[i] || {};
+
+    const aplicarEstado = (seleccionJ) => {
+      btns.forEach(x=>{
+        x.disabled = true;
+        if(parseInt(x.dataset.j, 10) === p.c) x.classList.add('correct');
+      });
+      if(seleccionJ !== p.c){
+        const selBtn = [...btns].find(x => parseInt(x.dataset.j, 10) === seleccionJ);
+        if(selBtn) selBtn.classList.add('wrong');
+      }
+      expl.innerHTML = (seleccionJ === p.c ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>Respuesta incorrecta.</strong> ') + p.e;
+      expl.classList.add('show');
+    };
+
+    if(saved.respondido){
+      aplicarEstado(saved.seleccion);
+      quizRespondidas++;
+      if(saved.acierto) quizAciertos++;
+    } else {
+      btns.forEach(b=>{
+        b.addEventListener('click', ()=>{
+          const j = parseInt(b.dataset.j, 10);
+          const acierto = (j === p.c);
+
+          estado.detalles.quiz[i] = { respondido: true, seleccion: j, acierto: acierto };
+          guardarEstado();
+
+          aplicarEstado(j);
+          quizRespondidas++;
+          if(acierto) quizAciertos++;
+
+          if(quizRespondidas === preguntasQuiz.length){
+            mostrarResultadoQuiz(false);
+          }
+        });
+      });
+    }
+  });
+
+  if(quizRespondidas === preguntasQuiz.length){
+    mostrarResultadoQuiz(true);
+  }
+}
+
+function mostrarResultadoQuiz(skipScroll){
+  const res = document.getElementById('quizResult');
+  document.getElementById('quizScore').textContent = quizAciertos + '/' + preguntasQuiz.length;
+  const pct = Math.round(quizAciertos / preguntasQuiz.length * 100);
+  let titulo, msg;
+  if(pct === 100){ titulo = '🏆 ¡Perfecto!'; msg = 'Dominas la presentación y difusión de soluciones tecnológicas con criterio profesional.'; }
+  else if(pct >= 75){ titulo = '🌟 ¡Muy bien!'; msg = 'Tienes una comprensión sólida. Repasa las preguntas falladas para afinar los detalles.'; }
+  else if(pct >= 50){ titulo = '👍 Buen intento'; msg = 'Vas por el camino correcto. Vuelve a las secciones de formato, pitch, lenguaje inclusivo y audiencia.'; }
+  else { titulo = '📚 A seguir aprendiendo'; msg = 'Revisa con calma cada sección y vuelve a intentarlo.'; }
+  document.getElementById('quizTitle').textContent = titulo;
+  document.getElementById('quizMsg').textContent = msg;
+  res.style.display = 'block';
+  if(!skipScroll) res.scrollIntoView({behavior:'smooth', block:'center'});
+  if(quizAciertos > estado.scores.quiz){
+    estado.scores.quiz = quizAciertos;
+    guardarEstado();
+    actualizarCertificado();
+  }
+  completarReto('quiz', '¡Cuestionario final completado! ' + quizAciertos + '/' + preguntasQuiz.length);
+}
+
+/* ================================================================
+   13. CERTIFICADO Y PDF RASTERIZADO
+================================================================ */
+function actualizarCertificado(){
+  const stats = document.getElementById('certStats');
+  const nombreEl = document.getElementById('certNombre');
+  const warn = document.getElementById('certWarn');
+  const btn = document.getElementById('btnCertificado');
+
+  if(nombreEl) nombreEl.textContent = estado.nombre || '—';
+
+  const s = estado.scores;
+  const nRetos = estado.retos.length;
+
+  const items = [
+    {num: (s.formato>0 ? s.formato + '/6' : '—'), lbl:'Formatos'},
+    {num: (s.pitch>0 ? s.pitch + '/6' : '—'), lbl:'Pitch'},
+    {num: (s.inclusivo>0 ? s.inclusivo + '/8' : '—'), lbl:'Lenguaje'},
+    {num: (s.tiempo ? '✓' : '—'), lbl:'Tiempo'},
+    {num: (s.audiencia>0 ? s.audiencia + '/6' : '—'), lbl:'Audiencia'},
+    {num: (s.quiz>0 ? s.quiz + '/10' : '—'), lbl:'Cuestionario'},
+    {num: nRetos + '/' + RETOS_TOTALES, lbl:'Retos totales'}
+  ];
+
+  if(stats) stats.innerHTML = items.map(it=>`
+    <div class="cert-stat">
+      <div class="num">${it.num}</div>
+      <div class="lbl">${it.lbl}</div>
+    </div>
+  `).join('');
+
+  if(warn) warn.style.display = (nRetos === 0) ? 'block' : 'none';
+  if(btn){
+    btn.disabled = (nRetos === 0);
+    btn.style.opacity = (nRetos === 0) ? .55 : 1;
+    btn.style.cursor = (nRetos === 0) ? 'not-allowed' : 'pointer';
+  }
+}
+
+document.getElementById('btnCertificado').addEventListener('click', ()=>{
+  if(!estado.nombre){ toast('Introduce tu nombre primero'); return; }
+  if(estado.retos.length === 0){ toast('Completa al menos un reto para obtener el certificado'); return; }
+  generarPDFRasterizado();
+});
+
+function generarPDFRasterizado(){
+  if(!(window.jspdf && window.jspdf.jsPDF)){
+    toast('No se ha podido cargar la librería PDF. Inténtalo de nuevo.');
+    return;
+  }
+  try{
+    const DPI = 300;
+    const W_MM = 297, H_MM = 210;
+    const W = Math.round(W_MM / 25.4 * DPI);
+    const H = Math.round(H_MM / 25.4 * DPI);
+    const mm = v => v / 25.4 * DPI;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = '#f7fee7';
+    ctx.fillRect(0,0,W,H);
+
+    ctx.strokeStyle = '#365314';
+    ctx.lineWidth = mm(2);
+    ctx.strokeRect(mm(10), mm(10), W-mm(20), H-mm(20));
+    ctx.lineWidth = mm(0.5);
+    ctx.strokeRect(mm(14), mm(14), W-mm(28), H-mm(28));
+
+    ctx.fillStyle = '#365314';
+    ctx.fillRect(mm(14), mm(14), mm(20), mm(3));
+    ctx.fillRect(mm(14), mm(14), mm(3), mm(20));
+    ctx.fillRect(W-mm(34), mm(14), mm(20), mm(3));
+    ctx.fillRect(W-mm(17), mm(14), mm(3), mm(20));
+    ctx.fillRect(mm(14), H-mm(17), mm(20), mm(3));
+    ctx.fillRect(mm(14), H-mm(34), mm(3), mm(20));
+    ctx.fillRect(W-mm(34), H-mm(17), mm(20), mm(3));
+    ctx.fillRect(W-mm(17), H-mm(34), mm(3), mm(20));
+
+    ctx.fillStyle = '#365314';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = `bold ${mm(9)}px Arial, sans-serif`;
+    ctx.fillText('CERTIFICADO DE APROVECHAMIENTO', W/2, mm(38));
+
+    ctx.fillStyle = '#64748b';
+    ctx.font = `${mm(4)}px Arial, sans-serif`;
+    ctx.fillText('Presenta y Difunde · Formatos, pitch, lenguaje inclusivo y audiencia', W/2, mm(48));
+
+    ctx.strokeStyle = '#14b8a6';
+    ctx.lineWidth = mm(0.8);
+    ctx.beginPath();
+    ctx.moveTo(W/2 - mm(60), mm(53));
+    ctx.lineTo(W/2 + mm(60), mm(53));
+    ctx.stroke();
+
+    ctx.fillStyle = '#475569';
+    ctx.font = `${mm(4.5)}px Arial, sans-serif`;
+    ctx.fillText('Se certifica que', W/2, mm(68));
+
+    ctx.fillStyle = '#0f172a';
+    ctx.font = `bold ${mm(14)}px Arial, sans-serif`;
+    ctx.fillText(estado.nombre, W/2, mm(85));
+
+    ctx.fillStyle = '#334155';
+    ctx.font = `${mm(4)}px Arial, sans-serif`;
+    ctx.fillText('ha completado las actividades interactivas de la aplicación educativa sobre presentación', W/2, mm(97));
+    ctx.fillText('y difusión de soluciones tecnológicas, obteniendo:', W/2, mm(104));
+
+    const s = estado.scores;
+    const resultados = [
+      ['Formato y canal de difusión', s.formato>0 ? s.formato + ' / 6 aciertos' : 'No realizado'],
+      ['Estructura del pitch', s.pitch>0 ? s.pitch + ' / 6 elementos' : 'No completado'],
+      ['Lenguaje inclusivo', s.inclusivo>0 ? s.inclusivo + ' / 8 aciertos' : 'No realizado'],
+      ['Gestión del tiempo', s.tiempo ? 'Completada' : 'No completada'],
+      ['Adaptación a la audiencia', s.audiencia>0 ? s.audiencia + ' / 6 aciertos' : 'No realizado'],
+      ['Cuestionario final', s.quiz>0 ? s.quiz + ' / 10' : 'No realizado'],
+      ['Retos completados', estado.retos.length + ' / ' + RETOS_TOTALES]
+    ];
+
+    const tableX = mm(60);
+    const tableY = mm(116);
+    const rowH = mm(9);
+    const colW1 = mm(110), colW2 = mm(70);
+    const totalW = colW1 + colW2;
+
+    ctx.fillStyle = '#365314';
+    ctx.fillRect(tableX, tableY, totalW, mm(9));
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `bold ${mm(3.6)}px Arial, sans-serif`;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('ACTIVIDAD', tableX + mm(4), tableY + mm(4.5));
+    ctx.fillText('RESULTADO', tableX + colW1 + mm(4), tableY + mm(4.5));
+
+    resultados.forEach((row, i)=>{
+      const y = tableY + mm(9) + i * rowH;
+      if(i % 2 === 0){
+        ctx.fillStyle = '#ecfccb';
+        ctx.fillRect(tableX, y, totalW, rowH);
+      }
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = mm(0.2);
+      ctx.strokeRect(tableX, y, totalW, rowH);
+      ctx.fillStyle = '#1e293b';
+      ctx.font = `${mm(3.6)}px Arial, sans-serif`;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(row[0], tableX + mm(4), y + rowH/2);
+      ctx.font = `bold ${mm(3.6)}px Arial, sans-serif`;
+      ctx.fillText(row[1], tableX + colW1 + mm(4), y + rowH/2);
+    });
+
+    const fecha = new Date().toLocaleDateString('es-ES', {day:'numeric', month:'long', year:'numeric'});
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#64748b';
+    ctx.font = `${mm(3.5)}px Arial, sans-serif`;
+    ctx.fillText('Fecha de emisión: ' + fecha, W/2, H - mm(24));
+    ctx.font = `${mm(3)}px Arial, sans-serif`;
+    ctx.fillText('Este certificado acredita la realización de las actividades interactivas de la aplicación educativa.', W/2, H - mm(17));
+
+    const imgData = canvas.toDataURL('image/png');
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
+    doc.addImage(imgData, 'PNG', 0, 0, W_MM, H_MM, undefined, 'FAST');
+    doc.save('Certificado_PresentaDifunde_' + estado.nombre.replace(/[^a-zA-Z0-9]/g,'_') + '.pdf');
+    toast('¡Certificado descargado!');
+  } catch(err){
+    console.error(err);
+    toast('No se pudo generar el PDF.');
+  }
+}
+
+/* ================================================================
+   14. RESETEO DE ACTIVIDADES (al cambiar de usuario)
+================================================================ */
+function resetearActividades(){
+  if(typeof initFormato === 'function')  initFormato();
+  if(typeof initPitch === 'function')    initPitch();
+  if(typeof initInclusivo === 'function')initInclusivo();
+  if(typeof initTiempo === 'function')   initTiempo();
+  if(typeof initAdaptar === 'function')  initAdaptar();
+  if(typeof initQuiz === 'function')     initQuiz();
+
+  const res = document.getElementById('quizResult');
+  if(res) res.style.display = 'none';
+  const score = document.getElementById('quizScore');
+  if(score) score.textContent = '0/10';
+  const title = document.getElementById('quizTitle');
+  if(title) title.textContent = '¡Buen trabajo!';
+  const qmsg = document.getElementById('quizMsg');
+  if(qmsg) qmsg.textContent = '';
+
+  ['formatoMsg','pitchMsg','incMsg','tiempoMsg','adaptarMsg'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.textContent = '';
+  });
+}
+
+/* ================================================================
+   15. INICIALIZACIÓN
+================================================================ */
+cargarEstado();            // ← primero cargar el estado guardado
+initFormato();             // ← luego inicializar actividades con el estado restaurado
+initPitch();
+initInclusivo();
+initTiempo();
+initAdaptar();
+initQuiz();
+
+mostrarLogin();
+actualizarProgreso();
+actualizarCertificado();
+</script>
+</body>
+</html>
