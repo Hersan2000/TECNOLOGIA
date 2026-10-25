@@ -1,0 +1,3139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Robots y Sistemas Automáticos · Diseña, construye, programa</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --cian:#06b6d4; --cian-claro:#cffafe; --cian-oscuro:#155e75;
+  --lima:#84cc16; --lima-claro:#ecfccb; --lima-oscuro:#3f6212;
+  --azul:#2563eb; --azul-claro:#dbeafe; --azul-oscuro:#1e3a8a;
+  --violeta:#8b5cf6; --violeta-claro:#ede9fe; --violeta-oscuro:#5b21b6;
+  --rojo:#dc2626; --rojo-claro:#fee2e2;
+  --ambar:#f59e0b; --ambar-claro:#fef3c7; --ambar-oscuro:#92400e;
+  --gris:#64748b; --gris-claro:#f1f5f9; --gris-oscuro:#1e293b;
+  --blanco:#fff; --negro:#0f172a;
+  --sombra:0 10px 30px rgba(15,23,42,.08);
+  --sombra-lg:0 20px 50px rgba(15,23,42,.14);
+  --radio:20px;
+  --fuente:'Segoe UI',system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+  --mono:'Consolas','Monaco','Courier New',monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0; font-family:var(--fuente); background:var(--gris-claro); color:var(--negro); line-height:1.7; -webkit-font-smoothing:antialiased;}
+body.locked{overflow:hidden}
+h1,h2,h3,h4{line-height:1.2; margin:0 0 .5rem}
+p{margin:0 0 1rem}
+
+/* LOGIN */
+#loginOverlay{
+  position:fixed; inset:0; z-index:2000;
+  background:radial-gradient(1000px 600px at 20% 10%,#155e75 0%,transparent 60%),
+             radial-gradient(900px 500px at 85% 90%,#3f6212 0%,transparent 55%),
+             linear-gradient(160deg,#082f49,#0f172a);
+  display:grid; place-items:center; padding:1.2rem;
+  transition:opacity .6s, visibility .6s;
+}
+#loginOverlay.hidden{opacity:0; visibility:hidden; pointer-events:none}
+.login-card{
+  background:#fff; border-radius:26px; padding:2.2rem 2rem;
+  max-width:500px; width:100%; box-shadow:0 30px 70px rgba(0,0,0,.4);
+  text-align:center; position:relative; overflow:hidden;
+  animation:aparecer .6s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes aparecer{from{opacity:0;transform:translateY(24px) scale(.96)}to{opacity:1;transform:none}}
+.login-card::before{content:""; position:absolute; top:0; left:0; right:0; height:6px;
+  background:linear-gradient(90deg,var(--cian),var(--lima),var(--violeta));}
+.login-emoji{font-size:3.4rem; line-height:1; margin-bottom:.5rem; display:block}
+.login-card h1{font-size:1.55rem; color:var(--cian-oscuro); letter-spacing:-.4px}
+.login-card p.sub{font-size:.94rem; color:var(--gris); margin-bottom:1.5rem}
+.login-card input{width:100%; font-family:inherit; font-size:1.02rem; padding:.95rem 1.1rem;
+  border-radius:14px; border:2px solid #e2e8f0; background:#f8fafc; color:var(--negro);
+  transition:.2s; text-align:center; font-weight:600; margin-bottom:1rem;}
+.login-card input:focus{outline:none; border-color:var(--cian); background:#fff; box-shadow:0 0 0 5px rgba(6,182,212,.14);}
+.login-card .btn{width:100%; justify-content:center}
+.login-error{font-size:.82rem; color:var(--rojo); margin-top:.7rem; min-height:1.2em; font-weight:700}
+.welcome-back{background:var(--cian-claro); border:1.5px solid #a5f3fc; border-radius:14px;
+  padding:1rem; margin-bottom:1.2rem; font-size:.92rem; color:var(--cian-oscuro);}
+.welcome-back strong{font-size:1.05rem}
+.login-btns{display:flex; gap:.6rem; flex-wrap:wrap; justify-content:center}
+.login-btns .btn{flex:1; min-width:130px; justify-content:center}
+
+/* PROGRESO */
+#progresoGlobal{position:fixed; top:0; left:0; right:0; height:5px; background:rgba(255,255,255,.2); z-index:1000;}
+#progresoBarra{height:100%; width:0%; transition:width .6s cubic-bezier(.2,.8,.2,1);
+  background:linear-gradient(90deg,var(--cian),var(--lima),var(--violeta));
+  box-shadow:0 0 12px rgba(6,182,212,.6);}
+
+/* NAV */
+nav{position:sticky; top:0; z-index:900; background:rgba(255,255,255,.9); backdrop-filter:blur(14px);
+  border-bottom:1px solid #e2e8f0; padding:.55rem .8rem;}
+.nav-inner{max-width:1200px; margin:0 auto; display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;}
+.nav-brand{font-weight:800; font-size:.92rem; letter-spacing:.5px; color:var(--cian-oscuro);
+  display:flex; align-items:center; gap:.45rem; margin-right:auto;}
+.nav-brand .dot{width:11px;height:11px;border-radius:50%;background:linear-gradient(135deg,var(--cian),var(--lima));}
+.nav-user{font-size:.8rem; font-weight:800; color:var(--cian-oscuro);
+  background:var(--cian-claro); padding:.3rem .8rem; border-radius:999px;
+  display:flex; align-items:center; gap:.35rem;}
+.nav-links{display:flex; gap:.3rem; flex-wrap:wrap}
+.nav-links a{font-size:.8rem; font-weight:600; text-decoration:none; color:var(--gris-oscuro);
+  padding:.35rem .7rem; border-radius:999px; transition:.25s; white-space:nowrap;}
+.nav-links a:hover{background:var(--cian-claro); color:var(--cian-oscuro)}
+.nav-links a.active{background:var(--cian-oscuro); color:#fff}
+#progresoPill{font-size:.72rem; font-weight:800; color:var(--cian-oscuro); background:var(--cian-claro);
+  padding:.3rem .7rem; border-radius:999px; white-space:nowrap;}
+
+/* HERO */
+header.hero{position:relative; overflow:hidden; color:#fff;
+  background:radial-gradient(1200px 600px at 15% -10%,#155e75 0%,transparent 60%),
+             radial-gradient(900px 500px at 90% 10%,#3f6212 0%,transparent 55%),
+             linear-gradient(160deg,#082f49,#0f172a);
+  padding:4.5rem 1.2rem 4rem;}
+.blob{position:absolute; border-radius:50%; filter:blur(70px); opacity:.4; animation:flotar 14s ease-in-out infinite}
+.blob.b1{width:340px;height:340px;background:#06b6d4;top:-90px;left:-60px}
+.blob.b2{width:280px;height:280px;background:#84cc16;bottom:-110px;right:-40px;animation-delay:-5s}
+.blob.b3{width:220px;height:220px;background:#8b5cf6;top:40%;right:25%;animation-delay:-9s}
+@keyframes flotar{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(28px,-32px) scale(1.12)}}
+.hero-inner{position:relative; max-width:1000px; margin:0 auto; text-align:center}
+.badge-top{display:inline-flex; align-items:center; gap:.5rem; font-size:.76rem; font-weight:800;
+  letter-spacing:1.4px; text-transform:uppercase; color:#67e8f9;
+  background:rgba(6,182,212,.18); border:1px solid rgba(103,232,249,.4);
+  padding:.42rem 1rem; border-radius:999px; margin-bottom:1.2rem;}
+header.hero h1{font-size:clamp(1.85rem,5.2vw,3.3rem); font-weight:900; letter-spacing:-1px; margin-bottom:.7rem;}
+header.hero h1 span{background:linear-gradient(90deg,#67e8f9,#bef264,#c4b5fd);
+  -webkit-background-clip:text; background-clip:text; color:transparent;}
+.hero-sub{max-width:800px; margin:0 auto 1.6rem; color:#cbd5e1; font-size:clamp(.95rem,2.2vw,1.1rem)}
+.hero-sub strong{color:#67e8f9}
+.hero-chips{display:flex; gap:.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:2rem}
+.chip{font-size:.74rem; font-weight:800; letter-spacing:.6px; padding:.34rem .8rem; border-radius:999px;
+  background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.22); color:#e2e8f0;}
+.hero-cta{display:flex; gap:.7rem; justify-content:center; flex-wrap:wrap}
+.btn{display:inline-flex; align-items:center; gap:.45rem; cursor:pointer; border:none;
+  font-family:inherit; font-size:.92rem; font-weight:800; padding:.8rem 1.5rem; border-radius:999px;
+  text-decoration:none; transition:transform .2s, box-shadow .2s, background .2s;}
+.btn-primary{background:linear-gradient(135deg,var(--cian),var(--cian-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(6,182,212,.4)}
+.btn-primary:hover{transform:translateY(-3px); box-shadow:0 16px 34px rgba(6,182,212,.5)}
+.btn-ghost{background:rgba(255,255,255,.1); color:#fff; border:1.5px solid rgba(255,255,255,.3)}
+.btn-ghost:hover{background:rgba(255,255,255,.2); transform:translateY(-3px)}
+.btn-lima{background:linear-gradient(135deg,var(--lima),var(--lima-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(132,204,22,.4)}
+.btn-lima:hover{transform:translateY(-3px)}
+.btn-violeta{background:linear-gradient(135deg,var(--violeta),var(--violeta-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(139,92,246,.4)}
+.btn-violeta:hover{transform:translateY(-3px)}
+.btn-ambar{background:linear-gradient(135deg,var(--ambar),var(--ambar-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(245,158,11,.4)}
+.btn-ambar:hover{transform:translateY(-3px)}
+
+/* LAYOUT */
+main{max-width:1200px; margin:0 auto; padding:0 1.1rem 5rem}
+section{padding:3.2rem 0 1rem; scroll-margin-top:70px}
+.sec-head{margin-bottom:1.8rem}
+.kicker{display:inline-block; font-size:.72rem; font-weight:900; letter-spacing:1.6px; text-transform:uppercase;
+  color:var(--cian-oscuro); background:var(--cian-claro); padding:.3rem .75rem; border-radius:999px; margin-bottom:.7rem;}
+.kicker.lima{color:var(--lima-oscuro); background:var(--lima-claro)}
+.kicker.violeta{color:var(--violeta-oscuro); background:var(--violeta-claro)}
+.kicker.ambar{color:var(--ambar-oscuro); background:var(--ambar-claro)}
+.kicker.azul{color:var(--azul-oscuro); background:var(--azul-claro)}
+.sec-head h2{font-size:clamp(1.5rem,3.6vw,2.15rem); font-weight:900; letter-spacing:-.6px}
+.sec-head p.lead{color:var(--gris); max-width:900px; font-size:1rem}
+.card{background:var(--blanco); border-radius:var(--radio); padding:1.6rem; box-shadow:var(--sombra); border:1px solid #e2e8f0;}
+.grid{display:grid; gap:1.1rem}
+.g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.reveal{opacity:0; transform:translateY(26px); transition:opacity .7s cubic-bezier(.2,.8,.2,1), transform .7s cubic-bezier(.2,.8,.2,1)}
+.reveal.in{opacity:1; transform:none}
+
+/* PILARES */
+.pilar{background:#fff; border-radius:16px; padding:1.3rem; border:1px solid #e2e8f0;
+  border-top:5px solid var(--cian); box-shadow:var(--sombra); transition:.3s;}
+.pilar:hover{transform:translateY(-6px); box-shadow:var(--sombra-lg)}
+.pilar .ico{font-size:2rem; display:block; margin-bottom:.5rem}
+.pilar h4{font-size:1.05rem; color:var(--cian-oscuro)}
+.pilar p{font-size:.9rem; color:var(--gris); margin:0}
+
+/* ========== TEORÍA EXPANDIDA ========== */
+.teoria{
+  background:#fff; border-radius:var(--radio); padding:1.6rem; box-shadow:var(--sombra);
+  border:1px solid #e2e8f0; margin-bottom:1.4rem;
+}
+.teoria h3{
+  color:var(--cian-oscuro); font-size:1.15rem; margin-bottom:.8rem;
+  display:flex; align-items:center; gap:.5rem;
+}
+.teoria h3 .th-ico{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:34px; height:34px; border-radius:10px;
+  background:var(--cian-claro); color:var(--cian-oscuro);
+  font-size:1rem;
+}
+.teoria h4{
+  color:var(--cian-oscuro); font-size:1rem; margin-top:1.2rem; margin-bottom:.5rem;
+  padding-left:.6rem; border-left:4px solid var(--cian);
+}
+.teoria p{font-size:.94rem; color:var(--gris-oscuro); margin-bottom:.8rem}
+.teoria ul, .teoria ol{font-size:.92rem; color:var(--gris-oscuro); margin:0 0 1rem; padding-left:1.3rem}
+.teoria li{margin-bottom:.35rem}
+.teoria li strong{color:var(--cian-oscuro)}
+.teoria .destacado{
+  background:linear-gradient(150deg,var(--cian-claro),#fff);
+  border-left:4px solid var(--cian); border-radius:0 12px 12px 0;
+  padding:.9rem 1.1rem; margin:1rem 0; font-size:.92rem;
+  color:var(--cian-oscuro);
+}
+.teoria .destacado strong{color:var(--cian-oscuro); font-weight:900}
+.teoria.lima .th-ico{background:var(--lima-claro); color:var(--lima-oscuro)}
+.teoria.lima h3{color:var(--lima-oscuro)}
+.teoria.lima h4{color:var(--lima-oscuro); border-color:var(--lima)}
+.teoria.lima li strong{color:var(--lima-oscuro)}
+.teoria.lima .destacado{background:linear-gradient(150deg,var(--lima-claro),#fff); border-color:var(--lima); color:var(--lima-oscuro)}
+.teoria.violeta .th-ico{background:var(--violeta-claro); color:var(--violeta-oscuro)}
+.teoria.violeta h3{color:var(--violeta-oscuro)}
+.teoria.violeta h4{color:var(--violeta-oscuro); border-color:var(--violeta)}
+.teoria.violeta li strong{color:var(--violeta-oscuro)}
+.teoria.violeta .destacado{background:linear-gradient(150deg,var(--violeta-claro),#fff); border-color:var(--violeta); color:var(--violeta-oscuro)}
+.teoria.ambar .th-ico{background:var(--ambar-claro); color:var(--ambar-oscuro)}
+.teoria.ambar h3{color:var(--ambar-oscuro)}
+.teoria.ambar h4{color:var(--ambar-oscuro); border-color:var(--ambar)}
+.teoria.ambar li strong{color:var(--ambar-oscuro)}
+.teoria.ambar .destacado{background:linear-gradient(150deg,var(--ambar-claro),#fff); border-color:var(--ambar); color:var(--ambar-oscuro)}
+.teoria.azul .th-ico{background:var(--azul-claro); color:var(--azul-oscuro)}
+.teoria.azul h3{color:var(--azul-oscuro)}
+.teoria.azul h4{color:var(--azul-oscuro); border-color:var(--azul)}
+.teoria.azul li strong{color:var(--azul-oscuro)}
+.teoria.azul .destacado{background:linear-gradient(150deg,var(--azul-claro),#fff); border-color:var(--azul); color:var(--azul-oscuro)}
+.teoria .ejemplo{
+  background:#f8fafc; border-radius:10px; padding:.7rem .9rem;
+  font-size:.85rem; color:var(--gris-oscuro); margin:.5rem 0;
+  border-left:3px solid var(--gris);
+}
+.teoria .ejemplo strong{color:var(--gris-oscuro)}
+.teoria .tabla-tipos{
+  width:100%; border-collapse:collapse; margin:.8rem 0 1rem;
+  font-size:.86rem;
+}
+.teoria .tabla-tipos th, .teoria .tabla-tipos td{
+  padding:.6rem .7rem; text-align:left;
+  border-bottom:1px solid #e2e8f0;
+}
+.teoria .tabla-tipos th{
+  background:var(--cian-claro); color:var(--cian-oscuro);
+  font-weight:900; font-size:.78rem; text-transform:uppercase; letter-spacing:.4px;
+}
+.teoria.lima .tabla-tipos th{background:var(--lima-claro); color:var(--lima-oscuro)}
+.teoria.violeta .tabla-tipos th{background:var(--violeta-claro); color:var(--violeta-oscuro)}
+.teoria.ambar .tabla-tipos th{background:var(--ambar-claro); color:var(--ambar-oscuro)}
+.teoria.azul .tabla-tipos th{background:var(--azul-claro); color:var(--azul-oscuro)}
+.teoria .tabla-tipos tr:nth-child(even) td{background:#f8fafc}
+.teoria .grid-teoria{
+  display:grid; gap:.8rem; grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  margin:1rem 0;
+}
+.teoria .bloque-teoria{
+  background:#f8fafc; border-radius:12px; padding:.9rem 1rem;
+  border-top:3px solid var(--cian);
+}
+.teoria.lima .bloque-teoria{border-color:var(--lima)}
+.teoria.violeta .bloque-teoria{border-color:var(--violeta)}
+.teoria.ambar .bloque-teoria{border-color:var(--ambar)}
+.teoria.azul .bloque-teoria{border-color:var(--azul)}
+.teoria .bloque-teoria h5{
+  font-size:.88rem; font-weight:900; color:var(--cian-oscuro);
+  margin:0 0 .4rem;
+}
+.teoria.lima .bloque-teoria h5{color:var(--lima-oscuro)}
+.teoria.violeta .bloque-teoria h5{color:var(--violeta-oscuro)}
+.teoria.ambar .bloque-teoria h5{color:var(--ambar-oscuro)}
+.teoria.azul .bloque-teoria h5{color:var(--azul-oscuro)}
+.teoria .bloque-teoria p{font-size:.85rem; margin:0; color:var(--gris)}
+.teoria .fases{
+  display:grid; gap:.6rem; grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  margin:1rem 0;
+}
+.teoria .fase{
+  background:#fff; border:2px solid var(--cian-claro); border-radius:12px;
+  padding:.75rem; text-align:center; position:relative;
+}
+.teoria .fase .fase-num{
+  display:inline-block; font-size:.72rem; font-weight:900; background:var(--cian);
+  color:#fff; padding:.15rem .55rem; border-radius:999px; margin-bottom:.35rem;
+}
+.teoria .fase h6{font-size:.85rem; font-weight:900; color:var(--cian-oscuro); margin:.2rem 0}
+.teoria .fase p{font-size:.75rem; color:var(--gris); margin:0; line-height:1.35}
+
+/* ACTIVIDADES */
+.actividad{background:#fff; border-radius:var(--radio); padding:1.6rem; box-shadow:var(--sombra);
+  border:1px solid #e2e8f0; margin-top:1.6rem;}
+.actividad h3{color:var(--cian-oscuro); font-size:1.15rem; margin-bottom:.3rem}
+.actividad .intro{font-size:.93rem; color:var(--gris); margin-bottom:1rem}
+
+/* ========== RETO 1: CONSTRUCTOR ROBOT ========== */
+.mision-card{
+  background:linear-gradient(150deg,#cffafe,#fff); border-left:6px solid var(--cian);
+  border-radius:0 14px 14px 0; padding:1rem 1.2rem; margin-bottom:1.2rem;
+}
+.mision-card h4{color:var(--cian-oscuro); font-size:1rem; margin-bottom:.3rem}
+.mision-card p{font-size:.9rem; margin:0; color:var(--gris-oscuro)}
+.robot-builder{display:grid; gap:1rem; grid-template-columns:1fr 1fr;}
+@media(max-width:820px){.robot-builder{grid-template-columns:1fr}}
+.rb-bloque{
+  background:#f8fafc; border-radius:12px; padding:.9rem 1rem; border:1px solid #e2e8f0;
+}
+.rb-bloque h5{
+  font-size:.76rem; letter-spacing:.9px; text-transform:uppercase;
+  color:var(--cian-oscuro); font-weight:900; margin-bottom:.5rem;
+}
+.rb-opciones{display:flex; flex-direction:column; gap:.4rem;}
+.rb-opcion{
+  background:#fff; border:2px solid #e2e8f0; border-radius:10px; padding:.55rem .75rem;
+  font-size:.84rem; font-weight:600; cursor:pointer; transition:.2s; color:var(--gris-oscuro);
+  display:flex; gap:.5rem; align-items:center;
+}
+.rb-opcion:hover{border-color:var(--cian); background:var(--cian-claro); color:var(--cian-oscuro)}
+.rb-opcion.sel{background:var(--cian); color:#fff; border-color:var(--cian-oscuro)}
+.rb-opcion .rb-ico{font-size:1.2rem}
+.robot-score{
+  margin-top:1.2rem; background:linear-gradient(160deg,#155e75,#082f49); color:#fff;
+  border-radius:16px; padding:1.3rem; text-align:center;
+}
+.robot-score .num{font-size:2.6rem; font-weight:900; line-height:1; color:#bef264}
+.robot-score .lbl{font-size:.72rem; letter-spacing:1.2px; text-transform:uppercase; color:#a5f3fc; font-weight:800; margin-top:.3rem;}
+.robot-score .msg{font-size:.88rem; color:#cffafe; margin-top:.7rem; min-height:3em}
+.robot-score .prog{
+  height:12px; border-radius:8px; background:rgba(255,255,255,.15); overflow:hidden; margin-top:.8rem;
+}
+.robot-score .prog div{height:100%; width:0%; background:linear-gradient(90deg,#bef264,#67e8f9); transition:width .5s;}
+
+/* ========== RETO 2: CLASIFICA TECNOLOGÍA ========== */
+.tecnologias-legend{
+  display:flex; gap:.6rem; flex-wrap:wrap; margin-bottom:1.2rem;
+  padding:.8rem 1rem; background:#f8fafc; border-radius:12px; border:1px solid #e2e8f0;
+}
+.tecnologias-legend span{
+  font-size:.78rem; font-weight:800; padding:.35rem .7rem; border-radius:999px;
+}
+.tl-mec{background:#fef3c7; color:#92400e}
+.tl-elec{background:#dbeafe; color:#1e40af}
+.tl-neum{background:#cffafe; color:#155e75}
+.tl-control{background:#ede9fe; color:#5b21b6}
+.tec-grid{display:grid; gap:.9rem; grid-template-columns:repeat(auto-fit,minmax(280px,1fr));}
+.tec-card{
+  background:#fff; border:2px solid #e2e8f0; border-radius:16px; padding:1rem 1.1rem;
+  display:flex; flex-direction:column; gap:.7rem; transition:.3s;
+}
+.tec-card.done{border-color:var(--cian); background:#f8fafc}
+.tec-card .tec-titulo{
+  font-size:.92rem; font-weight:900; color:var(--cian-oscuro);
+  display:flex; gap:.5rem; align-items:center;
+}
+.tec-card .tec-titulo .tec-ico{font-size:1.4rem}
+.tec-card .tec-desc{font-size:.82rem; color:var(--gris); line-height:1.4; margin:0}
+.tec-btns{display:grid; grid-template-columns:1fr 1fr; gap:.4rem;}
+.tec-btns button{
+  font-family:inherit; font-size:.78rem; font-weight:800; cursor:pointer;
+  padding:.5rem .4rem; border-radius:10px; border:2px solid #e2e8f0; background:#f8fafc; color:var(--gris-oscuro);
+  transition:.2s;
+}
+.tec-btns button:hover:not(:disabled){border-color:var(--cian); background:var(--cian-claro); color:var(--cian-oscuro)}
+.tec-btns button:disabled{cursor:default; opacity:.55}
+.tec-btns button.correct{background:#dcfce7; border-color:#16a34a; color:#15803d; opacity:1}
+.tec-btns button.wrong{background:#fee2e2; border-color:#dc2626; color:#b91c1c; opacity:1}
+.tec-fb{
+  font-size:.8rem; border-radius:10px; padding:0; max-height:0; overflow:hidden; transition:.35s; color:var(--gris-oscuro);
+}
+.tec-fb.show{max-height:220px; padding:.6rem .75rem; background:#fff; border-left:3px solid var(--cian)}
+#tecMsg{text-align:center; margin-top:1.2rem; font-weight:800; color:var(--cian-oscuro); min-height:1.4em}
+
+/* ========== RETO 3: PROGRAMAR ROBOT ========== */
+.prog-layout{display:grid; gap:1.3rem; grid-template-columns:1.2fr .8fr;}
+@media(max-width:900px){.prog-layout{grid-template-columns:1fr}}
+.maze-box{
+  background:linear-gradient(160deg,#0f172a,#082f49); border-radius:18px; padding:1.2rem;
+  display:flex; flex-direction:column; align-items:center; gap:1rem;
+  box-shadow:inset 0 0 40px rgba(0,0,0,.4);
+}
+#mazeGrid{
+  display:grid; grid-template-columns:repeat(6, 1fr); grid-template-rows:repeat(6, 1fr);
+  gap:5px; width:100%; max-width:420px; aspect-ratio:1;
+}
+.maze-cell{
+  aspect-ratio:1; width:100%; height:100%; border-radius:8px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:clamp(1rem, 3.2vw, 1.6rem); font-weight:900; line-height:1;
+  overflow:hidden; transition:background .3s, box-shadow .3s; user-select:none;
+}
+.maze-cell.path{
+  background:linear-gradient(150deg,#e2e8f0,#cbd5e1);
+  box-shadow:inset 0 0 0 1px #94a3b8;
+  color:#475569;
+}
+.maze-cell.wall{
+  background:repeating-linear-gradient(45deg,
+    #0f172a 0, #0f172a 4px,
+    #334155 4px, #334155 8px);
+  border:2px solid #64748b;
+  box-shadow:inset 0 0 10px rgba(0,0,0,.85);
+  color:transparent;
+}
+.maze-cell.goal{
+  background:linear-gradient(150deg,#84cc16,#3f6212);
+  box-shadow:inset 0 0 0 2px #65a30d;
+  color:#fff;
+}
+.maze-cell.robot{
+  background:linear-gradient(150deg,#06b6d4,#155e75);
+  box-shadow:inset 0 0 0 3px #67e8f9;
+  color:#fff;
+}
+.prog-controles{display:flex; flex-direction:column; gap:.8rem;}
+.prog-panel{
+  background:#fff; border-radius:14px; padding:1rem; border:1px solid #e2e8f0; box-shadow:var(--sombra);
+}
+.prog-panel h5{
+  font-size:.76rem; letter-spacing:.9px; text-transform:uppercase;
+  color:var(--cian-oscuro); font-weight:900; margin-bottom:.6rem;
+}
+.prog-botones{display:grid; grid-template-columns:1fr 1fr; gap:.4rem;}
+.prog-botones button{
+  font-family:inherit; font-size:.82rem; font-weight:800; cursor:pointer;
+  padding:.65rem .5rem; border-radius:10px; border:2px solid #e2e8f0; background:#fff;
+  color:var(--gris-oscuro); transition:.2s;
+  display:flex; flex-direction:column; align-items:center; gap:.2rem;
+}
+.prog-botones button:hover:not(:disabled){border-color:var(--cian); background:var(--cian-claro); color:var(--cian-oscuro); transform:translateY(-2px)}
+.prog-botones button:disabled{opacity:.5; cursor:not-allowed}
+.prog-botones button .pb-ico{font-size:1.3rem}
+#programaLista{
+  background:#0f172a; border-radius:12px; padding:.8rem; min-height:120px;
+  font-family:var(--mono); font-size:.82rem; color:#bef264;
+  display:flex; flex-direction:column; gap:.25rem; max-height:200px; overflow-y:auto;
+}
+#programaLista .vacio{color:#475569; font-style:italic; font-family:var(--fuente)}
+.prog-comando{
+  background:rgba(6,182,212,.15); border-left:3px solid var(--cian);
+  padding:.25rem .55rem; border-radius:4px; display:flex; justify-content:space-between;
+  color:#67e8f9;
+}
+.prog-comando .pc-num{color:#94a3b8; margin-right:.5rem}
+.prog-acciones{display:flex; gap:.5rem; margin-top:.7rem; flex-wrap:wrap;}
+.prog-acciones button{
+  font-family:inherit; font-size:.8rem; font-weight:800; cursor:pointer;
+  padding:.55rem .95rem; border-radius:10px; border:none; transition:.2s;
+}
+.prog-acciones .pa-run{background:linear-gradient(135deg,var(--lima),var(--lima-oscuro)); color:#fff; flex:1;}
+.prog-acciones .pa-run:hover{transform:translateY(-2px); box-shadow:0 8px 20px rgba(132,204,22,.4)}
+.prog-acciones .pa-run:disabled{opacity:.5; cursor:not-allowed; transform:none; box-shadow:none}
+.prog-acciones .pa-reset{background:#f1f5f9; color:var(--gris-oscuro); border:2px solid #e2e8f0;}
+.prog-acciones .pa-reset:hover{background:var(--gris-claro)}
+.prog-acciones .pa-borrar{background:#fee2e2; color:#991b1b; border:2px solid #fecaca;}
+.prog-acciones .pa-borrar:hover{background:#fecaca}
+#progMsg{
+  text-align:center; font-size:.86rem; font-weight:800; margin-top:.6rem; min-height:1.4em;
+  color:var(--cian-oscuro);
+}
+#progMsg.ok{color:var(--lima-oscuro)}
+#progMsg.err{color:#991b1b}
+
+/* ========== RETO 4: SENSORES Y ACTUADORES ========== */
+.sensor-wrap{display:grid; gap:1rem; grid-template-columns:1fr 1fr;}
+@media(max-width:720px){.sensor-wrap{grid-template-columns:1fr}}
+.sensor-col h4{
+  font-size:.8rem; letter-spacing:.9px; text-transform:uppercase;
+  color:var(--violeta-oscuro); font-weight:900; margin-bottom:.6rem; padding-left:.4rem;
+}
+.sensor-item{
+  background:#fff; border:2px solid #e2e8f0; border-radius:14px; padding:.7rem .9rem;
+  margin-bottom:.5rem; cursor:pointer; transition:.22s; font-size:.86rem; font-weight:700;
+  color:var(--gris-oscuro);
+}
+.sensor-item:hover:not(.matched){border-color:var(--violeta); background:var(--violeta-claro); color:var(--violeta-oscuro); transform:translateX(4px)}
+.sensor-item.sel{background:var(--violeta); color:#fff; border-color:var(--violeta-oscuro)}
+.sensor-item.matched{background:var(--lima-claro); border-color:var(--lima); color:var(--lima-oscuro); cursor:default; opacity:.85}
+.sensor-item.matched::before{content:"✓"; font-weight:900; color:var(--lima); font-size:1rem; margin-right:.35rem}
+.sensor-item.error{animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+#sensorMsg{text-align:center; margin-top:1.2rem; font-weight:800; color:var(--violeta-oscuro); min-height:1.4em}
+
+/* ========== RETO 5: LAZO ABIERTO VS CERRADO ========== */
+.lazo-wrap{display:grid; gap:.9rem; grid-template-columns:repeat(auto-fit,minmax(280px,1fr));}
+.lazo-card{
+  background:#fff; border:2px solid #e2e8f0; border-radius:16px; padding:1rem 1.1rem;
+  display:flex; flex-direction:column; gap:.7rem; transition:.3s;
+}
+.lazo-card .lc-svg{height:60px; display:block; margin:0 auto .2rem;}
+.lazo-card .lc-titulo{font-size:.92rem; font-weight:900; color:var(--azul-oscuro); text-align:center;}
+.lazo-card .lc-desc{font-size:.82rem; color:var(--gris); text-align:center; margin:0; line-height:1.4}
+.lazo-btns{display:flex; gap:.5rem;}
+.lazo-btns button{
+  flex:1; font-family:inherit; font-size:.8rem; font-weight:800; cursor:pointer;
+  padding:.5rem .4rem; border-radius:10px; border:2px solid #e2e8f0; background:#f8fafc; color:var(--gris-oscuro);
+  transition:.2s;
+}
+.lazo-btns button:hover:not(:disabled){border-color:var(--azul); background:var(--azul-claro); color:var(--azul-oscuro)}
+.lazo-btns button:disabled{cursor:default; opacity:.55}
+.lazo-btns button.correct{background:#dcfce7; border-color:#16a34a; color:#15803d; opacity:1}
+.lazo-btns button.wrong{background:#fee2e2; border-color:#dc2626; color:#b91c1c; opacity:1}
+.lazo-fb{
+  font-size:.8rem; border-radius:10px; padding:0; max-height:0; overflow:hidden; transition:.35s; color:var(--gris-oscuro);
+}
+.lazo-fb.show{max-height:220px; padding:.55rem .7rem; background:#f8fafc; border-left:3px solid var(--azul)}
+.lazo-card.done{border-color:var(--azul); background:#f8fafc}
+#lazoMsg{text-align:center; margin-top:1.2rem; font-weight:800; color:var(--azul-oscuro); min-height:1.4em}
+
+/* QUIZ */
+.q{background:#fff; border-radius:16px; padding:1.3rem 1.4rem; box-shadow:var(--sombra);
+  border:1px solid #e2e8f0; margin-bottom:1rem;}
+.q-num{display:inline-block; font-size:.72rem; font-weight:900; letter-spacing:1px; color:#fff;
+  background:var(--cian-oscuro); padding:.2rem .6rem; border-radius:8px; margin-bottom:.6rem;}
+.q h4{font-size:1rem; margin-bottom:.9rem}
+.opts{display:grid; gap:.5rem}
+.opt{text-align:left; font-family:inherit; font-size:.9rem; font-weight:600; cursor:pointer;
+  padding:.7rem .9rem; border-radius:12px; border:2px solid #e2e8f0; background:#f8fafc; color:var(--gris-oscuro);
+  transition:.2s; display:flex; gap:.6rem; align-items:flex-start;}
+.opt:hover:not(:disabled){border-color:var(--cian); background:var(--cian-claro); color:var(--cian-oscuro); transform:translateX(4px)}
+.opt:disabled{cursor:default}
+.opt .letter{flex:0 0 24px; height:24px; border-radius:7px; background:#e2e8f0; color:var(--gris-oscuro);
+  display:grid; place-items:center; font-size:.75rem; font-weight:900;}
+.opt.correct{background:#dcfce7; border-color:#16a34a; color:#14532d}
+.opt.correct .letter{background:#16a34a; color:#fff}
+.opt.wrong{background:#fee2e2; border-color:#dc2626; color:#7f1d1d}
+.opt.wrong .letter{background:#dc2626; color:#fff}
+.expl{margin-top:.85rem; font-size:.86rem; background:#ecfeff; border-left:4px solid var(--cian);
+  padding:.7rem .9rem; border-radius:0 10px 10px 0; color:var(--gris-oscuro); display:none;}
+.expl.show{display:block}
+
+/* VOCABULARIO */
+.voc-grid{display:grid; gap:.6rem; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); margin-bottom:1rem}
+.voc-term{text-align:left; font-family:inherit; font-size:.88rem; font-weight:800; cursor:pointer;
+  padding:.85rem 1rem; border-radius:14px; border:2px solid #e2e8f0; background:#fff;
+  color:var(--gris-oscuro); transition:.25s; display:flex; align-items:center; gap:.5rem;}
+.voc-term:hover{border-color:var(--cian); background:var(--cian-claro); color:var(--cian-oscuro); transform:translateY(-3px)}
+.voc-term.active{background:var(--cian-oscuro); color:#fff; border-color:var(--cian-oscuro)}
+#vocDef{max-height:0; overflow:hidden; transition:max-height .5s cubic-bezier(.2,.8,.2,1), padding .3s;
+  background:linear-gradient(150deg,#155e75,#082f49); color:#fff; border-radius:16px; padding:0 1.4rem;}
+#vocDef.show{max-height:440px; padding:1.3rem 1.4rem}
+#vocDef h4{color:#67e8f9; font-size:1.05rem; margin-bottom:.5rem}
+#vocDef p{color:#cffafe; font-size:.92rem; margin:0}
+
+/* CERTIFICADO */
+#certificado{background:linear-gradient(150deg,#155e75,#082f49); color:#fff; border-radius:26px;
+  padding:2.4rem 1.8rem; box-shadow:var(--sombra-lg); text-align:center; position:relative; overflow:hidden;}
+#certificado::before{content:""; position:absolute; inset:14px; border:2px solid rgba(103,232,249,.35);
+  border-radius:18px; pointer-events:none;}
+#certificado h2{color:#67e8f9; font-size:1.5rem; margin-bottom:.3rem}
+#certificado p.sub{color:#cffafe; font-size:.95rem; max-width:560px; margin:0 auto 1.4rem}
+.cert-name{font-size:clamp(1.6rem,5vw,2.4rem); font-weight:900; letter-spacing:-.5px; margin:.6rem 0 1rem;
+  background:linear-gradient(90deg,#67e8f9,#bef264,#c4b5fd); -webkit-background-clip:text; background-clip:text; color:transparent;}
+.cert-stats{display:grid; gap:.7rem; grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  max-width:820px; margin:0 auto 1.6rem;}
+.cert-stat{background:rgba(255,255,255,.09); border:1px solid rgba(103,232,249,.3);
+  border-radius:14px; padding:.8rem .6rem; text-align:center;}
+.cert-stat .num{font-size:1.35rem; font-weight:900; color:#bef264; line-height:1}
+.cert-stat .lbl{font-size:.7rem; color:#cffafe; text-transform:uppercase; letter-spacing:.9px; font-weight:800; margin-top:.3rem}
+.cert-warn{background:rgba(190,242,100,.14); border:1px solid rgba(190,242,100,.4);
+  color:#ecfccb; font-size:.86rem; padding:.7rem 1rem; border-radius:12px;
+  max-width:600px; margin:0 auto 1.2rem;}
+.cert-note{font-size:.78rem; color:#94a3b8; margin-top:1rem; max-width:560px; margin-left:auto; margin-right:auto;}
+
+/* Toast */
+#toast{position:fixed; bottom:1.4rem; left:50%; transform:translate(-50%,140%); z-index:1200;
+  background:var(--negro); color:#fff; font-weight:700; font-size:.88rem; padding:.85rem 1.4rem;
+  border-radius:999px; box-shadow:var(--sombra-lg); transition:transform .45s cubic-bezier(.2,.8,.2,1);
+  display:flex; align-items:center; gap:.55rem; max-width:92vw; text-align:center;}
+#toast.show{transform:translate(-50%,0)}
+
+footer{background:var(--negro); color:#94a3b8; text-align:center; padding:2.6rem 1.2rem; font-size:.85rem;}
+footer strong{color:#67e8f9}
+
+@media(max-width:640px){
+  .card{padding:1.2rem}
+  .nav-brand span.txt{display:none}
+  #mazeGrid{max-width:340px}
+}
+</style>
+</head>
+<body class="locked">
+
+<div id="loginOverlay">
+  <div class="login-card" id="loginCard"></div>
+</div>
+
+<div id="progresoGlobal"><div id="progresoBarra"></div></div>
+
+<nav>
+  <div class="nav-inner">
+    <div class="nav-brand"><span class="dot"></span><span class="txt">Robots y Sistemas Automáticos</span></div>
+    <div class="nav-user">👤 <span id="navUserName">—</span></div>
+    <div class="nav-links">
+      <a href="#intro">Inicio</a>
+      <a href="#diseno">Diseño</a>
+      <a href="#tecnologias">Tecnologías</a>
+      <a href="#programacion">Programación</a>
+      <a href="#componentes">Componentes</a>
+      <a href="#control">Control</a>
+      <a href="#quiz">Quiz</a>
+      <a href="#certificado">Certificado</a>
+    </div>
+    <div id="progresoPill">0 / 6 retos</div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+  <div class="hero-inner">
+    <div class="badge-top">🤖 Sistemas automáticos</div>
+    <h1>Diseña, construye y <span>programa robots</span></h1>
+    <p class="hero-sub">
+      Hola, <strong id="heroNombre">amigo/a</strong>. Aprende a <strong>diseñar sistemas automáticos</strong>
+      que resuelven tareas por sí mismos, aplicando conocimientos de <strong>mecánica, electrónica,
+      neumática y control</strong>. Con actividades interactivas, un simulador de programación y tu
+      certificado final.
+    </p>
+    <div class="hero-chips">
+      <span class="chip">⚙️ Mecánica</span>
+      <span class="chip">💡 Electrónica</span>
+      <span class="chip">💨 Neumática</span>
+      <span class="chip">🧠 Control</span>
+      <span class="chip">🐍 Programación</span>
+    </div>
+    <div class="hero-cta">
+      <a href="#intro" class="btn btn-primary">🚀 Empezar</a>
+      <a href="#certificado" class="btn btn-ghost">🏆 Mi certificado</a>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============ INTRO ============ -->
+  <section id="intro">
+    <div class="sec-head reveal">
+      <span class="kicker">Punto de partida</span>
+      <h2>Los sistemas automáticos: cuando las máquinas trabajan solas</h2>
+      <p class="lead">
+        Un sistema automático es aquel que <strong>ejecuta tareas de forma autónoma</strong>, sin
+        necesidad de que una persona lo controle continuamente. Los robots son un tipo especial de
+        sistema automático que combina <strong>mecánica</strong> (estructura, motores),
+        <strong>electrónica</strong> (sensores, controladores, actuadores),
+        <strong>programación</strong> (el programa que define su comportamiento) y, cuando hay
+        feedback, <strong>control en lazo cerrado</strong>.
+      </p>
+    </div>
+
+    <!-- TEORÍA AMPLIADA: INTRO -->
+    <div class="teoria reveal">
+      <h3><span class="th-ico">📘</span> ¿Qué es un sistema automático?</h3>
+      <p>
+        Un <strong>sistema automático</strong> es un conjunto de componentes que ejecutan tareas
+        de forma autónoma siguiendo un programa predefinido, sin necesidad de intervención humana
+        continua. Los sistemas automáticos están presentes en multitud de ámbitos: desde una
+        lavadora doméstica hasta una cadena de montaje industrial, pasando por un robot aspirador
+        o un semáforo inteligente.
+      </p>
+
+      <h4>Diferencia entre automático, automático programable y robot</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Tipo</th>
+          <th>Características</th>
+          <th>Ejemplo</th>
+        </tr>
+        <tr>
+          <td><strong>Automático simple</strong></td>
+          <td>Ejecuta una secuencia fija sin posibilidad de cambio.</td>
+          <td>Semáforo con ciclo fijo, tostadora con temporizador.</td>
+        </tr>
+        <tr>
+          <td><strong>Automático programable</strong></td>
+          <td>Se puede reprogramar para adaptarse a tareas distintas.</td>
+          <td>Lavadora con varios programas, PLC industrial.</td>
+        </tr>
+        <tr>
+          <td><strong>Robot</strong></td>
+          <td>Sistema automático programable capaz de moverse, actuar sobre el entorno y percibirlo mediante sensores.</td>
+          <td>Robot industrial, robot aspirador, robot educativo.</td>
+        </tr>
+      </table>
+
+      <h4>Los 4 pilares de un robot</h4>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>⚙️ Mecánica</h5>
+          <p>Estructura, chasis, ruedas, engranajes, motores. La base física que permite el movimiento.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>💡 Electrónica</h5>
+          <p>Sensores que recogen información, controladores que la procesan y actuadores que actúan.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🐍 Programación</h5>
+          <p>El conjunto de instrucciones que define cómo debe comportarse el robot en cada situación.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🧠 Control</h5>
+          <p>Lazo abierto (ejecuta sin comprobar) o cerrado (usa la información de los sensores para ajustar).</p>
+        </div>
+      </div>
+
+      <h4>¿Qué puede hacer un robot?</h4>
+      <p>
+        Un robot puede realizar tres grandes tipos de tareas:
+      </p>
+      <ul>
+        <li><strong>Manipulación:</strong> coger, mover, colocar objetos (brazos robóticos).</li>
+        <li><strong>Movilidad:</strong> desplazarse por el entorno (robots móviles, drones).</li>
+        <li><strong>Interacción con el entorno:</strong> medir, detectar, comunicar (sensores).</li>
+      </ul>
+
+      <h4>Breve historia de la robótica</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Año</th>
+          <th>Hito</th>
+        </tr>
+        <tr>
+          <td><strong>~400 a.C.</strong></td>
+          <td>El matemático griego Arquitas construye una paloma mecánica de madera.</td>
+        </tr>
+        <tr>
+          <td><strong>1495</strong></td>
+          <td>Leonardo da Vinci diseña un caballero mecánico.</td>
+        </tr>
+        <tr>
+          <td><strong>1921</strong></td>
+          <td>Karel Čapek acuña el término "robot" en su obra teatral <em>R.U.R.</em></td>
+        </tr>
+        <tr>
+          <td><strong>1961</strong></td>
+          <td>Se instala Unimate, primer robot industrial, en una planta de General Motors.</td>
+        </tr>
+        <tr>
+          <td><strong>1997</strong></td>
+          <td>El robot Sojourner explora Marte.</td>
+        </tr>
+        <tr>
+          <td><strong>2002</strong></td>
+          <td>iRobot lanza la primera Roomba, robot aspirador doméstico.</td>
+        </tr>
+        <tr>
+          <td><strong>2010s</strong></td>
+          <td>Auge de los robots educativos (Arduino, LEGO Mindstorms) y de los drones.</td>
+        </tr>
+        <tr>
+          <td><strong>2020s</strong></td>
+          <td>Robots colaborativos (cobots), IA integrada, robótica blanda.</td>
+        </tr>
+      </table>
+
+      <h4>¿Dónde se usan los robots actualmente?</h4>
+      <ul>
+        <li><strong>Industria:</strong> fabricación, soldadura, pintura, montaje, control de calidad.</li>
+        <li><strong>Medicina:</strong> cirugía asistida, prótesis, rehabilitación, robots de desinfección.</li>
+        <li><strong>Agricultura:</strong> siembra, recolección, análisis del suelo, drones de vigilancia.</li>
+        <li><strong>Logística:</strong> almacenes automatizados, reparto, clasificación de paquetes.</li>
+        <li><strong>Exploración:</strong> espacio, fondo marino, volcanes, zonas contaminadas.</li>
+        <li><strong>Doméstico:</strong> aspiradoras, cortacésped, cocinas automatizadas.</li>
+        <li><strong>Educación:</strong> robots didácticos para aprender programación y mecánica.</li>
+      </ul>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> un robot es mucho más que una máquina. Es un
+        <strong>sistema integrado</strong> en el que todas las partes están conectadas: si cambias
+        un componente (por ejemplo, un motor por otro más potente), puede que necesites cambiar el
+        controlador, el programa, la estructura e incluso la fuente de alimentación.
+      </div>
+
+      <h4>El papel de la robótica en la sociedad actual</h4>
+      <p>
+        La robótica está transformando el mundo laboral, la medicina, la agricultura y la vida
+        cotidiana. Algunos retos que plantea:
+      </p>
+      <ul>
+        <li><strong>Sustitución de empleos:</strong> algunos trabajos repetitivos se automatizan.</li>
+        <li><strong>Creación de nuevos empleos:</strong> técnicos en robótica, programadores, mantenedores.</li>
+        <li><strong>Ética:</strong> responsabilidad en caso de accidentes, decisiones autónomas de los robots.</li>
+        <li><strong>Seguridad:</strong> robots colaborativos que trabajan junto a personas.</li>
+        <li><strong>Educación:</strong> necesidad de formar en competencias STEM desde edades tempranas.</li>
+      </ul>
+    </div>
+
+    <div class="grid g4">
+      <div class="pilar reveal" style="border-top-color:var(--cian)">
+        <span class="ico">⚙️</span>
+        <h4>Mecánica</h4>
+        <p>Estructura, chasis, ruedas, engranajes, motores. La base física que permite el movimiento.</p>
+      </div>
+      <div class="pilar reveal" style="border-top-color:var(--lima)">
+        <span class="ico">💡</span>
+        <h4>Electrónica</h4>
+        <p>Sensores que recogen información, controladores que la procesan y actuadores que actúan.</p>
+      </div>
+      <div class="pilar reveal" style="border-top-color:var(--violeta)">
+        <span class="ico">🐍</span>
+        <h4>Programación</h4>
+        <p>El conjunto de instrucciones que define cómo debe comportarse el robot en cada situación.</p>
+      </div>
+      <div class="pilar reveal" style="border-top-color:var(--azul)">
+        <span class="ico">🧠</span>
+        <h4>Control</h4>
+        <p>Lazo abierto (ejecuta sin comprobar) o cerrado (usa la información de los sensores para ajustar).</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== RETO 1: CONSTRUCTOR DE ROBOT ========== -->
+  <section id="diseno">
+    <div class="sec-head reveal">
+      <span class="kicker lima">Bloque 1</span>
+      <h2>⚙️ Diseña un robot para una misión</h2>
+      <p class="lead">
+        Todo robot se diseña con un <strong>objetivo concreto</strong>. Elegir bien los componentes
+        (chasis, motores, sensores, controlador y alimentación) es la diferencia entre un robot
+        que funciona y uno que no sirve.
+      </p>
+    </div>
+
+    <!-- TEORÍA EXPANDIDA: DISEÑO -->
+    <div class="teoria lima reveal">
+      <h3><span class="th-ico">⚙️</span> Diseño mecánico de un robot</h3>
+      <p>
+        El <strong>diseño mecánico</strong> define la estructura física del robot: su forma, sus
+        dimensiones, sus materiales y su sistema de tracción. Es la base sobre la que se montan
+        todos los demás componentes.
+      </p>
+
+      <h4>Las 6 partes fundamentales de un robot</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Parte</th>
+          <th>Función</th>
+          <th>Ejemplos</th>
+        </tr>
+        <tr>
+          <td><strong>Chasis</strong></td>
+          <td>Estructura que sostiene todos los componentes.</td>
+          <td>Placa de aluminio, impresión 3D, madera, acrílico.</td>
+        </tr>
+        <tr>
+          <td><strong>Sistema de tracción</strong></td>
+          <td>Permite el desplazamiento del robot.</td>
+          <td>Ruedas, orugas, patas, hélices.</td>
+        </tr>
+        <tr>
+          <td><strong>Motores</strong></td>
+          <td>Transforman energía eléctrica en movimiento.</td>
+          <td>Motores DC, servos, paso a paso.</td>
+        </tr>
+        <tr>
+          <td><strong>Controlador</strong></td>
+          <td>Procesa la información y ejecuta el programa.</td>
+          <td>Arduino, Raspberry Pi, PLC.</td>
+        </tr>
+        <tr>
+          <td><strong>Sensores</strong></td>
+          <td>Captan información del entorno.</td>
+          <td>Ultrasónico, IR, PIR, temperatura.</td>
+        </tr>
+        <tr>
+          <td><strong>Fuente de alimentación</strong></td>
+          <td>Suministra energía a todo el sistema.</td>
+          <td>Pilas, baterías LiPo, paneles solares.</td>
+        </tr>
+      </table>
+
+      <h4>Tipos de chasis y sistemas de tracción</h4>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>🛞 2 ruedas + 1 rueda loca</h5>
+          <p>Configuración clásica de robot móvil. Muy maniobrable, gira sobre su eje.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🚙 4 ruedas motrices</h5>
+          <p>Más estabilidad y tracción, pero los giros son más complejos de programar.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>⛓️ Orugas</h5>
+          <p>Excelente agarre en terrenos irregulares, pero más complejo y pesado.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🦿 Patas</h5>
+          <p>Máxima adaptabilidad al terreno, pero muy complejo de controlar y programar.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🚁 Hélices</h5>
+          <p>Vuelo. Requiere control muy preciso y sensores de orientación.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🎯 Ruedas omnidireccionales</h5>
+          <p>Permiten desplazamiento en cualquier dirección sin girar. Muy versátiles.</p>
+        </div>
+      </div>
+
+      <h4>Los motores: el corazón del movimiento</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Tipo</th>
+          <th>Características</th>
+          <th>Cuándo usarlo</th>
+        </tr>
+        <tr>
+          <td><strong>Motor DC</strong></td>
+          <td>Gira continuamente al aplicar tensión. Velocidad proporcional a la tensión.</td>
+          <td>Ruedas, hélices, cintas transportadoras.</td>
+        </tr>
+        <tr>
+          <td><strong>Servomotor</strong></td>
+          <td>Se coloca en un ángulo preciso (0-180°). Muy preciso.</td>
+          <td>Brazos robóticos, timones, articulaciones.</td>
+        </tr>
+        <tr>
+          <td><strong>Motor paso a paso</strong></td>
+          <td>Gira en pasos discretos muy precisos. Sin feedback.</td>
+          <td>Impresoras 3D, escáneres, posicionadores.</td>
+        </tr>
+        <tr>
+          <td><strong>Motor con reductora</strong></td>
+          <td>Reduce velocidad y aumenta el par motor.</td>
+          <td>Robots móviles que necesitan fuerza.</td>
+        </tr>
+        <tr>
+          <td><strong>Motor brushless</strong></td>
+          <td>Sin escobillas, alta eficiencia y duración.</td>
+          <td>Drones, vehículos eléctricos, robótica avanzada.</td>
+        </tr>
+      </table>
+
+      <h4>El par motor y la velocidad</h4>
+      <p>
+        Dos conceptos clave al elegir un motor:
+      </p>
+      <ul>
+        <li><strong>Par motor (torque):</strong> fuerza de giro que puede ejercer. Se mide en N·m o kg·cm.</li>
+        <li><strong>Velocidad:</strong> revoluciones por minuto (RPM).</li>
+        <li><strong>Relación:</strong> a mayor velocidad, menor par; y viceversa. Las reductoras intercambian velocidad por par.</li>
+      </ul>
+      <div class="ejemplo">
+        <strong>Ejemplo práctico:</strong> un motor DC de 12 V y 200 RPM puede tener dificultades
+        para subir una rampa. Añadiendo una reductora 10:1, la velocidad baja a 20 RPM pero el
+        par se multiplica por 10: subirá la rampa fácilmente.
+      </div>
+
+      <h4>Materiales para el chasis</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Material</th>
+          <th>Ventajas</th>
+          <th>Inconvenientes</th>
+        </tr>
+        <tr>
+          <td><strong>Aluminio</strong></td>
+          <td>Ligero, resistente, fácil de mecanizar.</td>
+          <td>Más caro que el plástico o la madera.</td>
+        </tr>
+        <tr>
+          <td><strong>Acrílico (PMMA)</strong></td>
+          <td>Ligero, transparente, fácil de cortar con láser.</td>
+          <td>Frágil ante impactos fuertes.</td>
+        </tr>
+        <tr>
+          <td><strong>PLA (impresión 3D)</strong></td>
+          <td>Personalización total, formas complejas.</td>
+          <td>Menos resistente que el aluminio.</td>
+        </tr>
+        <tr>
+          <td><strong>Madera (contrachapado)</strong></td>
+          <td>Barata, fácil de trabajar.</td>
+          <td>Más pesada y menos precisa.</td>
+        </tr>
+        <tr>
+          <td><strong>Fibra de carbono</strong></td>
+          <td>Ligerísima y muy rígida.</td>
+          <td>Muy cara y difícil de mecanizar.</td>
+        </tr>
+      </table>
+
+      <h4>Las 4 fases del diseño de un robot</h4>
+      <div class="fases">
+        <div class="fase">
+          <span class="fase-num">FASE 1</span>
+          <h6>🎯 Definir misión</h6>
+          <p>¿Qué tiene que hacer el robot? ¿En qué entorno?</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">FASE 2</span>
+          <h6>📐 Diseñar estructura</h6>
+          <p>Chasis, tracción, distribución de componentes.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">FASE 3</span>
+          <h6>⚙️ Elegir componentes</h6>
+          <p>Motores, sensores, controlador, alimentación.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">FASE 4</span>
+          <h6>🛠️ Construir y probar</h6>
+          <p>Montar, programar, validar, ajustar.</p>
+        </div>
+      </div>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> el diseño de un robot siempre parte de la
+        <strong>misión</strong>. No se eligen primero los componentes y luego se piensa qué hacer
+        con ellos: se define primero el objetivo y después se selecciona todo lo necesario para
+        conseguirlo.
+      </div>
+    </div>
+
+    <div class="actividad reveal" style="border-top:6px solid var(--lima)">
+      <span class="kicker lima">🎮 Reto 1 · Constructor de robot</span>
+      <h3>Diseña un robot que sigue una línea y se detiene ante obstáculos</h3>
+      <p class="intro">
+        Selecciona un componente en cada uno de los 5 bloques. La app calculará la
+        <strong>compatibilidad del diseño</strong> con la misión y te explicará cada elección.
+      </p>
+
+      <div class="mision-card">
+        <h4>🎯 Misión del robot</h4>
+        <p>
+          El robot debe desplazarse por el suelo <strong>siguiendo una línea negra pintada</strong> sobre
+          fondo blanco, y <strong>detenerse automáticamente</strong> cuando detecte un obstáculo delante.
+          Se alimentará con batería recargable y debe ser programable para adaptarse a distintos recorridos.
+        </p>
+      </div>
+
+      <div class="robot-builder" id="robotBuilder"></div>
+
+      <div class="robot-score">
+        <div class="num" id="robotScore">0%</div>
+        <div class="lbl">Compatibilidad con la misión</div>
+        <div class="prog"><div id="robotProg"></div></div>
+        <div class="msg" id="robotMsg">Selecciona componentes en cada bloque para empezar.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== RETO 2: CLASIFICA POR TECNOLOGÍA ========== -->
+  <section id="tecnologias">
+    <div class="sec-head reveal">
+      <span class="kicker azul">Bloque 2</span>
+      <h2>🔧 Clasifica los componentes por tipo de tecnología</h2>
+      <p class="lead">
+        Un robot combina distintas <strong>tecnologías</strong>: <strong>mecánica</strong> (estructura y
+        transmisión del movimiento), <strong>electrónica</strong> (control de señales eléctricas),
+        <strong>neumática</strong> (uso de aire comprimido) y <strong>control</strong> (programa y
+        realimentación). Reconocer a qué tecnología pertenece cada componente es esencial para
+        entender cómo funciona el robot.
+      </p>
+    </div>
+
+    <!-- TEORÍA EXPANDIDA: TECNOLOGÍAS -->
+    <div class="teoria azul reveal">
+      <h3><span class="th-ico">🔧</span> Las tecnologías que integra un robot</h3>
+      <p>
+        Un robot no es una sola tecnología: es la <strong>integración de varias</strong>. Conocer
+        cada una y saber qué aporta es imprescindible para diseñar, construir y entender cualquier
+        sistema automático.
+      </p>
+
+      <h4>1. Mecánica</h4>
+      <p>
+        La <strong>mecánica</strong> se encarga de la estructura y de la transmisión del movimiento.
+        Sin mecánica, no hay robot: no habría estructura que sostenga los componentes ni forma de
+        que los motores muevan las ruedas.
+      </p>
+      <ul>
+        <li><strong>Estructura:</strong> chasis, soportes, fijaciones.</li>
+        <li><strong>Transmisión:</strong> engranajes, poleas, correas, cadenas, husillos.</li>
+        <li><strong>Rodamientos y ejes:</strong> permiten el giro suave y reducen el rozamiento.</li>
+        <li><strong>Suspensión:</strong> amortiguación de vibraciones.</li>
+        <li><strong>Materiales:</strong> aluminio, acero, plásticos técnicos, composites.</li>
+      </ul>
+
+      <h4>2. Electrónica</h4>
+      <p>
+        La <strong>electrónica</strong> controla las señales eléctricas que permiten leer los
+        sensores, procesar la información, controlar los motores y comunicarse.
+      </p>
+      <ul>
+        <li><strong>Componentes básicos:</strong> resistencias, condensadores, diodos, transistores.</li>
+        <li><strong>Circuitos integrados:</strong> microcontroladores, amplificadores, reguladores.</li>
+        <li><strong>Circuitos de potencia:</strong> puentes H, drivers de motores, relés.</li>
+        <li><strong>Alimentación:</strong> fuentes, reguladores de tensión, baterías.</li>
+        <li><strong>Comunicaciones:</strong> I2C, SPI, UART, Wi-Fi, Bluetooth.</li>
+      </ul>
+
+      <h4>3. Neumática e hidráulica</h4>
+      <p>
+        La <strong>neumática</strong> usa aire comprimido y la <strong>hidráulica</strong> aceite a
+        presión para generar movimiento. Son tecnologías muy usadas en automatización industrial
+        porque ofrecen mucha fuerza con componentes sencillos.
+      </p>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Aspecto</th>
+          <th>Neumática</th>
+          <th>Hidráulica</th>
+        </tr>
+        <tr>
+          <td><strong>Fluido</strong></td>
+          <td>Aire comprimido</td>
+          <td>Aceite a presión</td>
+        </tr>
+        <tr>
+          <td><strong>Presión típica</strong></td>
+          <td>6-10 bares</td>
+          <td>100-300 bares</td>
+        </tr>
+        <tr>
+          <td><strong>Fuerza</strong></td>
+          <td>Moderada</td>
+          <td>Muy alta</td>
+        </tr>
+        <tr>
+          <td><strong>Precisión</strong></td>
+          <td>Media</td>
+          <td>Alta</td>
+        </tr>
+        <tr>
+          <td><strong>Aplicaciones</strong></td>
+          <td>Pinzas, cilindros, puertas automáticas.</td>
+          <td>Excavadoras, prensas, dirección asistida.</td>
+        </tr>
+        <tr>
+          <td><strong>Ventajas</strong></td>
+          <td>Limpia, rápida, sencilla, barata.</td>
+          <td>Muy potente, precisa.</td>
+        </tr>
+        <tr>
+          <td><strong>Inconvenientes</strong></td>
+          <td>Poco precisa, ruidosa.</td>
+          <td>Puede tener fugas, más cara, más sucia.</td>
+        </tr>
+      </table>
+
+      <h4>4. Control</h4>
+      <p>
+        El <strong>control</strong> es la capa que decide qué hacer y cuándo. Incluye el programa
+        que ejecuta el robot, los algoritmos que comparan lo medido con lo deseado y las señales
+        que envían a los actuadores.
+      </p>
+      <ul>
+        <li><strong>Controlador:</strong> Arduino, Raspberry Pi, PLC.</li>
+        <li><strong>Programa:</strong> conjunto de instrucciones que definen el comportamiento.</li>
+        <li><strong>Algoritmos:</strong> lógica, comparación, decisión, secuenciación.</li>
+        <li><strong>Realimentación:</strong> uso de sensores para ajustar el comportamiento.</li>
+        <li><strong>Comunicación:</strong> coordinación con otros sistemas o con personas.</li>
+      </ul>
+
+      <h4>¿Cómo trabajan juntas las tecnologías?</h4>
+      <p>
+        En un robot, las tecnologías no funcionan por separado: están <strong>integradas</strong>.
+        El siguiente ejemplo muestra el flujo de información completo:
+      </p>
+      <div class="ejemplo">
+        <strong>Ejemplo:</strong> un robot seguidor de línea.<br>
+        1. El <strong>sensor IR</strong> (electrónica) detecta si está sobre línea blanca o negra.<br>
+        2. El <strong>controlador</strong> (control) compara la lectura con lo esperado.<br>
+        3. El <strong>programa</strong> decide qué hacer: acelerar, girar, parar.<br>
+        4. El <strong>puente H</strong> (electrónica) envía la corriente adecuada.<br>
+        5. Los <strong>motores</strong> (mecánica) giran.<br>
+        6. Las <strong>ruedas</strong> (mecánica) mueven el robot.<br>
+        7. El ciclo se repite cientos de veces por segundo (realimentación).
+      </div>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> entender un robot es entender cómo se
+        <strong>combinan</strong> mecánica, electrónica, neumática e informática. Un fallo en
+        cualquiera de ellas hace fallar todo el sistema.
+      </div>
+    </div>
+
+    <div class="actividad reveal" style="border-top:6px solid var(--azul)">
+      <span class="kicker azul">🎮 Reto 2 · Clasifica por tecnología</span>
+      <h3>¿A qué tecnología pertenece cada componente?</h3>
+      <p class="intro">
+        Lee la descripción de cada componente y elige a qué tipo de tecnología pertenece. Recibirás
+        feedback inmediato con la explicación. Hay 12 componentes en total (3 de cada categoría).
+      </p>
+
+      <div class="tecnologias-legend">
+        <span class="tl-mec">⚙️ Mecánica</span>
+        <span class="tl-elec">⚡ Electrónica</span>
+        <span class="tl-neum">💨 Neumática</span>
+        <span class="tl-control">🧠 Control</span>
+      </div>
+
+      <div class="tec-grid" id="tecGrid"></div>
+      <div id="tecMsg"></div>
+    </div>
+  </section>
+
+  <!-- ========== RETO 3: PROGRAMAR ROBOT ========== -->
+  <section id="programacion">
+    <div class="sec-head reveal">
+      <span class="kicker violeta">Bloque 3</span>
+      <h2>🐍 Programa al robot para salir del laberinto</h2>
+      <p class="lead">
+        Un robot sin programa no hace nada. El programa define qué hacer en cada momento.
+        Aquí vas a escribir un <strong>programa secuencial</strong> para que el robot llegue
+        hasta la meta evitando las paredes. Analiza el laberinto, planifica el recorrido y
+        añade los comandos en orden.
+      </p>
+    </div>
+
+    <!-- TEORÍA EXPANDIDA: PROGRAMACIÓN -->
+    <div class="teoria violeta reveal">
+      <h3><span class="th-ico">🐍</span> Programación de robots</h3>
+      <p>
+        Un <strong>programa</strong> es un conjunto ordenado de instrucciones que definen el
+        comportamiento del robot. Programar es <strong>traducir una tarea</strong> en una secuencia
+        de comandos que el controlador pueda ejecutar.
+      </p>
+
+      <h4>Los 3 tipos de estructuras de programación</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Estructura</th>
+          <th>Función</th>
+          <th>Ejemplo</th>
+        </tr>
+        <tr>
+          <td><strong>Secuencia</strong></td>
+          <td>Ejecuta instrucciones una tras otra.</td>
+          <td>"Avanza, gira, avanza, para".</td>
+        </tr>
+        <tr>
+          <td><strong>Condicional (if)</strong></td>
+          <td>Ejecuta un bloque si se cumple una condición.</td>
+          <td>"Si detecta obstáculo, para".</td>
+        </tr>
+        <tr>
+          <td><strong>Bucle (while/for)</strong></td>
+          <td>Repite un bloque mientras se cumple una condición.</td>
+          <td>"Mientras no llegues a la meta, avanza".</td>
+        </tr>
+      </table>
+
+      <h4>El diagrama de flujo</h4>
+      <p>
+        Un <strong>diagrama de flujo</strong> es una representación gráfica de un algoritmo. Es
+        la mejor herramienta para planificar el programa antes de escribirlo.
+      </p>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Símbolo</th>
+          <th>Significado</th>
+        </tr>
+        <tr>
+          <td><strong>Óvalo</strong></td>
+          <td>Inicio o fin del programa.</td>
+        </tr>
+        <tr>
+          <td><strong>Rectángulo</strong></td>
+          <td>Acción o proceso.</td>
+        </tr>
+        <tr>
+          <td><strong>Rombo</strong></td>
+          <td>Decisión (sí/no).</td>
+        </tr>
+        <tr>
+          <td><strong>Paralelogramo</strong></td>
+          <td>Entrada o salida de datos.</td>
+        </tr>
+        <tr>
+          <td><strong>Flecha</strong></td>
+          <td>Dirección del flujo.</td>
+        </tr>
+      </table>
+
+      <h4>Lenguajes de programación para robótica</h4>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>Scratch (bloques)</h5>
+          <p>Programación visual por bloques. Ideal para iniciación y proyectos educativos.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>Arduino (C++)</h5>
+          <p>Lenguaje textual, cercano al hardware. El estándar educativo en robótica.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>Python</h5>
+          <p>Lenguaje muy legible y versátil. Usado con Raspberry Pi y en IA.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>ROS</h5>
+          <p>Robot Operating System. Framework profesional para robots complejos.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>Ladder (PLC)</h5>
+          <p>Lenguaje gráfico para autómatas industriales. Simula esquemas eléctricos.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>Blockly</h5>
+          <p>Programación por bloques que se puede exportar a código textual.</p>
+        </div>
+      </div>
+
+      <h4>Estructuras básicas de un programa de robot</h4>
+      <div class="ejemplo">
+        <strong>Ejemplo de programa secuencial en pseudocódigo:</strong><br>
+        <code>INICIO</code><br>
+        &nbsp;&nbsp;configurar pines de motor y sensores<br>
+        &nbsp;&nbsp;repetir:<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;leer sensor de línea<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;si sobre línea → avanzar<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;si no sobre línea → girar hacia la línea<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;si sensor ultrasónico &lt; 20 cm → parar<br>
+        &nbsp;&nbsp;mientras no llegues a la meta<br>
+        <code>FIN</code>
+      </div>
+
+      <h4>Variables y constantes</h4>
+      <p>
+        En programación, las <strong>variables</strong> son espacios donde guardamos valores que
+        pueden cambiar (por ejemplo, la velocidad del motor). Las <strong>constantes</strong> son
+        valores que no cambian (por ejemplo, el número de pines del controlador).
+      </p>
+
+      <h4>Depuración: encontrar y corregir errores</h4>
+      <p>
+        Los programas casi nunca funcionan a la primera. La <strong>depuración</strong> consiste en
+        encontrar los errores y corregirlos. Tipos de errores:
+      </p>
+      <ul>
+        <li><strong>Errores de sintaxis:</strong> el programa no compila porque está mal escrito.</li>
+        <li><strong>Errores lógicos:</strong> el programa compila, pero hace algo distinto de lo que queremos.</li>
+        <li><strong>Errores de hardware:</strong> el programa está bien, pero un componente está mal conectado.</li>
+      </ul>
+      <p>
+        Técnicas útiles de depuración:
+      </p>
+      <ul>
+        <li>Imprimir valores por el monitor serie para ver qué está pasando.</li>
+        <li>Dividir el programa en partes pequeñas y probarlas por separado.</li>
+        <li>Comprobar las conexiones antes de asumir que el programa está mal.</li>
+        <li>Leer los mensajes de error del compilador con calma.</li>
+      </ul>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> programar no es escribir código de memoria: es
+        <strong>pensar el problema</strong>, planificar la solución, escribirla, probarla y
+        mejorarla. El código es solo la última parte del proceso.
+      </div>
+    </div>
+
+    <div class="actividad reveal" style="border-top:6px solid var(--violeta)">
+      <span class="kicker violeta">🎮 Reto 3 · Programa al robot</span>
+      <h3>Laberinto 6×6: llega hasta la meta verde</h3>
+      <p class="intro">
+        El robot (celda cian con flecha) comienza en la esquina superior izquierda mirando hacia
+        la derecha. Las <strong>paredes</strong> se muestran como bloques oscuros con rayado diagonal
+        y borde gris. Los caminos libres son celdas grises claras. La <strong>meta</strong> es la
+        celda verde con diana. Usa los comandos para llevar al robot hasta ella.
+      </p>
+
+      <div class="prog-layout">
+        <div class="maze-box">
+          <div id="mazeGrid"></div>
+          <div id="progMsg">Añade comandos al programa y pulsa ▶ Ejecutar.</div>
+        </div>
+
+        <div class="prog-controles">
+          <div class="prog-panel">
+            <h5>➕ Añadir comando</h5>
+            <div class="prog-botones">
+              <button data-cmd="avanza"><span class="pb-ico">⬆️</span>Avanza</button>
+              <button data-cmd="izquierda"><span class="pb-ico">↺</span>Gira ←</button>
+              <button data-cmd="derecha"><span class="pb-ico">↻</span>Gira →</button>
+              <button data-cmd="espera"><span class="pb-ico">⏸️</span>Espera</button>
+            </div>
+          </div>
+
+          <div class="prog-panel">
+            <h5>📋 Programa</h5>
+            <div id="programaLista"><span class="vacio">Aún no has añadido comandos.</span></div>
+            <div class="prog-acciones">
+              <button class="pa-run" id="btnEjecutar">▶ Ejecutar</button>
+              <button class="pa-borrar" id="btnBorrarUltimo">🗑️ Borrar último</button>
+              <button class="pa-reset" id="btnReset">🔄 Reiniciar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== RETO 4: SENSORES Y ACTUADORES ========== -->
+  <section id="componentes">
+    <div class="sec-head reveal">
+      <span class="kicker">Bloque 4</span>
+      <h2>🔬 Sensores y actuadores: los sentidos y los músculos del robot</h2>
+      <p class="lead">
+        Los <strong>sensores</strong> captan información del entorno y la convierten en señales
+        eléctricas. Los <strong>actuadores</strong> convierten señales eléctricas en acciones
+        físicas (movimiento, luz, sonido). Saber qué hace cada uno es imprescindible para diseñar
+        cualquier sistema automático.
+      </p>
+    </div>
+
+    <!-- TEORÍA EXPANDIDA: SENSORES Y ACTUADORES -->
+    <div class="teoria violeta reveal">
+      <h3><span class="th-ico">🔬</span> Sensores, actuadores y controladores</h3>
+      <p>
+        Todo sistema automático se basa en tres tipos de componentes: <strong>sensores</strong>
+        que perciben, <strong>controladores</strong> que deciden y <strong>actuadores</strong> que
+        actúan. Entender qué hace cada uno y cómo se conectan es la base de la robótica.
+      </p>
+
+      <h4>Los sensores: los sentidos del robot</h4>
+      <p>
+        Un <strong>sensor</strong> es un dispositivo que capta una magnitud física del entorno y la
+        convierte en una señal eléctrica interpretable por el controlador. Los sensores se clasifican
+        según la magnitud que miden:
+      </p>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Magnitud</th>
+          <th>Sensor típico</th>
+          <th>Aplicación</th>
+        </tr>
+        <tr>
+          <td><strong>Distancia</strong></td>
+          <td>Ultrasónico HC-SR04, IR de distancia</td>
+          <td>Detectar obstáculos, medir huecos.</td>
+        </tr>
+        <tr>
+          <td><strong>Luz</strong></td>
+          <td>LDR, fotodiodo, sensor de color</td>
+          <td>Seguidor de línea, detectar amanecer.</td>
+        </tr>
+        <tr>
+          <td><strong>Temperatura</strong></td>
+          <td>Termistor NTC, LM35, DHT11</td>
+          <td>Termostatos, control climático.</td>
+        </tr>
+        <tr>
+          <td><strong>Movimiento</strong></td>
+          <td>PIR, acelerómetro, giroscopio</td>
+          <td>Alarmas, detectar caídas, orientación.</td>
+        </tr>
+        <tr>
+          <td><strong>Presión</strong></td>
+          <td>Sensor de presión barométrica</td>
+          <td>Altímetros, detectar pulsaciones.</td>
+        </tr>
+        <tr>
+          <td><strong>Humedad</strong></td>
+          <td>DHT11, sensor capacitivo de suelo</td>
+          <td>Riego automático, control ambiental.</td>
+        </tr>
+        <tr>
+          <td><strong>Gas</strong></td>
+          <td>MQ-2, MQ-135</td>
+          <td>Detectar humo, gas, calidad del aire.</td>
+        </tr>
+        <tr>
+          <td><strong>Sonido</strong></td>
+          <td>Micrófono, sensor de sonido</td>
+          <td>Reconocer órdenes, detectar ruidos.</td>
+        </tr>
+      </table>
+
+      <h4>Tipos de señal: analógica vs. digital</h4>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>📊 Sensor analógico</h5>
+          <p>Entrega un valor continuo (por ejemplo, una tensión entre 0 y 5 V). Ejemplo: LDR, termistor.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🔢 Sensor digital</h5>
+          <p>Entrega un valor discreto (0 o 1). Ejemplo: PIR, sensor de final de carrera.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🌐 Sensor digital con bus</h5>
+          <p>Entrega datos codificados por un bus de comunicación. Ejemplo: DHT11, IMU.</p>
+        </div>
+      </div>
+
+      <h4>Los actuadores: los músculos del robot</h4>
+      <p>
+        Un <strong>actuador</strong> convierte una señal eléctrica en una acción física:
+        movimiento, luz, sonido, calor. Los principales tipos son:
+      </p>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Actuador</th>
+          <th>Convierte</th>
+          <th>Uso típico</th>
+        </tr>
+        <tr>
+          <td><strong>Motor DC</strong></td>
+          <td>Electricidad → movimiento rotatorio continuo</td>
+          <td>Ruedas, hélices, cintas.</td>
+        </tr>
+        <tr>
+          <td><strong>Servomotor</strong></td>
+          <td>Electricidad → ángulo preciso (0-180°)</td>
+          <td>Brazos, timones, articulaciones.</td>
+        </tr>
+        <tr>
+          <td><strong>Motor paso a paso</strong></td>
+          <td>Electricidad → giro en pasos discretos</td>
+          <td>Impresoras 3D, CNC.</td>
+        </tr>
+        <tr>
+          <td><strong>LED</strong></td>
+          <td>Electricidad → luz</td>
+          <td>Indicadores, pantallas, iluminación.</td>
+        </tr>
+        <tr>
+          <td><strong>Zumbador</strong></td>
+          <td>Electricidad → sonido</td>
+          <td>Alarmas, avisos sonoros.</td>
+        </tr>
+        <tr>
+          <td><strong>Resistencia calefactora</strong></td>
+          <td>Electricidad → calor</td>
+          <td>Hornos, calentadores.</td>
+        </tr>
+        <tr>
+          <td><strong>Cilindro neumático</strong></td>
+          <td>Aire comprimido → movimiento lineal</td>
+          <td>Pinzas, prensas, puertas.</td>
+        </tr>
+        <tr>
+          <td><strong>Relé</strong></td>
+          <td>Pequeña señal → conmutar alta potencia</td>
+          <td>Encender motores, luces, bombas.</td>
+        </tr>
+      </table>
+
+      <h4>El controlador: el cerebro del robot</h4>
+      <p>
+        El <strong>controlador</strong> es el componente que ejecuta el programa: lee los sensores,
+        decide qué hacer y envía las órdenes a los actuadores. Los controladores más usados en
+        robótica educativa son:
+      </p>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Controlador</th>
+          <th>Características</th>
+          <th>Aplicaciones</th>
+        </tr>
+        <tr>
+          <td><strong>Arduino Uno</strong></td>
+          <td>Microcontrolador ATmega328. 14 pines digitales, 6 analógicos. 16 MHz.</td>
+          <td>Proyectos educativos, control de motores, lectura de sensores.</td>
+        </tr>
+        <tr>
+          <td><strong>Arduino Mega</strong></td>
+          <td>Más pines y memoria. 54 digitales, 16 analógicos.</td>
+          <td>Proyectos con muchos sensores y actuadores.</td>
+        </tr>
+        <tr>
+          <td><strong>ESP32</strong></td>
+          <td>Wi-Fi y Bluetooth integrados. Doble núcleo, más rápido.</td>
+          <td>IoT, robots conectados.</td>
+        </tr>
+        <tr>
+          <td><strong>Raspberry Pi</strong></td>
+          <td>Ordenador completo con Linux. GPIO, USB, HDMI.</td>
+          <td>Visión artificial, IA, robots complejos.</td>
+        </tr>
+        <tr>
+          <td><strong>micro:bit</strong></td>
+          <td>Placa educativa con LEDs, sensores integrados, radio.</td>
+          <td>Iniciación, proyectos escolares.</td>
+        </tr>
+        <tr>
+          <td><strong>PLC</strong></td>
+          <td>Robusto, industrial, programable en Ladder.</td>
+          <td>Automatización de fábricas.</td>
+        </tr>
+      </table>
+
+      <h4>Otros componentes esenciales</h4>
+      <ul>
+        <li><strong>Puente H:</strong> permite invertir el sentido de giro de un motor DC.</li>
+        <li><strong>Driver de motor:</strong> amplifica la señal del controlador para mover motores potentes.</li>
+        <li><strong>Regulador de tensión:</strong> mantiene estable la tensión de alimentación.</li>
+        <li><strong>Resistencias pull-up/pull-down:</strong> aseguran niveles lógicos estables en entradas digitales.</li>
+        <li><strong>Condensadores de desacoplo:</strong> filtran ruido eléctrico.</li>
+        <li><strong>Protoboard:</strong> placa para montar circuitos sin soldadura.</li>
+      </ul>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> diseñar un robot es <strong>combinar sensores,
+        controlador y actuadores</strong> de forma coherente con la misión. Un sensor inadecuado
+        o un actuador mal dimensionado pueden arruinar el proyecto, aunque el programa sea perfecto.
+      </div>
+    </div>
+
+    <div class="actividad reveal" style="border-top:6px solid var(--violeta)">
+      <span class="kicker violeta">🎮 Reto 4 · Empareja componentes</span>
+      <h3>Cada sensor o actuador con su función</h3>
+      <p class="intro">
+        Pulsa un componente (columna izquierda) y luego la función que realiza (columna derecha).
+        Hay 8 parejas en total.
+      </p>
+
+      <div class="sensor-wrap">
+        <div class="sensor-col">
+          <h4>🔌 Sensores y actuadores</h4>
+          <div id="sensorComponentes"></div>
+        </div>
+        <div class="sensor-col">
+          <h4>🎯 ¿Qué hace?</h4>
+          <div id="sensorFunciones"></div>
+        </div>
+      </div>
+      <div id="sensorMsg"></div>
+    </div>
+  </section>
+
+  <!-- ========== RETO 5: LAZO ABIERTO VS CERRADO ========== -->
+  <section id="control">
+    <div class="sec-head reveal">
+      <span class="kicker ambar">Bloque 5</span>
+      <h2>🧠 Control en lazo abierto vs. lazo cerrado</h2>
+      <p class="lead">
+        Existen dos grandes formas de controlar un sistema automático. En <strong>lazo abierto</strong>,
+        el sistema ejecuta las órdenes sin comprobar si el resultado es el esperado. En
+        <strong>lazo cerrado</strong>, el sistema utiliza la información de los sensores para
+        corregir su comportamiento en tiempo real.
+      </p>
+    </div>
+
+    <!-- TEORÍA EXPANDIDA: CONTROL -->
+    <div class="teoria ambar reveal">
+      <h3><span class="th-ico">🧠</span> Sistemas de control: lazo abierto y lazo cerrado</h3>
+      <p>
+        El <strong>control</strong> es el conjunto de operaciones que permiten que un sistema
+        alcance y mantenga un comportamiento deseado. En función de si el sistema comprueba el
+        resultado o no, hablamos de <strong>control en lazo abierto</strong> o
+        <strong>control en lazo cerrado</strong>.
+      </p>
+
+      <h4>Control en lazo abierto</h4>
+      <p>
+        En el <strong>control en lazo abierto</strong>, el sistema ejecuta las órdenes programadas
+        sin comprobar el resultado. No hay sensores que informen de si se está alcanzando el
+        objetivo.
+      </p>
+      <ul>
+        <li><strong>Ventajas:</strong> simple, barato, no necesita sensores.</li>
+        <li><strong>Inconvenientes:</strong> no se adapta a cambios del entorno, no corrige errores.</li>
+        <li><strong>Ejemplos:</strong> tostadora con temporizador, semáforo con ciclo fijo, lavadora con programa predefinido.</li>
+      </ul>
+
+      <h4>Control en lazo cerrado</h4>
+      <p>
+        En el <strong>control en lazo cerrado</strong>, el sistema mide continuamente el resultado
+        mediante sensores y lo compara con el valor deseado. Si hay diferencia, ajusta la acción.
+        A este proceso se le llama <strong>realimentación</strong> o <strong>feedback</strong>.
+      </p>
+      <ul>
+        <li><strong>Ventajas:</strong> se adapta a cambios, corrige errores, es preciso.</li>
+        <li><strong>Inconvenientes:</strong> más complejo, más caro, requiere sensores.</li>
+        <li><strong>Ejemplos:</strong> termostato, robot seguidor de línea, control de crucero de un coche.</li>
+      </ul>
+
+      <h4>Comparativa entre los dos tipos de control</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Aspecto</th>
+          <th>Lazo abierto</th>
+          <th>Lazo cerrado</th>
+        </tr>
+        <tr>
+          <td><strong>¿Comprueba el resultado?</strong></td>
+          <td>No</td>
+          <td>Sí, mediante sensores</td>
+        </tr>
+        <tr>
+          <td><strong>¿Se adapta a cambios?</strong></td>
+          <td>No</td>
+          <td>Sí</td>
+        </tr>
+        <tr>
+          <td><strong>Precisión</strong></td>
+          <td>Baja</td>
+          <td>Alta</td>
+        </tr>
+        <tr>
+          <td><strong>Coste</strong></td>
+          <td>Bajo</td>
+          <td>Más alto (necesita sensores)</td>
+        </tr>
+        <tr>
+          <td><strong>Complejidad</strong></td>
+          <td>Simple</td>
+          <td>Complejo</td>
+        </tr>
+        <tr>
+          <td><strong>Ejemplos</strong></td>
+          <td>Tostadora, semáforo fijo, ventilador manual.</td>
+          <td>Termostato, robot seguidor, control de crucero.</td>
+        </tr>
+      </table>
+
+      <h4>El bucle de control</h4>
+      <p>
+        Todo sistema de control en lazo cerrado sigue el mismo bucle:
+      </p>
+      <div class="fases">
+        <div class="fase">
+          <span class="fase-num">1</span>
+          <h6>📡 Medir</h6>
+          <p>El sensor mide el valor actual.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">2</span>
+          <h6>⚖️ Comparar</h6>
+          <p>Se compara con el valor deseado.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">3</span>
+          <h6>🧠 Decidir</h6>
+          <p>El controlador calcula la corrección.</p>
+        </div>
+        <div class="fase">
+          <span class="fase-num">4</span>
+          <h6>⚙️ Actuar</h6>
+          <p>El actuador ejecuta la acción.</p>
+        </div>
+      </div>
+      <p>
+        Este bucle se repite continuamente, cientos o miles de veces por segundo, ajustando el
+        sistema para acercarlo al objetivo.
+      </p>
+
+      <h4>El error y el algoritmo de control</h4>
+      <p>
+        El <strong>error</strong> es la diferencia entre el valor deseado (consigna) y el valor
+        medido. El controlador calcula el error y decide cómo actuar. Los algoritmos de control
+        más usados son:
+      </p>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Algoritmo</th>
+          <th>Características</th>
+          <th>Uso típico</th>
+        </tr>
+        <tr>
+          <td><strong>Control On/Off</strong></td>
+          <td>Enciende o apaga. Simple pero oscilante.</td>
+          <td>Termostato básico.</td>
+        </tr>
+        <tr>
+          <td><strong>Control P (Proporcional)</strong></td>
+          <td>Corrige en proporción al error.</td>
+          <td>Regulación de velocidad, temperatura.</td>
+        </tr>
+        <tr>
+          <td><strong>Control PI</strong></td>
+          <td>Añade acumulación del error para eliminar desviación.</td>
+          <td>Control industrial de procesos.</td>
+        </tr>
+        <tr>
+          <td><strong>Control PID</strong></td>
+          <td>Combina proporcional, integral y derivativo. Muy preciso.</td>
+          <td>Drones, robótica, control de motores.</td>
+        </tr>
+      </table>
+
+      <h4>¿Cuándo usar cada tipo de control?</h4>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>Lazo abierto si…</h5>
+          <p>Las condiciones son estables, la precisión no es crítica y el coste importa.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>Lazo cerrado si…</h5>
+          <p>Hay cambios del entorno, se necesita precisión o la seguridad es importante.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>Control PID si…</h5>
+          <p>Se necesita máxima precisión y respuesta rápida. Es el estándar industrial.</p>
+        </div>
+      </div>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> el control es lo que hace que un sistema automático sea
+        <strong>realmente útil</strong>. Sin control, solo tenemos una máquina que ejecuta órdenes.
+        Con control en lazo cerrado, tenemos un sistema que <strong>se adapta y se corrige</strong>.
+      </div>
+    </div>
+
+    <div class="actividad reveal" style="border-top:6px solid var(--ambar)">
+      <span class="kicker ambar">🎮 Reto 5 · Clasifica el sistema</span>
+      <h3>¿Es lazo abierto o lazo cerrado?</h3>
+      <p class="intro">
+        Analiza cada sistema y decide qué tipo de control utiliza.
+      </p>
+
+      <div class="lazo-wrap" id="lazoWrap"></div>
+      <div id="lazoMsg"></div>
+    </div>
+
+    <!-- VOCABULARIO -->
+    <div class="actividad reveal" style="border-top:6px solid var(--cian-oscuro)">
+      <span class="kicker">📚 Vocabulario clave</span>
+      <h3>Diccionario interactivo</h3>
+      <p class="intro">Pulsa sobre cualquier término para ver su explicación detallada.</p>
+      <div class="voc-grid" id="vocGrid"></div>
+      <div id="vocDef"></div>
+    </div>
+  </section>
+
+  <!-- ========== QUIZ ========== -->
+  <section id="quiz">
+    <div class="sec-head reveal">
+      <span class="kicker ambar">🎯 Reto 6 · Cuestionario final</span>
+      <h2>Comprueba lo que has aprendido</h2>
+      <p class="lead">10 preguntas sobre sistemas automáticos, robots, sensores, actuadores, tecnologías y control.</p>
+    </div>
+    <div id="quizContainer"></div>
+    <div id="quizResult" style="display:none;text-align:center;padding:1.8rem;border-radius:var(--radio);color:#fff;background:linear-gradient(135deg,#155e75,#082f49);box-shadow:var(--sombra-lg)">
+      <div id="quizScore" style="font-size:3rem;font-weight:900;line-height:1;margin-bottom:.4rem">0/10</div>
+      <h3 id="quizTitle" style="color:#fff">¡Buen trabajo!</h3>
+      <p id="quizMsg" style="color:#cffafe;max-width:560px;margin:0 auto"></p>
+    </div>
+  </section>
+
+  <!-- ========== CERTIFICADO ========== -->
+  <section id="certificado">
+    <div id="certificado">
+      <h2>🏆 Tu certificado de aprovechamiento</h2>
+      <p class="sub">Al completar las actividades obtendrás un certificado personalizado con tus resultados, que podrás descargar en PDF.</p>
+
+      <div class="cert-name" id="certNombre">—</div>
+
+      <div class="cert-stats" id="certStats"></div>
+
+      <div class="cert-warn" id="certWarn" style="display:none">
+        ⚠️ Aún no has completado ninguna actividad. Termina al menos una para generar tu certificado.
+      </div>
+
+      <button class="btn btn-ambar" id="btnCertificado" style="font-size:1rem;padding:.95rem 2rem">
+        📄 Descargar certificado en PDF
+      </button>
+      <p class="cert-note">El PDF se genera como imagen rasterizada: el texto no es editable ni seleccionable, garantizando su integridad.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p style="margin-bottom:.4rem"><strong>Robots y Sistemas Automáticos</strong> · Diseña · Construye · Programa · Controla</p>
+  <p style="margin:0;font-size:.8rem">Aplicación educativa interactiva · Tu progreso se guarda en este navegador</p>
+</footer>
+
+<div id="toast"></div>
+
+<script>
+/* ================================================================
+   1. ESTADO PERSISTENTE
+================================================================ */
+const LS_KEY = 'robotsSistemas_v3';
+const RETOS_TOTALES = 6;
+
+const ACTIVIDADES_DEFAULT = {
+  robot: {},          // { chasis:'chasis-2ruedas', motores:'motores-dc', ... }
+  tecnologias: {},    // { t1:'mec', t2:'elec', ... }
+  programacion: {resuelto:false, programa:[]},
+  componentes: [],    // ['s1','s2',...]
+  control: {},        // { l1:'abierto', l2:'cerrado', ... }
+  quiz: {}            // { 0:1, 1:1, ... }
+};
+
+let estado = {
+  nombre: '',
+  retos: [],
+  scores: {
+    robot: 0,
+    tecnologias: 0,
+    programacion: 0,
+    componentes: 0,
+    control: 0,
+    quiz: 0
+  },
+  actividades: JSON.parse(JSON.stringify(ACTIVIDADES_DEFAULT)),
+  iniciado: null
+};
+
+/* Flag que evita mostrar toasts y scrolls automáticos mientras restauramos
+   el estado guardado al abrir la página. */
+let restaurando = true;
+
+function guardarEstado(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(estado)); }catch(e){} }
+
+function cargarEstado(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(raw){
+      const d = JSON.parse(raw);
+      if(d && typeof d === 'object'){
+        estado = Object.assign(estado, d);
+        estado.scores = Object.assign({robot:0,tecnologias:0,programacion:0,componentes:0,control:0,quiz:0}, d.scores || {});
+        estado.retos = Array.isArray(d.retos) ? d.retos : [];
+        const act = Object.assign(JSON.parse(JSON.stringify(ACTIVIDADES_DEFAULT)), d.actividades || {});
+        if(!act.programacion || typeof act.programacion !== 'object') act.programacion = {resuelto:false, programa:[]};
+        if(!Array.isArray(act.programacion.programa)) act.programacion.programa = [];
+        if(!Array.isArray(act.componentes)) act.componentes = [];
+        estado.actividades = act;
+      }
+    }
+  }catch(e){}
+}
+
+/* Cargamos el estado ANTES de inicializar las actividades, para poder
+   restaurarlas al construir el DOM de cada reto. */
+cargarEstado();
+
+/* ================================================================
+   2. PROGRESO
+================================================================ */
+function actualizarProgreso(){
+  const n = estado.retos.length;
+  document.getElementById('progresoPill').textContent = n + ' / ' + RETOS_TOTALES + ' retos';
+  document.getElementById('progresoBarra').style.width = (n / RETOS_TOTALES * 100) + '%';
+}
+function completarReto(id, msg){
+  if(!estado.retos.includes(id)) estado.retos.push(id);
+  guardarEstado();
+  actualizarProgreso();
+  actualizarCertificado();
+  if(msg && !restaurando) toast(msg);
+}
+let toastTimer;
+function toast(texto){
+  const t = document.getElementById('toast');
+  t.innerHTML = '🏅 ' + texto;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 3500);
+}
+
+/* ================================================================
+   3. LOGIN
+================================================================ */
+const overlay = document.getElementById('loginOverlay');
+const card = document.getElementById('loginCard');
+
+function mostrarLogin(){
+  if(estado.nombre){
+    card.innerHTML = `
+      <span class="login-emoji">🤖</span>
+      <h1>¡Hola de nuevo!</h1>
+      <p class="sub">Hemos guardado tu progreso en este navegador.</p>
+      <div class="welcome-back">
+        Continuar como <strong>${escaparHTML(estado.nombre)}</strong><br>
+        <span style="font-size:.82rem">Retos completados: ${estado.retos.length} / ${RETOS_TOTALES}</span>
+      </div>
+      <div class="login-btns">
+        <button class="btn btn-primary" id="btnContinuar">▶ Continuar</button>
+        <button class="btn btn-ghost" id="btnCambiar" style="background:#f1f5f9;color:#0f172a;border-color:#e2e8f0">👤 Cambiar nombre</button>
+      </div>
+    `;
+    document.getElementById('btnContinuar').addEventListener('click', iniciarApp);
+    document.getElementById('btnCambiar').addEventListener('click', ()=>{
+      estado.nombre = '';
+      estado.retos = [];
+      estado.scores = {robot:0,tecnologias:0,programacion:0,componentes:0,control:0,quiz:0};
+      estado.actividades = JSON.parse(JSON.stringify(ACTIVIDADES_DEFAULT));
+      estado.iniciado = null;
+      guardarEstado();
+      // Recargamos para que la app arranque limpia, sin restos de la sesión anterior
+      location.reload();
+    });
+  } else {
+    renderLoginForm();
+  }
+}
+
+function renderLoginForm(){
+  card.innerHTML = `
+    <span class="login-emoji">🤖</span>
+    <h1>Bienvenido/a a Robots y Sistemas Automáticos</h1>
+    <p class="sub">Antes de empezar, dinos cómo te llamas. Tu progreso se guardará en este navegador para que puedas continuar cuando quieras.</p>
+    <input type="text" id="inputNombre" placeholder="Escribe tu nombre" maxlength="40" autocomplete="off">
+    <button class="btn btn-primary" id="btnEntrar">🚀 Comenzar la aventura</button>
+    <div class="login-error" id="loginError"></div>
+  `;
+  const inp = document.getElementById('inputNombre');
+  const btn = document.getElementById('btnEntrar');
+  const err = document.getElementById('loginError');
+  const submit = ()=>{
+    const v = inp.value.trim();
+    if(v.length < 2){ err.textContent = 'Por favor, introduce al menos 2 caracteres.'; inp.focus(); return; }
+    estado.nombre = v;
+    estado.iniciado = new Date().toISOString();
+    guardarEstado();
+    iniciarApp();
+  };
+  btn.addEventListener('click', submit);
+  inp.addEventListener('keydown', e=>{ if(e.key === 'Enter') submit(); });
+  setTimeout(()=>inp.focus(), 200);
+}
+
+function iniciarApp(){
+  overlay.classList.add('hidden');
+  document.body.classList.remove('locked');
+  document.getElementById('navUserName').textContent = estado.nombre;
+  document.getElementById('heroNombre').textContent = estado.nombre;
+  actualizarProgreso();
+  actualizarCertificado();
+}
+
+function escaparHTML(s){
+  return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ================================================================
+   4. REVEAL
+================================================================ */
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach((e,i)=>{
+    if(e.isIntersecting){
+      setTimeout(()=>e.target.classList.add('in'), i*70);
+      io.unobserve(e.target);
+    }
+  });
+},{threshold:.12, rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+/* ================================================================
+   5. NAV ACTIVO
+================================================================ */
+const secciones = [...document.querySelectorAll('section[id]')];
+const navLinks = [...document.querySelectorAll('.nav-links a')];
+window.addEventListener('scroll', ()=>{
+  let actual = '';
+  secciones.forEach(s=>{ if(window.scrollY >= s.offsetTop - 120) actual = s.id; });
+  navLinks.forEach(a=>a.classList.toggle('active', a.getAttribute('href') === '#'+actual));
+});
+
+/* ================================================================
+   6. RETO 1 · CONSTRUCTOR DE ROBOT
+================================================================ */
+const robotBloques = [
+  {
+    id:'chasis',
+    nombre:'⚙️ Chasis y sistema de tracción',
+    opciones:[
+      {v:'chasis-2ruedas', t:'2 ruedas motrices + 1 rueda loca', ico:'🛞', pts:15,
+       why:'Configuración clásica de robot seguidor de línea: dos motores permiten girar sobre el eje. Fácil de programar.'},
+      {v:'chasis-4ruedas', t:'4 ruedas motrices (tipo tanque)', ico:'🚙', pts:10,
+       why:'Permite más tracción y desplazamiento lateral, pero complica la programación de giros precisos.'},
+      {v:'chasis-orugas', t:'Orugas de goma', ico:'⛓️', pts:8,
+       why:'Muy buen agarre en terrenos irregulares, pero innecesario sobre una superficie plana como la del reto.'}
+    ]
+  },
+  {
+    id:'motores',
+    nombre:'🔋 Motores',
+    opciones:[
+      {v:'motores-dc', t:'2 motores DC con reductora', ico:'⚙️', pts:15,
+       why:'Los motores DC con reductora dan el par necesario para mover el robot a velocidad controlada. Ideal.'},
+      {v:'servos', t:'4 servomotores de rotación continua', ico:'🔄', pts:8,
+       why:'Los servos son más caros y no aportan ventaja sobre un motor DC para este tipo de misión.'},
+      {v:'motor-paso', t:'1 motor paso a paso', ico:'📏', pts:6,
+       why:'Los motores paso a paso son precisos pero muy lentos. Se usan en impresoras 3D, no en robots móviles rápidos.'}
+    ]
+  },
+  {
+    id:'sensores',
+    nombre:'📡 Sensores',
+    opciones:[
+      {v:'ir-ultra', t:'Sensor IR de línea + sensor ultrasónico', ico:'📡', pts:20,
+       why:'¡Combinación perfecta! El sensor IR sigue la línea y el ultrasónico detecta el obstáculo para detenerse.'},
+      {v:'solo-ultra', t:'Solo sensor ultrasónico', ico:'📶', pts:8,
+       why:'Con solo el ultrasónico puedes detectar obstáculos, pero no sigues la línea. La misión quedaría a medias.'},
+      {v:'solo-color', t:'Solo sensor de color RGB', ico:'🌈', pts:5,
+       why:'El sensor de color puede detectar la línea, pero no la presencia de obstáculos delante.'}
+    ]
+  },
+  {
+    id:'controlador',
+    nombre:'🧠 Controlador',
+    opciones:[
+      {v:'arduino', t:'Arduino (o similar)', ico:'🔌', pts:15,
+       why:'Arduino es perfecto para controlar motores y leer sensores en tiempo real. Estándar educativo.'},
+      {v:'rpi', t:'Raspberry Pi', ico:'🖥️', pts:10,
+       why:'Raspberry Pi es más potente pero también más compleja de programar para control en tiempo real.'},
+      {v:'plc', t:'PLC industrial', ico:'🏭', pts:4,
+       why:'Un PLC industrial es excesivo para este tipo de robot. Su uso se reserva a automatización de fábricas.'}
+    ]
+  },
+  {
+    id:'alimentacion',
+    nombre:'🔋 Alimentación',
+    opciones:[
+      {v:'lipo', t:'Batería LiPo recargable', ico:'🔋', pts:15,
+       why:'Ofrece energía suficiente y es recargable. Perfecta para un robot móvil.'},
+      {v:'aa', t:'4 pilas AA alcalinas', ico:'🪫', pts:6,
+       why:'Las pilas AA no recargables se agotan rápido y son menos sostenibles. Menos adecuadas.'},
+      {v:'solar', t:'Solo panel solar', ico:'☀️', pts:3,
+       why:'El panel solar no da energía suficiente para motores. Podría ser un complemento, pero no la única fuente.'}
+    ]
+  }
+];
+
+let robotSel = {};
+
+function initRobotBuilder(){
+  const cont = document.getElementById('robotBuilder');
+  if(!cont) return;
+  cont.innerHTML = '';
+  robotSel = {};
+  robotBloques.forEach(b=>{
+    const div = document.createElement('div');
+    div.className = 'rb-bloque';
+    div.innerHTML = `<h5>${b.nombre}</h5><div class="rb-opciones"></div>`;
+    const opCont = div.querySelector('.rb-opciones');
+    b.opciones.forEach(o=>{
+      const btn = document.createElement('div');
+      btn.className = 'rb-opcion';
+      btn.dataset.bloque = b.id;
+      btn.dataset.val = o.v;
+      btn.innerHTML = `<span class="rb-ico">${o.ico}</span><span>${o.t}</span>`;
+      btn.addEventListener('click', ()=>{
+        opCont.querySelectorAll('.rb-opcion').forEach(x=>x.classList.remove('sel'));
+        btn.classList.add('sel');
+        robotSel[b.id] = o;
+        estado.actividades.robot[b.id] = o.v;
+        guardarEstado();
+        actualizarRobot();
+      });
+      opCont.appendChild(btn);
+      // Restaurar selección previa
+      if(estado.actividades.robot && estado.actividades.robot[b.id] === o.v){
+        btn.classList.add('sel');
+        robotSel[b.id] = o;
+      }
+    });
+    cont.appendChild(div);
+  });
+  actualizarRobot();
+}
+
+function actualizarRobot(){
+  let totalPts = 0, maxPts = 0;
+  robotBloques.forEach(b=>{
+    const maxOp = b.opciones.reduce((a,o)=>Math.max(a,o.pts), 0);
+    maxPts += maxOp;
+    if(robotSel[b.id]) totalPts += robotSel[b.id].pts;
+  });
+  const completos = Object.keys(robotSel).length;
+  const total = robotBloques.length;
+  const pct = Math.round(totalPts / maxPts * 100);
+
+  document.getElementById('robotScore').textContent = pct + '%';
+  document.getElementById('robotProg').style.width = pct + '%';
+
+  const msgEl = document.getElementById('robotMsg');
+  if(completos === 0){
+    msgEl.textContent = 'Selecciona componentes en cada bloque para empezar.';
+  } else if(completos < total){
+    msgEl.textContent = `Bloques completados: ${completos} / ${total}.`;
+  } else if(pct >= 90){
+    msgEl.innerHTML = '🏆 ¡Diseño óptimo! Tienes un robot perfectamente adaptado a la misión.';
+    if(pct > estado.scores.robot){
+      estado.scores.robot = pct;
+      guardarEstado();
+      actualizarCertificado();
+    }
+    completarReto('robot', '¡Diseño de robot completado!');
+  } else if(pct >= 70){
+    msgEl.innerHTML = '🟢 Buen diseño. Alguna elección podría mejorarse para un rendimiento óptimo.';
+    if(pct > estado.scores.robot){
+      estado.scores.robot = pct;
+      guardarEstado();
+      actualizarCertificado();
+    }
+  } else if(pct >= 50){
+    msgEl.innerHTML = '🟠 El robot podría funcionar, pero hay componentes que no son los más adecuados para la misión.';
+    if(pct > estado.scores.robot){
+      estado.scores.robot = pct;
+      guardarEstado();
+      actualizarCertificado();
+    }
+  } else {
+    msgEl.innerHTML = '🔴 Este robot no resolvería la misión. Revisa tus elecciones.';
+  }
+}
+
+initRobotBuilder();
+
+/* ================================================================
+   7. RETO 2 · CLASIFICA POR TECNOLOGÍA
+================================================================ */
+const tecnologiasData = [
+  {id:'t1', ico:'⚙️', titulo:'Chasis de aluminio',
+   desc:'Estructura rígida que sostiene todos los componentes del robot.',
+   tipo:'mec', why:'El chasis es la base física del robot: forma parte de la MECÁNICA, encargada de la estructura y el soporte de todos los componentes.'},
+  {id:'t2', ico:'💡', titulo:'Motor DC con reductora',
+   desc:'Convierte energía eléctrica en movimiento rotatorio continuo.',
+   tipo:'elec', why:'El motor DC es un actuador que transforma energía eléctrica en movimiento. Pertenece a la ELECTRÓNICA.'},
+  {id:'t3', ico:'💨', titulo:'Cilindro neumático',
+   desc:'Se extiende y contrae mediante aire comprimido.',
+   tipo:'neum', why:'Los cilindros neumáticos utilizan aire comprimido para generar movimiento lineal. Son propios de la NEUMÁTICA.'},
+  {id:'t4', ico:'🧠', titulo:'Placa Arduino con programa cargado',
+   desc:'Lee sensores, ejecuta instrucciones y envía órdenes a los actuadores.',
+   tipo:'control', why:'Arduino es el controlador del robot: ejecuta el programa y coordina todos los componentes. Es la parte de CONTROL.'},
+  {id:'t5', ico:'⚙️', titulo:'Engranaje reductor',
+   desc:'Reduce la velocidad y aumenta el par motor.',
+   tipo:'mec', why:'Los engranajes transmiten y modifican el movimiento. Son parte fundamental de la MECÁNICA.'},
+  {id:'t6', ico:'💡', titulo:'Puente H (L298N)',
+   desc:'Permite cambiar el sentido de giro de un motor DC.',
+   tipo:'elec', why:'El puente H es un circuito electrónico que controla la polaridad del motor. Pertenece a la ELECTRÓNICA.'},
+  {id:'t7', ico:'💨', titulo:'Válvula de solenoide neumática',
+   desc:'Abre o cierra el paso de aire comprimido mediante una señal eléctrica.',
+   tipo:'neum', why:'Las válvulas de solenoide regulan el paso de aire comprimido. Su función es NEUMÁTICA.'},
+  {id:'t8', ico:'🧠', titulo:'Lazo de realimentación',
+   desc:'Usa la información de los sensores para corregir el comportamiento.',
+   tipo:'control', why:'La realimentación es la base del control en lazo cerrado: pertenece al CONTROL.'},
+  {id:'t9', ico:'⚙️', titulo:'Correa de transmisión dentada',
+   desc:'Transmite el giro del motor a las ruedas del robot.',
+   tipo:'mec', why:'Las correas de transmisión son elementos mecánicos que transmiten movimiento entre ejes.'},
+  {id:'t10', ico:'💡', titulo:'Sensor ultrasónico HC-SR04',
+   desc:'Mide la distancia al obstáculo mediante pulsos de sonido.',
+   tipo:'elec', why:'El sensor ultrasónico es un componente electrónico que convierte una magnitud física (distancia) en una señal eléctrica.'},
+  {id:'t11', ico:'💨', titulo:'Compresor de aire',
+   desc:'Genera la presión de aire que alimenta los actuadores neumáticos.',
+   tipo:'neum', why:'El compresor produce el aire comprimido que mueve los cilindros y válvulas. Es parte de la NEUMÁTICA.'},
+  {id:'t12', ico:'🧠', titulo:'Programa secuencial del robot',
+   desc:'Define la secuencia de acciones que debe seguir el robot.',
+   tipo:'control', why:'El programa es la lógica que ejecuta el controlador. Pertenece al CONTROL.'}
+];
+
+let tecRespondidas = 0, tecAciertos = 0;
+
+function initTecnologias(){
+  const cont = document.getElementById('tecGrid');
+  if(!cont) return;
+  cont.innerHTML = '';
+  tecRespondidas = 0;
+  tecAciertos = 0;
+
+  const mezcla = [...tecnologiasData].sort(()=>Math.random()-0.5);
+  mezcla.forEach((item)=>{
+    const div = document.createElement('div');
+    div.className = 'tec-card';
+    div.innerHTML = `
+      <div class="tec-titulo"><span class="tec-ico">${item.ico}</span>${item.titulo}</div>
+      <p class="tec-desc">${item.desc}</p>
+      <div class="tec-btns">
+        <button data-id="${item.id}" data-v="mec">⚙️ Mecánica</button>
+        <button data-id="${item.id}" data-v="elec">⚡ Electrónica</button>
+        <button data-id="${item.id}" data-v="neum">💨 Neumática</button>
+        <button data-id="${item.id}" data-v="control">🧠 Control</button>
+      </div>
+      <div class="tec-fb"></div>
+    `;
+    cont.appendChild(div);
+    const btns = div.querySelectorAll('.tec-btns button');
+    const fb = div.querySelector('.tec-fb');
+
+    const responder = (elegido)=>{
+      const acierto = elegido === item.tipo;
+      btns.forEach(x=>{
+        x.disabled = true;
+        if(x.dataset.v === item.tipo) x.classList.add('correct');
+      });
+      if(!acierto){
+        const chosen = [...btns].find(x=>x.dataset.v===elegido);
+        if(chosen) chosen.classList.add('wrong');
+      }
+      fb.innerHTML = (acierto ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>No exactamente.</strong> ') + item.why;
+      fb.classList.add('show');
+      div.classList.add('done');
+      tecRespondidas++;
+      if(acierto) tecAciertos++;
+      if(tecRespondidas === tecnologiasData.length){
+        if(tecAciertos > estado.scores.tecnologias){
+          estado.scores.tecnologias = tecAciertos;
+          guardarEstado();
+          actualizarCertificado();
+        }
+        document.getElementById('tecMsg').innerHTML =
+          `Has clasificado correctamente <strong>${tecAciertos} de ${tecnologiasData.length}</strong> componentes. ` +
+          (tecAciertos >= 10 ? '¡Dominas las tecnologías del robot!' : 'Repasa los que has fallado.');
+        completarReto('tecnologias', '¡Clasificación de tecnologías completada!');
+      }
+    };
+
+    btns.forEach(b=>{
+      b.addEventListener('click', ()=>{
+        const elegido = b.dataset.v;
+        estado.actividades.tecnologias[item.id] = elegido;
+        guardarEstado();
+        responder(elegido);
+      });
+    });
+
+    // Restaurar respuesta previa
+    const guardado = estado.actividades.tecnologias[item.id];
+    if(guardado && ['mec','elec','neum','control'].includes(guardado)){
+      responder(guardado);
+    }
+  });
+}
+
+initTecnologias();
+
+/* ================================================================
+   8. RETO 3 · PROGRAMACIÓN DEL ROBOT
+================================================================ */
+const maze = [
+  [0,0,0,0,0,0],
+  [1,1,0,1,0,0],
+  [0,0,0,1,1,0],
+  [1,1,0,0,0,0],
+  [0,0,0,1,0,0],
+  [0,1,1,0,0,2]
+];
+const MAZE_SIZE = 6;
+
+let robot = {x:0, y:0, dir:0};
+let programa = [];
+let ejecutando = false;
+
+const CMDS_INFO = {
+  avanza:    {ico:'⬆️', nombre:'Avanza'},
+  izquierda: {ico:'↺', nombre:'Gira ←'},
+  derecha:   {ico:'↻', nombre:'Gira →'},
+  espera:    {ico:'⏸️', nombre:'Espera'}
+};
+
+function robotChar(){
+  return ['→','↓','←','↑'][robot.dir];
+}
+
+function renderMaze(){
+  const grid = document.getElementById('mazeGrid');
+  let html = '';
+  for(let y = 0; y < MAZE_SIZE; y++){
+    for(let x = 0; x < MAZE_SIZE; x++){
+      const isWall = maze[y][x] === 1;
+      const isGoal = maze[y][x] === 2;
+      const isRobot = robot.x === x && robot.y === y;
+      let cls = 'maze-cell';
+      let contenido = '';
+      if(isWall){
+        cls += ' wall';
+      } else if(isGoal && isRobot){
+        cls += ' robot';
+        contenido = robotChar();
+      } else if(isGoal){
+        cls += ' goal';
+        contenido = '🎯';
+      } else if(isRobot){
+        cls += ' robot';
+        contenido = robotChar();
+      } else {
+        cls += ' path';
+      }
+      html += `<div class="${cls}">${contenido}</div>`;
+    }
+  }
+  grid.innerHTML = html;
+}
+
+function renderPrograma(){
+  const cont = document.getElementById('programaLista');
+  if(programa.length === 0){
+    cont.innerHTML = '<span class="vacio">Aún no has añadido comandos.</span>';
+    return;
+  }
+  cont.innerHTML = programa.map((c,i)=>{
+    const info = CMDS_INFO[c];
+    return `<div class="prog-comando"><span><span class="pc-num">${String(i+1).padStart(2,'0')}.</span>${info.ico} ${info.nombre}</span></div>`;
+  }).join('');
+  cont.scrollTop = cont.scrollHeight;
+}
+
+function sleep(ms){ return new Promise(r=>setTimeout(r, ms)); }
+
+async function ejecutarPrograma(){
+  if(ejecutando) return;
+  if(programa.length === 0){ toast('Añade al menos un comando al programa'); return; }
+
+  ejecutando = true;
+  document.getElementById('btnEjecutar').disabled = true;
+  document.getElementById('btnBorrarUltimo').disabled = true;
+  document.getElementById('btnReset').disabled = true;
+
+  robot = {x:0, y:0, dir:0};
+  renderMaze();
+  await sleep(300);
+
+  const msg = document.getElementById('progMsg');
+  msg.className = '';
+  msg.textContent = '▶ Ejecutando programa...';
+
+  for(let i = 0; i < programa.length; i++){
+    const cmd = programa[i];
+    msg.textContent = `▶ Ejecutando comando ${i+1}/${programa.length}: ${CMDS_INFO[cmd].ico} ${CMDS_INFO[cmd].nombre}`;
+
+    if(cmd === 'izquierda'){
+      robot.dir = (robot.dir + 3) % 4;
+    } else if(cmd === 'derecha'){
+      robot.dir = (robot.dir + 1) % 4;
+    } else if(cmd === 'avanza'){
+      let nx = robot.x, ny = robot.y;
+      if(robot.dir === 0) nx++;
+      else if(robot.dir === 1) ny++;
+      else if(robot.dir === 2) nx--;
+      else ny--;
+
+      if(nx < 0 || nx >= MAZE_SIZE || ny < 0 || ny >= MAZE_SIZE){
+        msg.className = 'err';
+        msg.textContent = `❌ El robot ha salido del laberinto en el comando ${i+1}. Revisa tu programa.`;
+        renderMaze();
+        await sleep(600);
+        ejecutando = false;
+        document.getElementById('btnEjecutar').disabled = false;
+        document.getElementById('btnBorrarUltimo').disabled = false;
+        document.getElementById('btnReset').disabled = false;
+        return;
+      }
+      if(maze[ny][nx] === 1){
+        msg.className = 'err';
+        msg.textContent = `❌ El robot ha chocado contra una pared en el comando ${i+1}. Revisa tu programa.`;
+        renderMaze();
+        await sleep(600);
+        ejecutando = false;
+        document.getElementById('btnEjecutar').disabled = false;
+        document.getElementById('btnBorrarUltimo').disabled = false;
+        document.getElementById('btnReset').disabled = false;
+        return;
+      }
+      robot.x = nx;
+      robot.y = ny;
+    }
+
+    renderMaze();
+    await sleep(420);
+
+    if(maze[robot.y][robot.x] === 2){
+      msg.className = 'ok';
+      msg.textContent = `🎉 ¡Meta alcanzada en ${i+1} comandos! Programa correcto.`;
+      // Guardamos el estado del reto como resuelto para restaurarlo al reabrir
+      estado.actividades.programacion.resuelto = true;
+      estado.actividades.programacion.programa = [...programa];
+      guardarEstado();
+      ejecutando = false;
+      document.getElementById('btnEjecutar').disabled = false;
+      document.getElementById('btnBorrarUltimo').disabled = false;
+      document.getElementById('btnReset').disabled = false;
+      if(estado.scores.programacion === 0){
+        estado.scores.programacion = 1;
+        guardarEstado();
+        actualizarCertificado();
+      }
+      completarReto('programacion', '¡Programa ejecutado con éxito!');
+      return;
+    }
+  }
+
+  msg.className = 'err';
+  msg.textContent = '⚠️ El programa terminó pero el robot no ha llegado a la meta. Añade más comandos o revisa el orden.';
+  ejecutando = false;
+  document.getElementById('btnEjecutar').disabled = false;
+  document.getElementById('btnBorrarUltimo').disabled = false;
+  document.getElementById('btnReset').disabled = false;
+}
+
+document.querySelectorAll('.prog-botones button').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    if(ejecutando) return;
+    programa.push(b.dataset.cmd);
+    renderPrograma();
+  });
+});
+
+document.getElementById('btnEjecutar').addEventListener('click', ejecutarPrograma);
+document.getElementById('btnBorrarUltimo').addEventListener('click', ()=>{
+  if(ejecutando) return;
+  programa.pop();
+  renderPrograma();
+});
+document.getElementById('btnReset').addEventListener('click', ()=>{
+  if(ejecutando) return;
+  programa = [];
+  robot = {x:0, y:0, dir:0};
+  // Si el usuario reinicia, borramos el estado guardado del laberinto
+  // (el reto sigue contando como completado en "retos" y "scores")
+  estado.actividades.programacion = {resuelto: false, programa: []};
+  guardarEstado();
+  renderMaze();
+  renderPrograma();
+  const msg = document.getElementById('progMsg');
+  msg.className = '';
+  msg.textContent = 'Añade comandos al programa y pulsa ▶ Ejecutar.';
+});
+
+robot = {x:0, y:0, dir:0};
+renderMaze();
+renderPrograma();
+
+// Restaurar laberinto resuelto (si el usuario lo completó en una sesión anterior)
+if(estado.actividades.programacion.resuelto){
+  robot = {x:5, y:5, dir:0}; // la meta está en [5][5]
+  programa = Array.isArray(estado.actividades.programacion.programa) ? [...estado.actividades.programacion.programa] : [];
+  renderMaze();
+  renderPrograma();
+  const msg = document.getElementById('progMsg');
+  msg.className = 'ok';
+  msg.textContent = '🎉 ¡Laberinto ya completado! Pulsa 🔄 Reiniciar para intentarlo de nuevo desde cero.';
+}
+
+/* ================================================================
+   9. RETO 4 · SENSORES Y ACTUADORES
+================================================================ */
+const sensorParejas = [
+  {id:'s1', comp:'📏 Sensor ultrasónico', func:'Mide distancia a un obstáculo mediante pulsos de sonido'},
+  {id:'s2', comp:'🌡️ Termistor (NTC)', func:'Mide la temperatura (su resistencia cambia con el calor)'},
+  {id:'s3', comp:'💡 Fotorresistencia LDR', func:'Detecta el nivel de luz ambiental'},
+  {id:'s4', comp:'👁️ Sensor PIR', func:'Detecta movimiento de personas por radiación infrarroja'},
+  {id:'s5', comp:'⚙️ Motor DC', func:'Produce movimiento rotatorio continuo'},
+  {id:'s6', comp:'🎯 Servomotor', func:'Coloca un eje en un ángulo preciso (0-180°)'},
+  {id:'s7', comp:'💡 LED', func:'Emite luz cuando pasa corriente en polarización directa'},
+  {id:'s8', comp:'🔊 Zumbador piezoeléctrico', func:'Emite sonido a distintas frecuencias'}
+];
+
+let sensorSelComp = null;
+let sensorSelFunc = null;
+let sensorEmparejadas = 0;
+
+function shuffle(arr){
+  const a = [...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function initSensores(){
+  const cc = document.getElementById('sensorComponentes');
+  const cf = document.getElementById('sensorFunciones');
+  if(!cc || !cf) return;
+  cc.innerHTML = '';
+  cf.innerHTML = '';
+  sensorSelComp = null;
+  sensorSelFunc = null;
+  sensorEmparejadas = 0;
+
+  shuffle(sensorParejas).forEach(s=>{
+    const el = document.createElement('div');
+    el.className = 'sensor-item';
+    el.dataset.id = s.id;
+    el.dataset.tipo = 'comp';
+    el.textContent = s.comp;
+    el.addEventListener('click', ()=>clickSensor(el));
+    cc.appendChild(el);
+  });
+  shuffle(sensorParejas).forEach(s=>{
+    const el = document.createElement('div');
+    el.className = 'sensor-item';
+    el.dataset.id = s.id;
+    el.dataset.tipo = 'func';
+    el.textContent = s.func;
+    el.addEventListener('click', ()=>clickSensor(el));
+    cf.appendChild(el);
+  });
+
+  // Restaurar parejas ya emparejadas
+  if(Array.isArray(estado.actividades.componentes) && estado.actividades.componentes.length > 0){
+    estado.actividades.componentes.forEach(id=>{
+      const comp = cc.querySelector(`.sensor-item[data-id="${id}"][data-tipo="comp"]`);
+      const func = cf.querySelector(`.sensor-item[data-id="${id}"][data-tipo="func"]`);
+      if(comp && func){
+        comp.classList.add('matched');
+        func.classList.add('matched');
+        sensorEmparejadas++;
+      }
+    });
+    if(sensorEmparejadas > 0){
+      const msg = document.getElementById('sensorMsg');
+      if(sensorEmparejadas === sensorParejas.length){
+        msg.innerHTML = '🎉 ¡Has emparejado los 8 componentes con su función!';
+      } else {
+        msg.textContent = `✅ ${sensorEmparejadas} de 8 parejas ya encontradas.`;
+      }
+      if(sensorEmparejadas > estado.scores.componentes){
+        estado.scores.componentes = sensorEmparejadas;
+        guardarEstado();
+        actualizarCertificado();
+      }
+    }
+  }
+}
+
+function clickSensor(el){
+  if(el.classList.contains('matched')) return;
+
+  if(el.dataset.tipo === 'comp'){
+    if(sensorSelComp) sensorSelComp.classList.remove('sel');
+    sensorSelComp = el;
+    el.classList.add('sel');
+  } else {
+    if(sensorSelFunc) sensorSelFunc.classList.remove('sel');
+    sensorSelFunc = el;
+    el.classList.add('sel');
+  }
+
+  if(sensorSelComp && sensorSelFunc){
+    const a = sensorSelComp, b = sensorSelFunc;
+    const msg = document.getElementById('sensorMsg');
+    if(a.dataset.id === b.dataset.id){
+      a.classList.remove('sel');
+      b.classList.remove('sel');
+      a.classList.add('matched');
+      b.classList.add('matched');
+      sensorEmparejadas++;
+      // Guardar la pareja acertada
+      if(!estado.actividades.componentes.includes(a.dataset.id)){
+        estado.actividades.componentes.push(a.dataset.id);
+        guardarEstado();
+      }
+      msg.textContent = `✅ ¡Bien! Pareja ${sensorEmparejadas} de 8 encontrada.`;
+      sensorSelComp = null;
+      sensorSelFunc = null;
+      if(sensorEmparejadas > estado.scores.componentes){
+        estado.scores.componentes = sensorEmparejadas;
+        guardarEstado();
+        actualizarCertificado();
+      }
+      if(sensorEmparejadas === 8){
+        msg.innerHTML = '🎉 ¡Has emparejado los 8 componentes con su función!';
+        completarReto('componentes', '¡Emparejamiento completado!');
+      }
+    } else {
+      a.classList.add('error');
+      b.classList.add('error');
+      msg.innerHTML = '❌ Esa no es la función correcta. Inténtalo de nuevo.';
+      setTimeout(()=>{
+        a.classList.remove('error','sel');
+        b.classList.remove('error','sel');
+        sensorSelComp = null;
+        sensorSelFunc = null;
+      }, 550);
+    }
+  }
+}
+
+initSensores();
+
+/* ================================================================
+   10. RETO 5 · LAZO ABIERTO VS CERRADO
+================================================================ */
+const lazoData = [
+  {id:'l1', titulo:'Tostadora con temporizador', desc:'Se apaga cuando pasa el tiempo programado, sin comprobar el grado de tostado.',
+   tipo:'abierto', why:'No hay sensor que compruebe el resultado: solo cuenta el tiempo. Si el pan está más o menos tostado, no lo corrige.'},
+  {id:'l2', titulo:'Termostato de casa', desc:'Enciende la calefacción hasta que la temperatura alcanza el valor programado.',
+   tipo:'cerrado', why:'Usa un sensor de temperatura para comparar con el valor deseado y actuar en consecuencia. Es lazo cerrado.'},
+  {id:'l3', titulo:'Robot seguidor de línea', desc:'Detecta la línea con sensores IR y ajusta la dirección de los motores para no salirse.',
+   tipo:'cerrado', why:'El sensor informa continuamente sobre la posición de la línea y el robot corrige su rumbo. Es lazo cerrado.'},
+  {id:'l4', titulo:'Ventilador que se enciende al pulsar un botón', desc:'Al pulsar el botón, el ventilador gira a velocidad fija hasta que se vuelve a pulsar.',
+   tipo:'abierto', why:'No comprueba la temperatura ni la velocidad real. Solo ejecuta la orden sin verificar el resultado.'},
+  {id:'l5', titulo:'Aspirador robot que evita obstáculos', desc:'Detecta paredes y objetos, y modifica su trayectoria para no chocar.',
+   tipo:'cerrado', why:'Utiliza sensores para detectar el entorno y adaptar su movimiento. Es un claro ejemplo de lazo cerrado.'},
+  {id:'l6', titulo:'Semáforo con ciclo fijo', desc:'Cambia de color cada 30 segundos, siempre con el mismo patrón.',
+   tipo:'abierto', why:'No depende de sensores: ejecuta un ciclo predefinido. No hay realimentación sobre el tráfico.'},
+  {id:'l7', titulo:'Fotocélula de farola', desc:'Enciende la luz cuando detecta poca luz ambiente y la apaga cuando hay suficiente.',
+   tipo:'cerrado', why:'Usa un sensor de luz para medir el nivel de luminosidad y decide encender o apagar. Es lazo cerrado.'},
+  {id:'l8', titulo:'Lavadora con ciclo preestablecido', desc:'Ejecuta el programa elegido sin modificar la duración ni los movimientos según cómo esté la ropa.',
+   tipo:'abierto', why:'Ejecuta un programa predefinido sin sensores que midan el estado real de la colada. Es lazo abierto.'}
+];
+
+let lazoRespondidas = 0, lazoAciertos = 0;
+
+(function initLazo(){
+  const cont = document.getElementById('lazoWrap');
+  if(!cont) return;
+  cont.innerHTML = '';
+  lazoRespondidas = 0;
+  lazoAciertos = 0;
+
+  lazoData.forEach((l, i)=>{
+    const div = document.createElement('div');
+    div.className = 'lazo-card';
+    div.innerHTML = `
+      <svg class="lc-svg" viewBox="0 0 200 60" xmlns="http://www.w3.org/2000/svg">
+        ${l.tipo === 'abierto'
+          ? `<line x1="20" y1="30" x2="100" y2="30" stroke="#2563eb" stroke-width="3"/>
+             <polygon points="95,25 105,30 95,35" fill="#2563eb"/>
+             <rect x="110" y="18" width="40" height="24" fill="#dbeafe" stroke="#2563eb" stroke-width="2" rx="4"/>
+             <text x="130" y="33" text-anchor="middle" font-size="9" font-weight="bold" fill="#1e3a8a">SISTEMA</text>
+             <polygon points="155,25 165,30 155,35" fill="#2563eb"/>
+             <text x="180" y="34" text-anchor="middle" font-size="9" fill="#1e3a8a">Salida</text>
+             <text x="60" y="18" text-anchor="middle" font-size="8" fill="#64748b">Orden</text>`
+          : `<path d="M 20 40 L 40 40 L 40 20 L 100 20" stroke="#2563eb" stroke-width="2.5" fill="none"/>
+             <polygon points="95,15 105,20 95,25" fill="#2563eb"/>
+             <rect x="110" y="8" width="40" height="24" fill="#dbeafe" stroke="#2563eb" stroke-width="2" rx="4"/>
+             <text x="130" y="23" text-anchor="middle" font-size="9" font-weight="bold" fill="#1e3a8a">SISTEMA</text>
+             <path d="M 150 20 L 180 20 L 180 45 L 20 45" stroke="#84cc16" stroke-width="2.5" fill="none" stroke-dasharray="4,3"/>
+             <text x="100" y="58" text-anchor="middle" font-size="8" fill="#3f6212">Realimentación</text>`
+        }
+      </svg>
+      <div class="lc-titulo">${l.titulo}</div>
+      <p class="lc-desc">${l.desc}</p>
+      <div class="lazo-btns">
+        <button data-i="${i}" data-v="abierto">🔓 Lazo abierto</button>
+        <button data-i="${i}" data-v="cerrado">🔒 Lazo cerrado</button>
+      </div>
+      <div class="lazo-fb"></div>
+    `;
+    cont.appendChild(div);
+    const btns = div.querySelectorAll('.lazo-btns button');
+    const fb = div.querySelector('.lazo-fb');
+
+    const responder = (elegido)=>{
+      const acierto = elegido === l.tipo;
+      btns.forEach(x=>{
+        x.disabled = true;
+        if(x.dataset.v === l.tipo) x.classList.add('correct');
+      });
+      if(!acierto){
+        const chosen = [...btns].find(x=>x.dataset.v===elegido);
+        if(chosen) chosen.classList.add('wrong');
+      }
+      fb.innerHTML = (acierto ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>No exactamente.</strong> ') + l.why;
+      fb.classList.add('show');
+      div.classList.add('done');
+      lazoRespondidas++;
+      if(acierto) lazoAciertos++;
+      if(lazoRespondidas === lazoData.length){
+        if(lazoAciertos > estado.scores.control){
+          estado.scores.control = lazoAciertos;
+          guardarEstado();
+          actualizarCertificado();
+        }
+        document.getElementById('lazoMsg').innerHTML =
+          `Has clasificado correctamente <strong>${lazoAciertos} de ${lazoData.length}</strong> sistemas. ` +
+          (lazoAciertos >= 6 ? '¡Dominas los tipos de control!' : 'Repasa los que has fallado.');
+        completarReto('control', '¡Clasificación de sistemas completada!');
+      }
+    };
+
+    btns.forEach(b=>{
+      b.addEventListener('click', ()=>{
+        estado.actividades.control[l.id] = b.dataset.v;
+        guardarEstado();
+        responder(b.dataset.v);
+      });
+    });
+
+    // Restaurar respuesta previa
+    const guardado = estado.actividades.control[l.id];
+    if(guardado && ['abierto','cerrado'].includes(guardado)){
+      responder(guardado);
+    }
+  });
+})();
+
+/* ================================================================
+   11. VOCABULARIO
+================================================================ */
+const vocabulario = [
+  {ico:'🤖', t:'Sistema automático', d:'Conjunto de componentes que ejecutan tareas de forma autónoma siguiendo un programa, sin necesidad de que una persona lo controle continuamente. Un robot es un sistema automático con capacidad de movimiento.'},
+  {ico:'📡', t:'Sensor', d:'Componente que capta una magnitud física del entorno (luz, temperatura, distancia, movimiento…) y la convierte en una señal eléctrica que el controlador puede interpretar.'},
+  {ico:'⚙️', t:'Actuador', d:'Componente que transforma una señal eléctrica en una acción física: movimiento (motor), luz (LED), sonido (zumbador), calor (resistencia).'},
+  {ico:'🧠', t:'Controlador', d:'Dispositivo que ejecuta el programa: lee las señales de los sensores, decide qué hacer y envía órdenes a los actuadores. Ejemplos: Arduino, Raspberry Pi, PLC.'},
+  {ico:'🔓', t:'Control en lazo abierto', d:'Sistema que ejecuta las órdenes programadas sin comprobar el resultado. No usa sensores para verificar si se alcanza el objetivo. Ejemplo: tostadora con temporizador.'},
+  {ico:'🔒', t:'Control en lazo cerrado', d:'Sistema que utiliza la información de los sensores para comparar la situación actual con la deseada y ajustar su comportamiento. Ejemplo: termostato, robot seguidor de línea.'},
+  {ico:'🔁', t:'Realimentación (feedback)', d:'Proceso por el que la información del resultado vuelve al sistema para que este pueda corregir su comportamiento. Es la característica clave del control en lazo cerrado.'},
+  {ico:'⚙️', t:'Mecánica', d:'Parte del robot que incluye la estructura, el chasis, las ruedas, los engranajes y los sistemas de transmisión del movimiento.'},
+  {ico:'💡', t:'Electrónica', d:'Parte del robot que incluye los componentes que manejan señales eléctricas: resistencias, condensadores, transistores, diodos, circuitos integrados.'},
+  {ico:'💨', t:'Neumática', d:'Tecnología que usa aire comprimido para generar movimiento. Se emplea en robots industriales, prótesis y automatización de fábricas.'},
+  {ico:'🔋', t:'Motor DC', d:'Motor de corriente continua que gira de forma continua cuando se le aplica tensión. Es el actuador básico para el movimiento en la mayoría de robots móviles.'},
+  {ico:'🎯', t:'Servomotor', d:'Motor especial que puede colocarse en un ángulo preciso (normalmente entre 0 y 180°). Se usa para mover brazos robóticos, timones o articulaciones.'},
+  {ico:'⚡', t:'Puente H', d:'Circuito electrónico que permite controlar el sentido de giro de un motor DC cambiando la polaridad de la alimentación. Es esencial en cualquier robot móvil.'},
+  {ico:'📏', t:'Sensor ultrasónico', d:'Sensor que mide distancia emitiendo pulsos de sonido y midiendo el tiempo que tarda el eco en volver. Muy usado para detectar obstáculos.'},
+  {ico:'🌈', t:'Sensor de color', d:'Sensor que detecta el color de una superficie mediante la emisión de luz y la medición de la reflejada. Se usa en clasificadoras y seguidores de línea.'},
+  {ico:'🛞', t:'Chasis', d:'Estructura física que sostiene todos los componentes del robot y define su forma y sistema de tracción.'},
+  {ico:'📋', t:'Programa', d:'Conjunto ordenado de instrucciones que definen el comportamiento del robot. Sin programa, un robot no hace nada.'},
+  {ico:'🔬', t:'Metacognición', d:'Capacidad de reflexionar sobre el propio proceso de aprendizaje y de construcción del conocimiento. Aplicada a la robótica, ayuda a mejorar los diseños y programas.'},
+  {ico:'💪', t:'Par motor (torque)', d:'Fuerza de giro que puede ejercer un motor. Se mide en N·m o kg·cm. Un par alto permite mover cargas pesadas a baja velocidad.'},
+  {ico:'🔁', t:'Reductora', d:'Mecanismo de engranajes que reduce la velocidad de un motor y aumenta su par. Muy usado en robots móviles que necesitan fuerza.'},
+  {ico:'🔄', t:'Motor paso a paso', d:'Motor que gira en pasos discretos muy precisos, sin necesitar sensores de posición. Se usa en impresoras 3D y máquinas CNC.'},
+  {ico:'🌐', t:'Bus de comunicación', d:'Sistema que permite a varios componentes intercambiar datos. Ejemplos: I2C, SPI, UART, Wi-Fi, Bluetooth.'},
+  {ico:'📊', t:'Señal analógica', d:'Señal que varía de forma continua en el tiempo, tomando infinitos valores posibles. Ejemplo: la tensión de una LDR.'},
+  {ico:'🔢', t:'Señal digital', d:'Señal que solo puede tomar valores discretos, normalmente 0 o 1 (bajo o alto). Ejemplo: la salida de un sensor PIR.'},
+  {ico:'🤖', t:'Cobot', d:'Robot colaborativo diseñado para trabajar junto a personas de forma segura, sin necesidad de barreras físicas.'}
+];
+
+(function initVoc(){
+  const grid = document.getElementById('vocGrid');
+  const defBox = document.getElementById('vocDef');
+  if(!grid) return;
+  vocabulario.forEach((v)=>{
+    const b = document.createElement('button');
+    b.className = 'voc-term';
+    b.innerHTML = `<span style="font-size:1.1rem">${v.ico}</span><span>${v.t}</span>`;
+    b.addEventListener('click', ()=>{
+      const yaActivo = b.classList.contains('active');
+      grid.querySelectorAll('.voc-term').forEach(x=>x.classList.remove('active'));
+      if(yaActivo){
+        defBox.classList.remove('show');
+        setTimeout(()=>{ defBox.innerHTML=''; }, 500);
+        return;
+      }
+      b.classList.add('active');
+      defBox.innerHTML = `<h4>${v.ico} ${v.t}</h4><p>${v.d}</p>`;
+      defBox.classList.add('show');
+    });
+    grid.appendChild(b);
+  });
+})();
+
+/* ================================================================
+   12. QUIZ FINAL
+   (Opciones reescritas para que la respuesta correcta no sea
+    sistemáticamente la más larga en todas las preguntas.)
+================================================================ */
+const preguntasQuiz = [
+  {q:'¿Qué caracteriza a un sistema automático?',
+   o:['Que necesita una persona que lo controle continuamente en todo momento',
+      'Que ejecuta tareas por sí solo siguiendo un programa',
+      'Que funciona únicamente si está conectado a la red eléctrica',
+      'Que solo puede realizar tareas muy sencillas y repetitivas'],
+   c:1, e:'Un sistema automático ejecuta tareas por sí mismo siguiendo un programa predefinido, sin necesidad de control humano continuo.'},
+
+  {q:'¿Cuál es la función de un SENSOR?',
+   o:['Generar el movimiento de los motores del robot',
+      'Almacenar la energía eléctrica necesaria para el funcionamiento',
+      'Captar una magnitud del entorno y convertirla en señal',
+      'Ejecutar paso a paso todas las instrucciones del programa'],
+   c:2, e:'Los sensores captan información del entorno (luz, temperatura, distancia…) y la convierten en señales eléctricas que el controlador puede procesar.'},
+
+  {q:'¿A qué tecnología pertenecen los cilindros y válvulas que usan aire comprimido?',
+   o:['Mecánica','Electrónica','Neumática','Control'],
+   c:2, e:'Los cilindros y válvulas que funcionan con aire comprimido son componentes neumáticos. La neumática se usa mucho en automatización industrial.'},
+
+  {q:'¿Qué componente controla un robot?',
+   o:['El chasis, que sostiene todos los componentes',
+      'Los motores, que generan el movimiento',
+      'El controlador: Arduino, Raspberry Pi o PLC',
+      'La batería, que alimenta todo el sistema'],
+   c:2, e:'El controlador es el cerebro del robot: lee los sensores, ejecuta el programa y envía órdenes a los actuadores.'},
+
+  {q:'¿Qué diferencia hay entre control en lazo abierto y en lazo cerrado?',
+   o:['No hay ninguna diferencia real en su funcionamiento',
+      'En lazo cerrado solo se utilizan relés, contactores y fusibles',
+      'En lazo abierto se usan más sensores que en cerrado',
+      'En abierto no se comprueba el resultado; en cerrado sí'],
+   c:3, e:'En lazo abierto, el sistema ejecuta sin verificar el resultado. En lazo cerrado, la realimentación permite comparar y corregir.'},
+
+  {q:'¿Qué sistema funciona en LAZO CERRADO?',
+   o:['Un semáforo con ciclo fijo de colores',
+      'Una tostadora con temporizador mecánico y palanca',
+      'Un termostato que regula según la temperatura',
+      'Una lavadora con un programa preestablecido fijo'],
+   c:2, e:'El termostato usa un sensor de temperatura para comparar con la deseada y ajustar su comportamiento. Es un ejemplo clásico de lazo cerrado.'},
+
+  {q:'¿A qué tecnología pertenece un engranaje reductor?',
+   o:['Mecánica','Electrónica','Neumática','Control'],
+   c:0, e:'Los engranajes transmiten y modifican el movimiento. Son componentes mecánicos.'},
+
+  {q:'¿Qué tipo de sensor usarías para detectar un obstáculo delante del robot?',
+   o:['Un sensor de temperatura o un termistor',
+      'Un sensor de luz LDR combinado con una fotorresistencia',
+      'Un sensor ultrasónico o un infrarrojo de distancia',
+      'Un sensor de humedad o un higrómetro'],
+   c:2, e:'Los sensores ultrasónicos o los infrarrojos de distancia miden la distancia al obstáculo y permiten al robot detectarlo y reaccionar.'},
+
+  {q:'¿Para qué sirve un servomotor en un robot?',
+   o:['Para girar sin control a la máxima velocidad posible',
+      'Para medir la luz ambiental y la distancia',
+      'Para cargar la batería del robot',
+      'Para colocar un eje en un ángulo preciso'],
+   c:3, e:'Los servomotores permiten posicionar un eje en un ángulo determinado con precisión, útil para brazos robóticos o mecanismos que necesitan posiciones exactas.'},
+
+  {q:'¿Por qué es importante analizar y reflexionar sobre el proceso seguido al construir un robot?',
+   o:['Porque lo exige el profesor al final de cada proyecto',
+      'Porque así se tarda más y se hace más largo',
+      'Porque permite aprender de los errores y mejorar',
+      'Porque hay que rellenar el cuestionario final'],
+   c:2, e:'La reflexión sobre el proceso es fundamental: ayuda a identificar qué funcionó, qué falló y cómo mejorar. Es una competencia clave en ingeniería y aprendizaje.'}
+];
+
+let quizRespondidas = 0, quizAciertos = 0;
+
+(function initQuiz(){
+  const cont = document.getElementById('quizContainer');
+  if(!cont) return;
+  cont.innerHTML = '';
+  quizRespondidas = 0;
+  quizAciertos = 0;
+
+  preguntasQuiz.forEach((p, i)=>{
+    const div = document.createElement('div');
+    div.className = 'q reveal';
+    div.innerHTML = `
+      <span class="q-num">PREGUNTA ${i+1}</span>
+      <h4>${p.q}</h4>
+      <div class="opts">
+        ${p.o.map((o,j)=>`
+          <button class="opt" data-i="${i}" data-j="${j}">
+            <span class="letter">${String.fromCharCode(65+j)}</span>
+            <span>${o}</span>
+          </button>`).join('')}
+      </div>
+      <div class="expl"></div>
+    `;
+    cont.appendChild(div);
+    io.observe(div);
+    const btns = div.querySelectorAll('.opt');
+    const expl = div.querySelector('.expl');
+
+    const responder = (j)=>{
+      btns.forEach(x=>x.disabled = true);
+      btns.forEach(x=>{ if(parseInt(x.dataset.j,10) === p.c) x.classList.add('correct'); });
+      if(j !== p.c){
+        const chosen = [...btns].find(x=>parseInt(x.dataset.j,10) === j);
+        if(chosen) chosen.classList.add('wrong');
+      } else {
+        quizAciertos++;
+      }
+      expl.innerHTML = (j === p.c ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>Respuesta incorrecta.</strong> ') + p.e;
+      expl.classList.add('show');
+      quizRespondidas++;
+      if(quizRespondidas === preguntasQuiz.length) mostrarResultadoQuiz();
+    };
+
+    btns.forEach(b=>{
+      b.addEventListener('click', ()=>{
+        const j = parseInt(b.dataset.j,10);
+        estado.actividades.quiz[i] = j;
+        guardarEstado();
+        responder(j);
+      });
+    });
+
+    // Restaurar respuesta previa
+    if(typeof estado.actividades.quiz[i] === 'number' && estado.actividades.quiz[i] >= 0 && estado.actividades.quiz[i] < p.o.length){
+      responder(estado.actividades.quiz[i]);
+    }
+  });
+})();
+
+function mostrarResultadoQuiz(){
+  const res = document.getElementById('quizResult');
+  document.getElementById('quizScore').textContent = quizAciertos + '/' + preguntasQuiz.length;
+  const pct = Math.round(quizAciertos / preguntasQuiz.length * 100);
+  let titulo, msg;
+  if(pct === 100){ titulo = '🏆 ¡Perfecto!'; msg = 'Dominas los sistemas automáticos, los robots y los tipos de control.'; }
+  else if(pct >= 75){ titulo = '🌟 ¡Muy bien!'; msg = 'Tienes una comprensión sólida. Repasa las preguntas falladas para afinar los detalles.'; }
+  else if(pct >= 50){ titulo = '👍 Buen intento'; msg = 'Vas por el camino correcto. Vuelve a las secciones de diseño, tecnologías, programación y control.'; }
+  else { titulo = '📚 A seguir aprendiendo'; msg = 'Revisa con calma cada sección y vuelve a intentarlo.'; }
+  document.getElementById('quizTitle').textContent = titulo;
+  document.getElementById('quizMsg').textContent = msg;
+  res.style.display = 'block';
+  // Solo hacemos scroll automático si el usuario acaba de terminar el quiz
+  // (no cuando estamos restaurando el estado al cargar la página).
+  if(!restaurando) res.scrollIntoView({behavior:'smooth', block:'center'});
+  if(quizAciertos > estado.scores.quiz){
+    estado.scores.quiz = quizAciertos;
+    guardarEstado();
+    actualizarCertificado();
+  }
+  completarReto('quiz', '¡Cuestionario final completado! ' + quizAciertos + '/' + preguntasQuiz.length);
+}
+
+/* ================================================================
+   13. CERTIFICADO Y PDF RASTERIZADO
+================================================================ */
+function actualizarCertificado(){
+  const stats = document.getElementById('certStats');
+  const nombreEl = document.getElementById('certNombre');
+  const warn = document.getElementById('certWarn');
+  const btn = document.getElementById('btnCertificado');
+
+  nombreEl.textContent = estado.nombre || '—';
+
+  const s = estado.scores;
+  const nRetos = estado.retos.length;
+
+  const items = [
+    {num: (s.robot>0 ? s.robot + '%' : '—'), lbl:'Diseño robot'},
+    {num: (s.tecnologias>0 ? s.tecnologias + '/12' : '—'), lbl:'Tecnologías'},
+    {num: (s.programacion ? '✓' : '—'), lbl:'Programación'},
+    {num: (s.componentes>0 ? s.componentes + '/8' : '—'), lbl:'Componentes'},
+    {num: (s.control>0 ? s.control + '/8' : '—'), lbl:'Control'},
+    {num: (s.quiz>0 ? s.quiz + '/10' : '—'), lbl:'Cuestionario'},
+    {num: nRetos + '/' + RETOS_TOTALES, lbl:'Retos totales'}
+  ];
+
+  stats.innerHTML = items.map(it=>`
+    <div class="cert-stat">
+      <div class="num">${it.num}</div>
+      <div class="lbl">${it.lbl}</div>
+    </div>
+  `).join('');
+
+  if(nRetos === 0){
+    warn.style.display = 'block';
+    btn.disabled = true;
+    btn.style.opacity = .55;
+    btn.style.cursor = 'not-allowed';
+  } else {
+    warn.style.display = 'none';
+    btn.disabled = false;
+    btn.style.opacity = 1;
+    btn.style.cursor = 'pointer';
+  }
+}
+
+document.getElementById('btnCertificado').addEventListener('click', ()=>{
+  if(!estado.nombre){ toast('Introduce tu nombre primero'); return; }
+  if(estado.retos.length === 0){ toast('Completa al menos un reto para obtener el certificado'); return; }
+  generarPDFRasterizado();
+});
+
+function generarPDFRasterizado(){
+  if(!(window.jspdf && window.jspdf.jsPDF)){
+    toast('No se ha podido cargar la librería PDF. Inténtalo de nuevo.');
+    return;
+  }
+  try{
+    const DPI = 300;
+    const W_MM = 297, H_MM = 210;
+    const W = Math.round(W_MM / 25.4 * DPI);
+    const H = Math.round(H_MM / 25.4 * DPI);
+    const mm = v => v / 25.4 * DPI;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = '#ecfeff';
+    ctx.fillRect(0,0,W,H);
+
+    ctx.strokeStyle = '#155e75';
+    ctx.lineWidth = mm(2);
+    ctx.strokeRect(mm(10), mm(10), W-mm(20), H-mm(20));
+    ctx.lineWidth = mm(0.5);
+    ctx.strokeRect(mm(14), mm(14), W-mm(28), H-mm(28));
+
+    ctx.fillStyle = '#155e75';
+    ctx.fillRect(mm(14), mm(14), mm(20), mm(3));
+    ctx.fillRect(mm(14), mm(14), mm(3), mm(20));
+    ctx.fillRect(W-mm(34), mm(14), mm(20), mm(3));
+    ctx.fillRect(W-mm(17), mm(14), mm(3), mm(20));
+    ctx.fillRect(mm(14), H-mm(17), mm(20), mm(3));
+    ctx.fillRect(mm(14), H-mm(34), mm(3), mm(20));
+    ctx.fillRect(W-mm(34), H-mm(17), mm(20), mm(3));
+    ctx.fillRect(W-mm(17), H-mm(34), mm(3), mm(20));
+
+    ctx.fillStyle = '#155e75';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = `bold ${mm(9)}px Arial, sans-serif`;
+    ctx.fillText('CERTIFICADO DE APROVECHAMIENTO', W/2, mm(38));
+
+    ctx.fillStyle = '#64748b';
+    ctx.font = `${mm(4)}px Arial, sans-serif`;
+    ctx.fillText('Robots y Sistemas Automáticos · Diseño · Programación · Control', W/2, mm(48));
+
+    ctx.strokeStyle = '#84cc16';
+    ctx.lineWidth = mm(0.8);
+    ctx.beginPath();
+    ctx.moveTo(W/2 - mm(60), mm(53));
+    ctx.lineTo(W/2 + mm(60), mm(53));
+    ctx.stroke();
+
+    ctx.fillStyle = '#475569';
+    ctx.font = `${mm(4.5)}px Arial, sans-serif`;
+    ctx.fillText('Se certifica que', W/2, mm(68));
+
+    ctx.fillStyle = '#0f172a';
+    ctx.font = `bold ${mm(14)}px Arial, sans-serif`;
+    ctx.fillText(estado.nombre, W/2, mm(85));
+
+    ctx.fillStyle = '#334155';
+    ctx.font = `${mm(4)}px Arial, sans-serif`;
+    ctx.fillText('ha completado las actividades interactivas de la aplicación educativa sobre diseño,', W/2, mm(97));
+    ctx.fillText('construcción y programación de sistemas automáticos y robots, obteniendo:', W/2, mm(104));
+
+    const s = estado.scores;
+    const resultados = [
+      ['Diseño del robot para la misión', s.robot>0 ? s.robot + ' % de compatibilidad' : 'No realizado'],
+      ['Clasificación por tipo de tecnología', s.tecnologias>0 ? s.tecnologias + ' / 12 componentes' : 'No realizada'],
+      ['Programación del robot en el laberinto', s.programacion ? 'Completado con éxito' : 'No completado'],
+      ['Emparejar sensores y actuadores', s.componentes>0 ? s.componentes + ' / 8 parejas' : 'No realizado'],
+      ['Clasificar sistemas de control', s.control>0 ? s.control + ' / 8 sistemas' : 'No realizado'],
+      ['Cuestionario final', s.quiz>0 ? s.quiz + ' / 10' : 'No realizado'],
+      ['Retos completados', estado.retos.length + ' / ' + RETOS_TOTALES]
+    ];
+
+    const tableX = mm(60);
+    const tableY = mm(116);
+    const rowH = mm(9);
+    const colW1 = mm(110), colW2 = mm(70);
+    const totalW = colW1 + colW2;
+
+    ctx.fillStyle = '#155e75';
+    ctx.fillRect(tableX, tableY, totalW, mm(9));
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `bold ${mm(3.6)}px Arial, sans-serif`;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('ACTIVIDAD', tableX + mm(4), tableY + mm(4.5));
+    ctx.fillText('RESULTADO', tableX + colW1 + mm(4), tableY + mm(4.5));
+
+    resultados.forEach((row, i)=>{
+      const y = tableY + mm(9) + i * rowH;
+      if(i % 2 === 0){
+        ctx.fillStyle = '#cffafe';
+        ctx.fillRect(tableX, y, totalW, rowH);
+      }
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = mm(0.2);
+      ctx.strokeRect(tableX, y, totalW, rowH);
+      ctx.fillStyle = '#1e293b';
+      ctx.font = `${mm(3.6)}px Arial, sans-serif`;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(row[0], tableX + mm(4), y + rowH/2);
+      ctx.font = `bold ${mm(3.6)}px Arial, sans-serif`;
+      ctx.fillText(row[1], tableX + colW1 + mm(4), y + rowH/2);
+    });
+
+    const fecha = new Date().toLocaleDateString('es-ES', {day:'numeric', month:'long', year:'numeric'});
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#64748b';
+    ctx.font = `${mm(3.5)}px Arial, sans-serif`;
+    ctx.fillText('Fecha de emisión: ' + fecha, W/2, H - mm(24));
+    ctx.font = `${mm(3)}px Arial, sans-serif`;
+    ctx.fillText('Este certificado acredita la realización de las actividades interactivas de la aplicación educativa.', W/2, H - mm(17));
+
+    const imgData = canvas.toDataURL('image/png');
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
+    doc.addImage(imgData, 'PNG', 0, 0, W_MM, H_MM, undefined, 'FAST');
+    doc.save('Certificado_RobotsSistemas_' + estado.nombre.replace(/[^a-zA-Z0-9]/g,'_') + '.pdf');
+    toast('¡Certificado descargado!');
+  } catch(err){
+    console.error(err);
+    toast('No se pudo generar el PDF.');
+  }
+}
+
+/* ================================================================
+   14. INICIALIZACIÓN
+   (cargarEstado() ya se ha llamado al principio, antes de inicializar
+    las actividades, para poder restaurarlas correctamente.)
+================================================================ */
+restaurando = false;
+mostrarLogin();
+actualizarProgreso();
+</script>
+</body>
+</html>
