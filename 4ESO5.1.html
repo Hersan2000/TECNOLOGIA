@@ -1,0 +1,2635 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Entorno Digital · Herramientas, evolución, fuentes y eficiencia</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --cobalt:#1d4ed8; --cobalt-claro:#dbeafe; --cobalt-oscuro:#1e3a8a;
+  --turquesa:#0d9488; --turquesa-claro:#ccfbf1; --turquesa-oscuro:#134e4a;
+  --magenta:#c026d3; --magenta-claro:#fae8ff; --magenta-oscuro:#701a75;
+  --naranja:#ea580c; --naranja-claro:#ffedd5; --naranja-oscuro:#7c2d12;
+  --rojo:#dc2626; --rojo-claro:#fee2e2;
+  --gris:#64748b; --gris-claro:#f1f5f9; --gris-oscuro:#1e293b;
+  --blanco:#fff; --negro:#0f172a;
+  --sombra:0 10px 30px rgba(15,23,42,.08);
+  --sombra-lg:0 20px 50px rgba(15,23,42,.14);
+  --radio:20px;
+  --fuente:'Segoe UI',system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+  --mono:'Consolas','Monaco','Courier New',monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0; font-family:var(--fuente); background:var(--gris-claro); color:var(--negro); line-height:1.7; -webkit-font-smoothing:antialiased;}
+body.locked{overflow:hidden}
+h1,h2,h3,h4{line-height:1.2; margin:0 0 .5rem}
+p{margin:0 0 1rem}
+
+/* LOGIN */
+#loginOverlay{
+  position:fixed; inset:0; z-index:2000;
+  background:radial-gradient(1000px 600px at 20% 10%,#1e3a8a 0%,transparent 60%),
+             radial-gradient(900px 500px at 85% 90%,#701a75 0%,transparent 55%),
+             linear-gradient(160deg,#0c1445,#0f172a);
+  display:grid; place-items:center; padding:1.2rem;
+  transition:opacity .6s, visibility .6s;
+}
+#loginOverlay.hidden{opacity:0; visibility:hidden; pointer-events:none}
+.login-card{
+  background:#fff; border-radius:26px; padding:2.2rem 2rem;
+  max-width:500px; width:100%; box-shadow:0 30px 70px rgba(0,0,0,.4);
+  text-align:center; position:relative; overflow:hidden;
+  animation:aparecer .6s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes aparecer{from{opacity:0;transform:translateY(24px) scale(.96)}to{opacity:1;transform:none}}
+.login-card::before{content:""; position:absolute; top:0; left:0; right:0; height:6px;
+  background:linear-gradient(90deg,var(--cobalt),var(--turquesa),var(--magenta));}
+.login-emoji{font-size:3.4rem; line-height:1; margin-bottom:.5rem; display:block}
+.login-card h1{font-size:1.55rem; color:var(--cobalt-oscuro); letter-spacing:-.4px}
+.login-card p.sub{font-size:.94rem; color:var(--gris); margin-bottom:1.5rem}
+.login-card input{width:100%; font-family:inherit; font-size:1.02rem; padding:.95rem 1.1rem;
+  border-radius:14px; border:2px solid #e2e8f0; background:#f8fafc; color:var(--negro);
+  transition:.2s; text-align:center; font-weight:600; margin-bottom:1rem;}
+.login-card input:focus{outline:none; border-color:var(--cobalt); background:#fff; box-shadow:0 0 0 5px rgba(29,78,216,.14);}
+.login-card .btn{width:100%; justify-content:center}
+.login-error{font-size:.82rem; color:var(--rojo); margin-top:.7rem; min-height:1.2em; font-weight:700}
+.welcome-back{background:var(--cobalt-claro); border:1.5px solid #bfdbfe; border-radius:14px;
+  padding:1rem; margin-bottom:1.2rem; font-size:.92rem; color:var(--cobalt-oscuro);}
+.welcome-back strong{font-size:1.05rem}
+.login-btns{display:flex; gap:.6rem; flex-wrap:wrap; justify-content:center}
+.login-btns .btn{flex:1; min-width:130px; justify-content:center}
+
+/* PROGRESO */
+#progresoGlobal{position:fixed; top:0; left:0; right:0; height:5px; background:rgba(255,255,255,.2); z-index:1000;}
+#progresoBarra{height:100%; width:0%; transition:width .6s cubic-bezier(.2,.8,.2,1);
+  background:linear-gradient(90deg,var(--cobalt),var(--turquesa),var(--magenta));
+  box-shadow:0 0 12px rgba(29,78,216,.6);}
+
+/* NAV */
+nav{position:sticky; top:0; z-index:900; background:rgba(255,255,255,.9); backdrop-filter:blur(14px);
+  border-bottom:1px solid #e2e8f0; padding:.55rem .8rem;}
+.nav-inner{max-width:1200px; margin:0 auto; display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;}
+.nav-brand{font-weight:800; font-size:.92rem; letter-spacing:.5px; color:var(--cobalt-oscuro);
+  display:flex; align-items:center; gap:.45rem; margin-right:auto;}
+.nav-brand .dot{width:11px;height:11px;border-radius:50%;background:linear-gradient(135deg,var(--cobalt),var(--magenta));}
+.nav-user{font-size:.8rem; font-weight:800; color:var(--cobalt-oscuro);
+  background:var(--cobalt-claro); padding:.3rem .8rem; border-radius:999px;
+  display:flex; align-items:center; gap:.35rem;}
+.nav-links{display:flex; gap:.3rem; flex-wrap:wrap}
+.nav-links a{font-size:.8rem; font-weight:600; text-decoration:none; color:var(--gris-oscuro);
+  padding:.35rem .7rem; border-radius:999px; transition:.25s; white-space:nowrap;}
+.nav-links a:hover{background:var(--cobalt-claro); color:var(--cobalt-oscuro)}
+.nav-links a.active{background:var(--cobalt-oscuro); color:#fff}
+#progresoPill{font-size:.72rem; font-weight:800; color:var(--cobalt-oscuro); background:var(--cobalt-claro);
+  padding:.3rem .7rem; border-radius:999px; white-space:nowrap;}
+
+/* HERO */
+header.hero{position:relative; overflow:hidden; color:#fff;
+  background:radial-gradient(1200px 600px at 15% -10%,#1e3a8a 0%,transparent 60%),
+             radial-gradient(900px 500px at 90% 10%,#701a75 0%,transparent 55%),
+             linear-gradient(160deg,#0c1445,#0f172a);
+  padding:4.5rem 1.2rem 4rem;}
+.blob{position:absolute; border-radius:50%; filter:blur(70px); opacity:.4; animation:flotar 14s ease-in-out infinite}
+.blob.b1{width:340px;height:340px;background:#1d4ed8;top:-90px;left:-60px}
+.blob.b2{width:280px;height:280px;background:#0d9488;bottom:-110px;right:-40px;animation-delay:-5s}
+.blob.b3{width:220px;height:220px;background:#c026d3;top:40%;right:25%;animation-delay:-9s}
+@keyframes flotar{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(28px,-32px) scale(1.12)}}
+.hero-inner{position:relative; max-width:1000px; margin:0 auto; text-align:center}
+.badge-top{display:inline-flex; align-items:center; gap:.5rem; font-size:.76rem; font-weight:800;
+  letter-spacing:1.4px; text-transform:uppercase; color:#93c5fd;
+  background:rgba(29,78,216,.18); border:1px solid rgba(147,197,253,.4);
+  padding:.42rem 1rem; border-radius:999px; margin-bottom:1.2rem;}
+header.hero h1{font-size:clamp(1.85rem,5.2vw,3.3rem); font-weight:900; letter-spacing:-1px; margin-bottom:.7rem;}
+header.hero h1 span{background:linear-gradient(90deg,#93c5fd,#5eead4,#f0abfc);
+  -webkit-background-clip:text; background-clip:text; color:transparent;}
+.hero-sub{max-width:800px; margin:0 auto 1.6rem; color:#cbd5e1; font-size:clamp(.95rem,2.2vw,1.1rem)}
+.hero-sub strong{color:#93c5fd}
+.hero-chips{display:flex; gap:.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:2rem}
+.chip{font-size:.74rem; font-weight:800; letter-spacing:.6px; padding:.34rem .8rem; border-radius:999px;
+  background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.22); color:#e2e8f0;}
+.hero-cta{display:flex; gap:.7rem; justify-content:center; flex-wrap:wrap}
+.btn{display:inline-flex; align-items:center; gap:.45rem; cursor:pointer; border:none;
+  font-family:inherit; font-size:.92rem; font-weight:800; padding:.8rem 1.5rem; border-radius:999px;
+  text-decoration:none; transition:transform .2s, box-shadow .2s, background .2s;}
+.btn-primary{background:linear-gradient(135deg,var(--cobalt),var(--cobalt-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(29,78,216,.4)}
+.btn-primary:hover{transform:translateY(-3px); box-shadow:0 16px 34px rgba(29,78,216,.5)}
+.btn-ghost{background:rgba(255,255,255,.1); color:#fff; border:1.5px solid rgba(255,255,255,.3)}
+.btn-ghost:hover{background:rgba(255,255,255,.2); transform:translateY(-3px)}
+.btn-turquesa{background:linear-gradient(135deg,var(--turquesa),var(--turquesa-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(13,148,136,.4)}
+.btn-turquesa:hover{transform:translateY(-3px)}
+.btn-magenta{background:linear-gradient(135deg,var(--magenta),var(--magenta-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(192,38,211,.4)}
+.btn-magenta:hover{transform:translateY(-3px)}
+.btn-naranja{background:linear-gradient(135deg,var(--naranja),var(--naranja-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(234,88,12,.4)}
+.btn-naranja:hover{transform:translateY(-3px)}
+
+/* LAYOUT */
+main{max-width:1200px; margin:0 auto; padding:0 1.1rem 5rem}
+section{padding:3.2rem 0 1rem; scroll-margin-top:70px}
+.sec-head{margin-bottom:1.8rem}
+.kicker{display:inline-block; font-size:.72rem; font-weight:900; letter-spacing:1.6px; text-transform:uppercase;
+  color:var(--cobalt-oscuro); background:var(--cobalt-claro); padding:.3rem .75rem; border-radius:999px; margin-bottom:.7rem;}
+.kicker.turquesa{color:var(--turquesa-oscuro); background:var(--turquesa-claro)}
+.kicker.magenta{color:var(--magenta-oscuro); background:var(--magenta-claro)}
+.kicker.naranja{color:var(--naranja-oscuro); background:var(--naranja-claro)}
+.sec-head h2{font-size:clamp(1.5rem,3.6vw,2.15rem); font-weight:900; letter-spacing:-.6px}
+.sec-head p.lead{color:var(--gris); max-width:900px; font-size:1rem}
+.card{background:var(--blanco); border-radius:var(--radio); padding:1.6rem; box-shadow:var(--sombra); border:1px solid #e2e8f0;}
+.grid{display:grid; gap:1.1rem}
+.g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.reveal{opacity:0; transform:translateY(26px); transition:opacity .7s cubic-bezier(.2,.8,.2,1), transform .7s cubic-bezier(.2,.8,.2,1)}
+.reveal.in{opacity:1; transform:none}
+
+/* PILARES */
+.pilar{background:#fff; border-radius:16px; padding:1.3rem; border:1px solid #e2e8f0;
+  border-top:5px solid var(--cobalt); box-shadow:var(--sombra); transition:.3s;}
+.pilar:hover{transform:translateY(-6px); box-shadow:var(--sombra-lg)}
+.pilar .ico{font-size:2rem; display:block; margin-bottom:.5rem}
+.pilar h4{font-size:1.05rem; color:var(--cobalt-oscuro)}
+.pilar p{font-size:.9rem; color:var(--gris); margin:0}
+
+/* ========== TEORÍA EXPANDIDA ========== */
+.teoria{
+  background:#fff; border-radius:var(--radio); padding:1.6rem; box-shadow:var(--sombra);
+  border:1px solid #e2e8f0; margin-bottom:1.4rem;
+}
+.teoria h3{
+  color:var(--cobalt-oscuro); font-size:1.15rem; margin-bottom:.8rem;
+  display:flex; align-items:center; gap:.5rem;
+}
+.teoria h3 .th-ico{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:34px; height:34px; border-radius:10px;
+  background:var(--cobalt-claro); color:var(--cobalt-oscuro);
+  font-size:1rem;
+}
+.teoria h4{
+  color:var(--cobalt-oscuro); font-size:1rem; margin-top:1.2rem; margin-bottom:.5rem;
+  padding-left:.6rem; border-left:4px solid var(--cobalt);
+}
+.teoria p{font-size:.94rem; color:var(--gris-oscuro); margin-bottom:.8rem}
+.teoria ul, .teoria ol{font-size:.92rem; color:var(--gris-oscuro); margin:0 0 1rem; padding-left:1.3rem}
+.teoria li{margin-bottom:.35rem}
+.teoria li strong{color:var(--cobalt-oscuro)}
+.teoria .destacado{
+  background:linear-gradient(150deg,var(--cobalt-claro),#fff);
+  border-left:4px solid var(--cobalt); border-radius:0 12px 12px 0;
+  padding:.9rem 1.1rem; margin:1rem 0; font-size:.92rem;
+  color:var(--cobalt-oscuro);
+}
+.teoria .destacado strong{color:var(--cobalt-oscuro); font-weight:900}
+.teoria.turquesa .th-ico{background:var(--turquesa-claro); color:var(--turquesa-oscuro)}
+.teoria.turquesa h3{color:var(--turquesa-oscuro)}
+.teoria.turquesa h4{color:var(--turquesa-oscuro); border-color:var(--turquesa)}
+.teoria.turquesa li strong{color:var(--turquesa-oscuro)}
+.teoria.turquesa .destacado{background:linear-gradient(150deg,var(--turquesa-claro),#fff); border-color:var(--turquesa); color:var(--turquesa-oscuro)}
+.teoria.magenta .th-ico{background:var(--magenta-claro); color:var(--magenta-oscuro)}
+.teoria.magenta h3{color:var(--magenta-oscuro)}
+.teoria.magenta h4{color:var(--magenta-oscuro); border-color:var(--magenta)}
+.teoria.magenta li strong{color:var(--magenta-oscuro)}
+.teoria.magenta .destacado{background:linear-gradient(150deg,var(--magenta-claro),#fff); border-color:var(--magenta); color:var(--magenta-oscuro)}
+.teoria.naranja .th-ico{background:var(--naranja-claro); color:var(--naranja-oscuro)}
+.teoria.naranja h3{color:var(--naranja-oscuro)}
+.teoria.naranja h4{color:var(--naranja-oscuro); border-color:var(--naranja)}
+.teoria.naranja li strong{color:var(--naranja-oscuro)}
+.teoria.naranja .destacado{background:linear-gradient(150deg,var(--naranja-claro),#fff); border-color:var(--naranja); color:var(--naranja-oscuro)}
+.teoria .ejemplo{
+  background:#f8fafc; border-radius:10px; padding:.7rem .9rem;
+  font-size:.85rem; color:var(--gris-oscuro); margin:.5rem 0;
+  border-left:3px solid var(--gris);
+}
+.teoria .ejemplo strong{color:var(--gris-oscuro)}
+.teoria .tabla-tipos{
+  width:100%; border-collapse:collapse; margin:.8rem 0 1rem;
+  font-size:.86rem;
+}
+.teoria .tabla-tipos th, .teoria .tabla-tipos td{
+  padding:.6rem .7rem; text-align:left;
+  border-bottom:1px solid #e2e8f0;
+}
+.teoria .tabla-tipos th{
+  background:var(--cobalt-claro); color:var(--cobalt-oscuro);
+  font-weight:900; font-size:.78rem; text-transform:uppercase; letter-spacing:.4px;
+}
+.teoria .tabla-tipos tr:nth-child(even) td{background:#f8fafc}
+.teoria .grid-teoria{
+  display:grid; gap:.8rem; grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  margin:1rem 0;
+}
+.teoria .bloque-teoria{
+  background:#f8fafc; border-radius:12px; padding:.9rem 1rem;
+  border-top:3px solid var(--cobalt);
+}
+.teoria.turquesa .bloque-teoria{border-color:var(--turquesa)}
+.teoria.magenta .bloque-teoria{border-color:var(--magenta)}
+.teoria.naranja .bloque-teoria{border-color:var(--naranja)}
+.teoria .bloque-teoria h5{
+  font-size:.88rem; font-weight:900; color:var(--cobalt-oscuro);
+  margin:0 0 .4rem;
+}
+.teoria.turquesa .bloque-teoria h5{color:var(--turquesa-oscuro)}
+.teoria.magenta .bloque-teoria h5{color:var(--magenta-oscuro)}
+.teoria.naranja .bloque-teoria h5{color:var(--naranja-oscuro)}
+.teoria .bloque-teoria p{font-size:.85rem; margin:0; color:var(--gris)}
+
+/* ACTIVIDADES */
+.actividad{background:#fff; border-radius:var(--radio); padding:1.6rem; box-shadow:var(--sombra);
+  border:1px solid #e2e8f0; margin-top:1.6rem;}
+.actividad h3{color:var(--cobalt-oscuro); font-size:1.15rem; margin-bottom:.3rem}
+.actividad .intro{font-size:.93rem; color:var(--gris); margin-bottom:1rem}
+
+/* ========== RETO 1: MAPA ENTORNO DIGITAL ========== */
+.mapa-cats{
+  display:flex; gap:.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:1.3rem;
+}
+.mapa-cat{
+  padding:.55rem 1rem; border-radius:12px; font-size:.82rem; font-weight:900;
+  border:2px solid;
+  display:flex; align-items:center; gap:.4rem;
+  transition:.3s;
+}
+.mapa-cat.comunicacion{background:#dbeafe; color:#1e40af; border-color:#93c5fd}
+.mapa-cat.almacenamiento{background:#ccfbf1; color:#134e4a; border-color:#5eead4}
+.mapa-cat.productividad{background:#fae8ff; color:#701a75; border-color:#f0abfc}
+.mapa-cat.creacion{background:#ffedd5; color:#7c2d12; border-color:#fdba74}
+.mapa-cat.completado{box-shadow:0 0 0 4px rgba(22,163,74,.25); border-color:#16a34a !important}
+.mapa-cat .mc-cuenta{
+  background:rgba(255,255,255,.6); border-radius:999px; padding:.05rem .5rem;
+  font-size:.72rem; font-weight:900;
+}
+.mapa-cat.completado .mc-cuenta{background:#16a34a; color:#fff}
+.mapa-tools{
+  display:grid; gap:.7rem; grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+}
+.mapa-tool{
+  background:#fff; border:2px solid #e2e8f0; border-radius:14px; padding:.85rem 1rem;
+  display:flex; flex-direction:column; gap:.6rem; transition:.3s;
+}
+.mapa-tool.done{border-color:var(--cobalt); background:#f0f4ff}
+.mt-head{display:flex; gap:.6rem; align-items:center}
+.mt-ico{font-size:1.7rem; flex-shrink:0}
+.mt-nombre{font-size:.92rem; font-weight:900; color:var(--cobalt-oscuro); margin:0}
+.mt-desc{font-size:.78rem; color:var(--gris); margin:.1rem 0 0; line-height:1.35}
+.mt-opciones{display:grid; grid-template-columns:repeat(2,1fr); gap:.35rem}
+.mt-btn{
+  font-family:inherit; font-size:.75rem; font-weight:800; cursor:pointer;
+  padding:.5rem .4rem; border-radius:9px; border:2px solid #e2e8f0; background:#f8fafc;
+  color:var(--gris-oscuro); transition:.2s;
+}
+.mt-btn:hover:not(:disabled){border-color:var(--cobalt); background:var(--cobalt-claro); color:var(--cobalt-oscuro)}
+.mt-btn:disabled{cursor:default; opacity:.5}
+.mt-btn.correct{background:#dcfce7; border-color:#16a34a; color:#15803d; opacity:1}
+.mt-btn.wrong{background:#fee2e2; border-color:#dc2626; color:#b91c1c; opacity:1}
+.mt-fb{font-size:.75rem; border-radius:8px; padding:0; max-height:0; overflow:hidden; transition:.35s; color:var(--gris-oscuro);}
+.mt-fb.show{max-height:180px; padding:.5rem .65rem; background:#fff; border-left:3px solid var(--cobalt)}
+#mapaMsg{text-align:center; margin-top:1.2rem; font-weight:800; color:var(--cobalt-oscuro); min-height:1.4em}
+
+/* ========== RETO 2: EVOLUCIÓN DIGITAL ========== */
+.evo-timeline{position:relative; padding:1rem 0}
+.evo-track{
+  position:relative; height:8px; background:linear-gradient(90deg,var(--cobalt),var(--turquesa),var(--magenta));
+  border-radius:999px; margin:2.5rem 1rem;
+}
+.evo-points{
+  position:absolute; top:-18px; left:0; right:0;
+  display:flex; justify-content:space-between;
+}
+.evo-point{
+  width:40px; height:40px; border-radius:50%; background:#fff;
+  border:3px solid var(--cobalt); display:grid; place-items:center;
+  cursor:pointer; transition:.25s; font-weight:900; font-size:.78rem;
+  color:var(--cobalt-oscuro); margin-top:-8px;
+}
+.evo-point:hover{transform:scale(1.15)}
+.evo-point.activo{background:var(--cobalt); color:#fff; transform:scale(1.2); box-shadow:0 0 0 6px rgba(29,78,216,.2)}
+.evo-point.visto{background:var(--turquesa); border-color:var(--turquesa); color:#fff}
+.evo-point.visto.activo{background:var(--cobalt); border-color:var(--cobalt)}
+.evo-info{
+  background:#fff; border-radius:16px; padding:1.3rem; margin-top:1.3rem;
+  border:1px solid #e2e8f0; min-height:180px; box-shadow:var(--sombra);
+}
+.evo-info h4{color:var(--cobalt-oscuro); font-size:1.1rem; margin-bottom:.3rem}
+.evo-info .ei-año{
+  display:inline-block; font-size:.72rem; font-weight:900; padding:.22rem .65rem;
+  background:var(--cobalt); color:#fff; border-radius:999px; margin-bottom:.6rem;
+  letter-spacing:.5px;
+}
+.evo-info p{font-size:.9rem; color:var(--gris-oscuro); margin-bottom:.5rem}
+.evo-info .ei-clave{
+  background:var(--turquesa-claro); border-left:4px solid var(--turquesa);
+  padding:.55rem .8rem; border-radius:0 10px 10px 0; margin-top:.6rem;
+  font-size:.85rem; color:var(--turquesa-oscuro);
+}
+.evo-info .ei-vacio{color:var(--gris); font-style:italic}
+.evo-progreso{
+  text-align:center; margin-top:1rem; font-weight:800; color:var(--cobalt-oscuro);
+}
+
+/* ========== RETO 3: DETECTIVE DE BULOS ========== */
+.bulos-wrap{display:grid; gap:1rem; grid-template-columns:repeat(auto-fit,minmax(300px,1fr));}
+.bulo-card{
+  background:#fff; border:2px solid #e2e8f0; border-radius:16px; padding:1rem 1.1rem;
+  display:flex; flex-direction:column; gap:.7rem; transition:.3s;
+}
+.bulo-card.done{border-color:var(--magenta); background:#fdf4ff}
+.bulo-frase{
+  font-size:.9rem; font-weight:700; color:var(--gris-oscuro); padding:.7rem .9rem;
+  background:#f8fafc; border-radius:12px; border-left:4px solid var(--magenta);
+  font-style:italic; min-height:3.5em; display:flex; align-items:center;
+}
+.bulo-frase::before{content:'"'; font-size:1.4rem; color:var(--magenta); margin-right:.2rem; line-height:1;}
+.bulo-opciones{display:grid; grid-template-columns:repeat(3,1fr); gap:.35rem;}
+.bulo-btn{
+  font-family:inherit; font-size:.72rem; font-weight:800; cursor:pointer;
+  padding:.5rem .35rem; border-radius:9px; border:2px solid #e2e8f0; background:#f8fafc;
+  color:var(--gris-oscuro); transition:.2s; display:flex; flex-direction:column; gap:.15rem; align-items:center;
+}
+.bulo-btn:hover:not(:disabled){border-color:var(--magenta); background:var(--magenta-claro); color:var(--magenta-oscuro)}
+.bulo-btn:disabled{cursor:default; opacity:.5}
+.bulo-btn .bb-ico{font-size:1.1rem}
+.bulo-btn.correct{background:#dcfce7; border-color:#16a34a; color:#15803d; opacity:1}
+.bulo-btn.wrong{background:#fee2e2; border-color:#dc2626; color:#b91c1c; opacity:1}
+.bulo-fb{
+  font-size:.78rem; border-radius:10px; padding:0; max-height:0; overflow:hidden;
+  transition:.35s; color:var(--gris-oscuro);
+}
+.bulo-fb.show{max-height:260px; padding:.6rem .75rem; background:#fff; border-left:3px solid var(--magenta)}
+#bulosMsg{text-align:center; margin-top:1.2rem; font-weight:800; color:var(--magenta-oscuro); min-height:1.4em}
+
+/* ========== RETO 4: CONTRASTAR FUENTES ========== */
+.contrastar-caso{
+  background:linear-gradient(150deg,#ccfbf1,#fff); border-left:6px solid var(--turquesa);
+  border-radius:0 16px 16px 0; padding:1.1rem 1.2rem; margin-bottom:1.2rem;
+}
+.contrastar-caso h4{color:var(--turquesa-oscuro); font-size:1rem; margin-bottom:.3rem}
+.contrastar-caso p{font-size:.88rem; margin:0; color:var(--gris-oscuro)}
+.fuentes-lista{
+  display:grid; gap:.6rem; grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  margin:1rem 0;
+}
+.fuente-item{
+  background:#fff; border-radius:12px; padding:.8rem .9rem;
+  border:2px solid #e2e8f0; display:flex; flex-direction:column; gap:.3rem;
+}
+.fuente-item .fi-tipo{
+  font-size:.68rem; font-weight:900; text-transform:uppercase; letter-spacing:.5px;
+  color:var(--turquesa-oscuro);
+}
+.fuente-item .fi-nombre{
+  font-size:.9rem; font-weight:900; color:var(--gris-oscuro);
+}
+.fuente-item .fi-dato{
+  font-family:var(--mono); font-size:.86rem; font-weight:900;
+  color:var(--turquesa-oscuro); background:var(--turquesa-claro);
+  padding:.2rem .55rem; border-radius:6px; align-self:flex-start;
+}
+.fuente-item .fi-desc{font-size:.76rem; color:var(--gris); margin:0}
+.contrastar-opciones{display:grid; gap:.5rem;}
+.contrastar-op{
+  text-align:left; font-family:inherit; font-size:.86rem; font-weight:600; cursor:pointer;
+  padding:.7rem .9rem; border-radius:12px; border:2px solid #e2e8f0; background:#fff;
+  color:var(--gris-oscuro); transition:.2s; display:flex; gap:.6rem; align-items:flex-start;
+}
+.contrastar-op:hover:not(:disabled){border-color:var(--turquesa); background:var(--turquesa-claro); color:var(--turquesa-oscuro); transform:translateX(4px)}
+.contrastar-op:disabled{cursor:default}
+.contrastar-op .co-letra{
+  flex:0 0 22px; height:22px; border-radius:6px; background:#e2e8f0; color:var(--gris-oscuro);
+  display:grid; place-items:center; font-size:.7rem; font-weight:900;
+}
+.contrastar-op.correct{background:#dcfce7; border-color:#16a34a; color:#15803d; opacity:1}
+.contrastar-op.correct .co-letra{background:#16a34a; color:#fff}
+.contrastar-op.wrong{background:#fee2e2; border-color:#dc2626; color:#b91c1c; opacity:1}
+.contrastar-op.wrong .co-letra{background:#dc2626; color:#fff}
+.contrastar-fb{
+  font-size:.82rem; border-radius:10px; padding:0; max-height:0; overflow:hidden;
+  transition:.35s; color:var(--gris-oscuro); margin-top:.6rem;
+}
+.contrastar-fb.show{max-height:240px; padding:.7rem .85rem; background:#fff; border-left:3px solid var(--turquesa)}
+#contrastarMsg{text-align:center; margin-top:1.2rem; font-weight:800; color:var(--turquesa-oscuro); min-height:1.4em}
+
+/* ========== RETO 5: EFICIENCIA ========== */
+.eficiencia-wrap{display:grid; gap:1rem; grid-template-columns:repeat(auto-fit,minmax(320px,1fr));}
+.ef-card{
+  background:#fff; border:2px solid #e2e8f0; border-radius:16px; padding:1.1rem;
+  display:flex; flex-direction:column; gap:.7rem; transition:.3s;
+}
+.ef-card.done{border-color:var(--naranja); background:#fff7ed}
+.ef-head{display:flex; gap:.7rem; align-items:flex-start}
+.ef-ico{font-size:1.9rem; flex-shrink:0}
+.ef-titulo{font-size:.95rem; font-weight:900; color:var(--naranja-oscuro); margin:0 0 .2rem}
+.ef-desc{font-size:.83rem; color:var(--gris-oscuro); margin:0; line-height:1.5}
+.ef-opciones{display:grid; gap:.4rem}
+.ef-op{
+  font-family:inherit; font-size:.82rem; font-weight:600; cursor:pointer; text-align:left;
+  padding:.6rem .85rem; border-radius:10px; border:2px solid #e2e8f0; background:#f8fafc;
+  color:var(--gris-oscuro); transition:.2s; display:flex; gap:.55rem; align-items:flex-start;
+}
+.ef-op:hover:not(:disabled){border-color:var(--naranja); background:var(--naranja-claro); color:var(--naranja-oscuro); transform:translateX(3px)}
+.ef-op:disabled{cursor:default}
+.ef-op .eo-letra{
+  flex:0 0 22px; height:22px; border-radius:6px; background:#e2e8f0; color:var(--gris-oscuro);
+  display:grid; place-items:center; font-size:.7rem; font-weight:900;
+}
+.ef-op.correct{background:#dcfce7; border-color:#16a34a; color:#15803d}
+.ef-op.correct .eo-letra{background:#16a34a; color:#fff}
+.ef-op.wrong{background:#fee2e2; border-color:#dc2626; color:#b91c1c}
+.ef-op.wrong .eo-letra{background:#dc2626; color:#fff}
+.ef-fb{
+  font-size:.78rem; border-radius:10px; padding:0; max-height:0; overflow:hidden;
+  transition:.35s; color:var(--gris-oscuro);
+}
+.ef-fb.show{max-height:240px; padding:.6rem .75rem; background:#fff; border-left:3px solid var(--naranja)}
+#efMsg{text-align:center; margin-top:1.2rem; font-weight:800; color:var(--naranja-oscuro); min-height:1.4em}
+
+/* QUIZ */
+.q{background:#fff; border-radius:16px; padding:1.3rem 1.4rem; box-shadow:var(--sombra);
+  border:1px solid #e2e8f0; margin-bottom:1rem;}
+.q-num{display:inline-block; font-size:.72rem; font-weight:900; letter-spacing:1px; color:#fff;
+  background:var(--cobalt-oscuro); padding:.2rem .6rem; border-radius:8px; margin-bottom:.6rem;}
+.q h4{font-size:1rem; margin-bottom:.9rem}
+.opts{display:grid; gap:.5rem}
+.opt{text-align:left; font-family:inherit; font-size:.9rem; font-weight:600; cursor:pointer;
+  padding:.7rem .9rem; border-radius:12px; border:2px solid #e2e8f0; background:#f8fafc; color:var(--gris-oscuro);
+  transition:.2s; display:flex; gap:.6rem; align-items:flex-start;}
+.opt:hover:not(:disabled){border-color:var(--cobalt); background:var(--cobalt-claro); color:var(--cobalt-oscuro); transform:translateX(4px)}
+.opt:disabled{cursor:default}
+.opt .letter{flex:0 0 24px; height:24px; border-radius:7px; background:#e2e8f0; color:var(--gris-oscuro);
+  display:grid; place-items:center; font-size:.75rem; font-weight:900;}
+.opt.correct{background:#dcfce7; border-color:#16a34a; color:#14532d}
+.opt.correct .letter{background:#16a34a; color:#fff}
+.opt.wrong{background:#fee2e2; border-color:#dc2626; color:#7f1d1d}
+.opt.wrong .letter{background:#dc2626; color:#fff}
+.expl{margin-top:.85rem; font-size:.86rem; background:#eff6ff; border-left:4px solid var(--cobalt);
+  padding:.7rem .9rem; border-radius:0 10px 10px 0; color:var(--gris-oscuro); display:none;}
+.expl.show{display:block}
+
+/* VOCABULARIO */
+.voc-grid{display:grid; gap:.6rem; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); margin-bottom:1rem}
+.voc-term{text-align:left; font-family:inherit; font-size:.88rem; font-weight:800; cursor:pointer;
+  padding:.85rem 1rem; border-radius:14px; border:2px solid #e2e8f0; background:#fff;
+  color:var(--gris-oscuro); transition:.25s; display:flex; align-items:center; gap:.5rem;}
+.voc-term:hover{border-color:var(--cobalt); background:var(--cobalt-claro); color:var(--cobalt-oscuro); transform:translateY(-3px)}
+.voc-term.active{background:var(--cobalt-oscuro); color:#fff; border-color:var(--cobalt-oscuro)}
+#vocDef{max-height:0; overflow:hidden; transition:max-height .5s cubic-bezier(.2,.8,.2,1), padding .3s;
+  background:linear-gradient(150deg,#1e3a8a,#0c1445); color:#fff; border-radius:16px; padding:0 1.4rem;}
+#vocDef.show{max-height:440px; padding:1.3rem 1.4rem}
+#vocDef h4{color:#93c5fd; font-size:1.05rem; margin-bottom:.5rem}
+#vocDef p{color:#bfdbfe; font-size:.92rem; margin:0}
+
+/* CERTIFICADO */
+#certificado{background:linear-gradient(150deg,#1e3a8a,#0c1445); color:#fff; border-radius:26px;
+  padding:2.4rem 1.8rem; box-shadow:var(--sombra-lg); text-align:center; position:relative; overflow:hidden;}
+#certificado::before{content:""; position:absolute; inset:14px; border:2px solid rgba(147,197,253,.35);
+  border-radius:18px; pointer-events:none;}
+#certificado h2{color:#93c5fd; font-size:1.5rem; margin-bottom:.3rem}
+#certificado p.sub{color:#bfdbfe; font-size:.95rem; max-width:560px; margin:0 auto 1.4rem}
+.cert-name{font-size:clamp(1.6rem,5vw,2.4rem); font-weight:900; letter-spacing:-.5px; margin:.6rem 0 1rem;
+  background:linear-gradient(90deg,#93c5fd,#5eead4,#f0abfc); -webkit-background-clip:text; background-clip:text; color:transparent;}
+.cert-stats{display:grid; gap:.7rem; grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  max-width:820px; margin:0 auto 1.6rem;}
+.cert-stat{background:rgba(255,255,255,.09); border:1px solid rgba(147,197,253,.3);
+  border-radius:14px; padding:.8rem .6rem; text-align:center;}
+.cert-stat .num{font-size:1.35rem; font-weight:900; color:#f0abfc; line-height:1}
+.cert-stat .lbl{font-size:.7rem; color:#bfdbfe; text-transform:uppercase; letter-spacing:.9px; font-weight:800; margin-top:.3rem}
+.cert-warn{background:rgba(240,171,252,.14); border:1px solid rgba(240,171,252,.4);
+  color:#fae8ff; font-size:.86rem; padding:.7rem 1rem; border-radius:12px;
+  max-width:600px; margin:0 auto 1.2rem;}
+.cert-note{font-size:.78rem; color:#94a3b8; margin-top:1rem; max-width:560px; margin-left:auto; margin-right:auto;}
+
+/* Toast */
+#toast{position:fixed; bottom:1.4rem; left:50%; transform:translate(-50%,140%); z-index:1200;
+  background:var(--negro); color:#fff; font-weight:700; font-size:.88rem; padding:.85rem 1.4rem;
+  border-radius:999px; box-shadow:var(--sombra-lg); transition:transform .45s cubic-bezier(.2,.8,.2,1);
+  display:flex; align-items:center; gap:.55rem; max-width:92vw; text-align:center;}
+#toast.show{transform:translate(-50%,0)}
+
+footer{background:var(--negro); color:#94a3b8; text-align:center; padding:2.6rem 1.2rem; font-size:.85rem;}
+footer strong{color:#93c5fd}
+
+@media(max-width:640px){
+  .card{padding:1.2rem}
+  .nav-brand span.txt{display:none}
+  .evo-points{gap:.3rem}
+  .evo-point{width:32px; height:32px; font-size:.65rem}
+  .bulo-opciones{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body class="locked">
+
+<div id="loginOverlay">
+  <div class="login-card" id="loginCard"></div>
+</div>
+
+<div id="progresoGlobal"><div id="progresoBarra"></div></div>
+
+<nav>
+  <div class="nav-inner">
+    <div class="nav-brand"><span class="dot"></span><span class="txt">Entorno Digital</span></div>
+    <div class="nav-user">👤 <span id="navUserName">—</span></div>
+    <div class="nav-links">
+      <a href="#intro">Inicio</a>
+      <a href="#mapa">Mi entorno</a>
+      <a href="#evolucion">Evolución</a>
+      <a href="#bulos">Bulos</a>
+      <a href="#contrastar">Fuentes</a>
+      <a href="#eficiencia">Eficiencia</a>
+      <a href="#quiz">Quiz</a>
+      <a href="#certificado">Certificado</a>
+    </div>
+    <div id="progresoPill">0 / 6 retos</div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+  <div class="hero-inner">
+    <div class="badge-top">🌐 Alfabetización digital</div>
+    <h1>Domina tu <span>entorno digital</span></h1>
+    <p class="hero-sub">
+      Hola, <strong id="heroNombre">amigo/a</strong>. Aprende a conocer tus
+      <strong>herramientas digitales</strong>, entender la <strong>evolución de la tecnología</strong>,
+      detectar <strong>bulos</strong>, <strong>contrastar fuentes</strong> y resolver tareas de
+      manera <strong>eficiente</strong>. Con actividades interactivas y tu certificado final.
+    </p>
+    <div class="hero-chips">
+      <span class="chip">🧭 Mi entorno digital</span>
+      <span class="chip">📡 Evolución tech</span>
+      <span class="chip">🔍 Fact-checking</span>
+      <span class="chip">📚 Contrastar fuentes</span>
+      <span class="chip">⚡ Eficiencia</span>
+    </div>
+    <div class="hero-cta">
+      <a href="#intro" class="btn btn-primary">🚀 Empezar</a>
+      <a href="#certificado" class="btn btn-ghost">🏆 Mi certificado</a>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============ INTRO ============ -->
+  <section id="intro">
+    <div class="sec-head reveal">
+      <span class="kicker">Punto de partida</span>
+      <h2>Vivimos rodeados de herramientas digitales: ¿las conocemos de verdad?</h2>
+      <p class="lead">
+        Cada día usamos decenas de aplicaciones y servicios digitales. Pero saber <strong>para qué
+        sirve cada uno</strong>, cómo ha <strong>evolucionado la tecnología</strong>, cómo
+        <strong>distinguir la información veraz de los bulos</strong> y cómo <strong>resolver tareas
+        de manera eficiente</strong> son competencias que marcan la diferencia. En esta aplicación
+        vas a trabajar todas ellas.
+      </p>
+    </div>
+
+    <div class="teoria reveal">
+      <h3><span class="th-ico">📘</span> ¿Qué es la alfabetización digital?</h3>
+      <p>
+        La <strong>alfabetización digital</strong> es el conjunto de conocimientos, habilidades y
+        actitudes que nos permiten usar las tecnologías digitales de forma <strong>crítica, segura,
+        eficiente y responsable</strong>. No se limita a saber "manejar aplicaciones": incluye
+        entender qué hay detrás, cómo ha evolucionado la tecnología, qué fuentes merecen confianza
+        y cómo sacar el máximo partido a las herramientas.
+      </p>
+      <h4>Las 5 dimensiones de la competencia digital</h4>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>1. Información y datos</h5>
+          <p>Buscar, evaluar, gestionar y almacenar información de forma crítica.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>2. Comunicación y colaboración</h5>
+          <p>Interactuar, compartir y colaborar mediante herramientas digitales respetando normas.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>3. Creación de contenido</h5>
+          <p>Producir y editar contenidos digitales, respetando derechos de autor y licencias.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>4. Seguridad</h5>
+          <p>Proteger dispositivos, datos personales, salud y entorno.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>5. Resolución de problemas</h5>
+          <p>Identificar necesidades y resolver problemas técnicos con los recursos disponibles.</p>
+        </div>
+      </div>
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> ser digitalmente competente no es lo mismo que ser un
+        "usuario avanzado". Se puede saber usar muchas apps y a la vez caer en bulos, malgastar
+        tiempo o comprometer la privacidad. La competencia digital va mucho más allá del manejo.
+      </div>
+    </div>
+
+    <div class="grid g4">
+      <div class="pilar reveal" style="border-top-color:var(--cobalt)">
+        <span class="ico">🧭</span>
+        <h4>Mi entorno digital</h4>
+        <p>Conocer las categorías de herramientas digitales y saber qué hace cada una.</p>
+      </div>
+      <div class="pilar reveal" style="border-top-color:var(--turquesa)">
+        <span class="ico">📡</span>
+        <h4>Evolución tecnológica</h4>
+        <p>Entender cómo la tecnología digital ha cambiado desde los años 90 hasta hoy.</p>
+      </div>
+      <div class="pilar reveal" style="border-top-color:var(--magenta)">
+        <span class="ico">🔍</span>
+        <h4>Detectar bulos</h4>
+        <p>Reconocer afirmaciones falsas, verdaderas o que necesitan verificación.</p>
+      </div>
+      <div class="pilar reveal" style="border-top-color:var(--naranja)">
+        <span class="ico">⚡</span>
+        <h4>Resolver con eficiencia</h4>
+        <p>Encontrar la forma más rápida y fiable de completar cada tarea digital.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== RETO 1: MAPA DEL ENTORNO DIGITAL ========== -->
+  <section id="mapa">
+    <div class="sec-head reveal">
+      <span class="kicker">Bloque 1</span>
+      <h2>🧭 Mapa de tu entorno digital personal</h2>
+      <p class="lead">
+        Las herramientas digitales se agrupan en grandes <strong>categorías según su función</strong>.
+        Reconocer a qué categoría pertenece cada una te ayuda a elegir la adecuada en cada situación
+        y a construir un entorno digital coherente.
+      </p>
+    </div>
+
+    <div class="teoria reveal">
+      <h3><span class="th-ico">🗂️</span> Categorías de herramientas digitales</h3>
+      <p>
+        Un <strong>entorno personal digital</strong> es el conjunto de aplicaciones, servicios y
+        dispositivos que una persona usa habitualmente. Se puede clasificar en cuatro grandes
+        categorías funcionales, aunque muchas herramientas modernas combinan varias.
+      </p>
+
+      <h4>1. Herramientas de comunicación</h4>
+      <p>
+        Sirven para <strong>transmitir información entre personas</strong>. Pueden ser síncronas
+        (todos a la vez, como una videollamada) o asíncronas (no coinciden en el tiempo, como un
+        correo). Pueden ser uno-a-uno, uno-a-muchos o muchos-a-muchos.
+      </p>
+      <ul>
+        <li><strong>Mensajería instantánea:</strong> WhatsApp, Telegram, Signal, iMessage.</li>
+        <li><strong>Correo electrónico:</strong> Gmail, Outlook, Proton Mail.</li>
+        <li><strong>Videollamada:</strong> Zoom, Google Meet, Teams.</li>
+        <li><strong>Comunidades y foros:</strong> Discord, Slack, Reddit.</li>
+        <li><strong>Redes sociales:</strong> Instagram, TikTok, X (Twitter), Mastodon.</li>
+      </ul>
+
+      <h4>2. Herramientas de almacenamiento en la nube</h4>
+      <p>
+        Permiten <strong>guardar archivos en servidores remotos</strong> y acceder a ellos desde
+        cualquier dispositivo con conexión. La gran ventaja es que no dependen de un único
+        dispositivo físico: si se rompe el ordenador, los archivos siguen a salvo.
+      </p>
+      <ul>
+        <li><strong>Almacenamiento general:</strong> Google Drive, OneDrive, Dropbox, iCloud.</li>
+        <li><strong>Almacenamiento multimedia:</strong> Google Photos, Flickr, YouTube (para vídeo).</li>
+        <li><strong>Almacenamiento técnico:</strong> GitHub (código), Figma (diseño).</li>
+      </ul>
+      <div class="ejemplo">
+        <strong>Ejemplo práctico:</strong> en lugar de llevar tus apuntes en un pendrive que
+        puedes perder, los guardas en Drive y los consultas desde el móvil, el portátil del
+        instituto o el ordenador de casa.
+      </div>
+
+      <h4>3. Herramientas de productividad</h4>
+      <p>
+        Ayudan a <strong>organizar, planificar y ejecutar tareas</strong>. Son las herramientas que
+        permiten "hacer más en menos tiempo" y coordinar equipos.
+      </p>
+      <ul>
+        <li><strong>Gestión de tareas:</strong> Trello, Asana, Todoist, Microsoft To Do.</li>
+        <li><strong>Notas y documentación:</strong> Notion, Obsidian, Evernote.</li>
+        <li><strong>Calendario:</strong> Google Calendar, Outlook Calendar.</li>
+        <li><strong>Ofimática:</strong> Google Docs, Word, Excel, LibreOffice.</li>
+      </ul>
+
+      <h4>4. Herramientas de creación de contenido</h4>
+      <p>
+        Permiten <strong>producir material visual, audiovisual, textual o interactivo</strong>.
+        Son las herramientas con las que pasas de ser consumidor a ser creador.
+      </p>
+      <ul>
+        <li><strong>Diseño gráfico:</strong> Canva, Figma, Adobe Express.</li>
+        <li><strong>Edición de vídeo:</strong> CapCut, DaVinci Resolve, iMovie.</li>
+        <li><strong>Edición de audio:</strong> Audacity, GarageBand.</li>
+        <li><strong>Programación y prototipado:</strong> Scratch, VS Code, Arduino IDE.</li>
+      </ul>
+
+      <div class="destacado">
+        <strong>💡 Reflexión:</strong> muchos usuarios tienen más de 20 herramientas distintas
+        sin saber muy bien para qué sirve cada una. Conocer las categorías ayuda a hacer un
+        "inventario mental" y elegir la adecuada sin perderse.
+      </div>
+
+      <h4>¿Cómo elegir la herramienta adecuada?</h4>
+      <p>Ante cualquier tarea, pregúntate:</p>
+      <ol>
+        <li><strong>¿Qué necesito exactamente?</strong> Comunicarme, guardar, organizar o crear.</li>
+        <li><strong>¿Con quién?</strong> ¿Es para mí solo o para un equipo? ¿Con personas técnicas o no técnicas?</li>
+        <li><strong>¿Dónde?</strong> ¿Necesito acceso desde varios dispositivos?</li>
+        <li><strong>¿Cuánto tiempo tengo?</strong> A veces la herramienta más potente no es la más adecuada si necesito rapidez.</li>
+        <li><strong>¿Es segura?</strong> ¿Quién más ve lo que subo? ¿Tengo control sobre mis datos?</li>
+      </ol>
+    </div>
+
+    <div class="actividad reveal" style="border-top:6px solid var(--cobalt)">
+      <span class="kicker">🎮 Reto 1 · Clasifica tus herramientas</span>
+      <h3>¿A qué categoría pertenece cada herramienta?</h3>
+      <p class="intro">
+        Cada tarjeta muestra una herramienta digital conocida. Clasifícala en una de las 4
+        categorías: <strong>Comunicación, Almacenamiento en la nube, Productividad</strong> o
+        <strong>Creación de contenido</strong>. Hay 8 herramientas.
+      </p>
+
+      <div class="mapa-cats">
+        <div class="mapa-cat comunicacion" data-cat="comunicacion">
+          💬 Comunicación <span class="mc-cuenta" id="cnt_comunicacion">0/2</span>
+        </div>
+        <div class="mapa-cat almacenamiento" data-cat="almacenamiento">
+          ☁️ Almacenamiento <span class="mc-cuenta" id="cnt_almacenamiento">0/2</span>
+        </div>
+        <div class="mapa-cat productividad" data-cat="productividad">
+          📋 Productividad <span class="mc-cuenta" id="cnt_productividad">0/2</span>
+        </div>
+        <div class="mapa-cat creacion" data-cat="creacion">
+          🎨 Creación <span class="mc-cuenta" id="cnt_creacion">0/2</span>
+        </div>
+      </div>
+
+      <div class="mapa-tools" id="mapaTools"></div>
+      <div id="mapaMsg"></div>
+    </div>
+  </section>
+
+  <!-- ========== RETO 2: EVOLUCIÓN DIGITAL ========== -->
+  <section id="evolucion">
+    <div class="sec-head reveal">
+      <span class="kicker turquesa">Bloque 2</span>
+      <h2>📡 Evolución de las tecnologías digitales</h2>
+      <p class="lead">
+        La tecnología digital ha evolucionado enormemente en apenas 30 años. Conocer esa evolución
+        te ayuda a entender por qué usamos las herramientas actuales y hacia dónde va la tecnología
+        del futuro.
+      </p>
+    </div>
+
+    <div class="teoria turquesa reveal">
+      <h3><span class="th-ico">🕰️</span> Historia y evolución de la era digital</h3>
+      <p>
+        En apenas tres décadas la tecnología digital ha transformado radicalmente cómo trabajamos,
+        nos comunicamos, aprendemos y nos relacionamos. Comprender esta evolución te ayuda a
+        <strong>entender el presente</strong> y a <strong>anticipar el futuro</strong>.
+      </p>
+
+      <h4>Etapa 1 · Web 1.0 (1991-2004): la web de solo lectura</h4>
+      <p>
+        Tim Berners-Lee publica en 1991 la primera página web y libera el código. Nace la
+        <strong>Web 1.0</strong>: páginas estáticas, escritas por unos pocos, que el resto solo
+        puede leer. Se accede desde ordenadores de sobremesa, con conexión telefónica lenta
+        (módem) y coste elevado.
+      </p>
+      <ul>
+        <li><strong>Características:</strong> contenido estático, hipervínculos, pocos creadores.</li>
+        <li><strong>Tecnologías:</strong> HTML, HTTP, primeros navegadores (Netscape, Internet Explorer).</li>
+        <li><strong>Uso social:</strong> leer noticias, buscar información, primeras tiendas online.</li>
+      </ul>
+
+      <h4>Etapa 2 · Web 2.0 (2004-2012): la web participativa</h4>
+      <p>
+        A partir de 2004 surge un nuevo paradigma: los usuarios ya no solo leen, también
+        <strong>crean y comparten</strong>. Aparecen los blogs, las wikis (Wikipedia, 2001), YouTube
+        (2005), Facebook (2004) y Twitter (2006). Cualquiera puede publicar sin saber programar.
+      </p>
+      <ul>
+        <li><strong>Características:</strong> contenido generado por usuarios, redes sociales, mashups.</li>
+        <li><strong>Tecnologías:</strong> AJAX, JavaScript, APIs, primeros smartphones.</li>
+        <li><strong>Uso social:</strong> compartir fotos, vídeos, opiniones. La información empieza a circular a gran velocidad.</li>
+      </ul>
+
+      <h4>Etapa 3 · Era móvil y nube (2007-2015)</h4>
+      <p>
+        El iPhone (2007) y Android popularizan los <strong>smartphones</strong> táctiles. La
+        <strong>nube</strong> (Google Drive, iCloud, Dropbox) cambia nuestra relación con los
+        archivos: ya no están en un dispositivo concreto, sino disponibles desde cualquier lugar.
+      </p>
+      <ul>
+        <li><strong>Características:</strong> movilidad, ubicuidad, apps, ecosistemas digitales.</li>
+        <li><strong>Tecnologías:</strong> 3G, 4G, GPS, Wi-Fi masivo, sensores en los móviles.</li>
+        <li><strong>Uso social:</strong> mensajería instantánea (WhatsApp, 2009), Instagram (2010), movilidad total.</li>
+      </ul>
+
+      <h4>Etapa 4 · Big Data, IoT e IA (2015-2020)</h4>
+      <p>
+        Los datos se convierten en el nuevo "petróleo". Los sistemas <strong>IoT</strong> conectan
+        millones de objetos a internet. La <strong>inteligencia artificial</strong> se integra en
+        asistentes de voz, recomendaciones personalizadas y reconocimiento de imágenes.
+      </p>
+      <ul>
+        <li><strong>Características:</strong> personalización masiva, decisiones algorítmicas, automatización.</li>
+        <li><strong>Tecnologías:</strong> machine learning, cloud computing, asistentes (Siri, Alexa).</li>
+        <li><strong>Uso social:</strong> consumo personalizado, comienzo del debate sobre sesgos y privacidad.</li>
+      </ul>
+
+      <h4>Etapa 5 · IA generativa y Web 3.0 (2020-actualidad)</h4>
+      <p>
+        Los modelos generativos (ChatGPT, DALL·E, Midjourney) generan texto, imagen y vídeo de
+        forma automática. El IoT, el edge computing y la realidad aumentada se combinan con
+        nuevas arquitecturas distribuidas (blockchain). La alfabetización digital es más crítica
+        que nunca.
+      </p>
+      <ul>
+        <li><strong>Características:</strong> IA accesible, contenidos sintéticos, automatización avanzada.</li>
+        <li><strong>Tecnologías:</strong> LLM, IA multimodal, 5G, edge computing, blockchain.</li>
+        <li><strong>Uso social:</strong> necesidad de distinguir lo humano de lo generado, verificar fuentes, regular la IA.</li>
+      </ul>
+
+      <div class="destacado">
+        <strong>💡 Reflexión:</strong> cada etapa no ha "borrado" la anterior, sino que se ha
+        superpuesto. Hoy convivimos con páginas de Web 1.0, redes sociales de Web 2.0, apps
+        móviles, IoT e IA generativa. Entender cada una te ayuda a usar la herramienta adecuada
+        en cada momento.
+      </div>
+    </div>
+
+    <div class="actividad reveal" style="border-top:6px solid var(--turquesa)">
+      <span class="kicker turquesa">🎮 Reto 2 · Línea temporal digital</span>
+      <h3>Recorre los grandes hitos de la era digital</h3>
+      <p class="intro">
+        Pulsa cada hito de la línea temporal para descubrir qué transformación trajo. Cuando los
+        hayas visto todos, completarás el reto.
+      </p>
+
+      <div class="evo-timeline">
+        <div class="evo-track">
+          <div class="evo-points" id="evoPoints"></div>
+        </div>
+        <div class="evo-info" id="evoInfo">
+          <p class="ei-vacio">Pulsa un hito de la línea temporal para ver la información.</p>
+        </div>
+        <div class="evo-progreso" id="evoProgreso">Hitos explorados: 0 / 6</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== RETO 3: DETECTIVE DE BULOS ========== -->
+  <section id="bulos">
+    <div class="sec-head reveal">
+      <span class="kicker magenta">Bloque 3</span>
+      <h2>🔍 Detective de bulos</h2>
+      <p class="lead">
+        En internet circulan <strong>afirmaciones verdaderas, falsas y dudosas</strong>. Antes de
+        creer o compartir algo, hay que comprobar si es verdadero, falso o si necesita más
+        verificación. Este ejercicio entrena tu criterio.
+      </p>
+    </div>
+
+    <div class="teoria magenta reveal">
+      <h3><span class="th-ico">🚨</span> Desinformación y fact-checking</h3>
+      <p>
+        La <strong>desinformación</strong> es información falsa difundida deliberadamente para
+        engañar. Se diferencia de la <strong>mala información</strong> (información incorrecta
+        difundida sin mala intención) y de la <strong>información maliciosa</strong> (información
+        cierta usada para hacer daño). Las tres circulan por las mismas redes y son difíciles de
+        distinguir a simple vista.
+      </p>
+
+      <h4>Tipos de bulos y desinformación</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Tipo</th>
+          <th>Descripción</th>
+          <th>Ejemplo típico</th>
+        </tr>
+        <tr>
+          <td><strong>Bulo viral</strong></td>
+          <td>Mensaje falso que se difunde rápido por redes y mensajería.</td>
+          <td>"Reenvía este mensaje o WhatsApp cerrará tu cuenta".</td>
+        </tr>
+        <tr>
+          <td><strong>Noticia falsa (fake news)</strong></td>
+          <td>Noticia inventada que imita el formato de un medio real.</td>
+          <td>Webs que copian el diseño de periódicos conocidos.</td>
+        </tr>
+        <tr>
+          <td><strong>Manipulación</strong></td>
+          <td>Datos reales usados fuera de contexto o retorcidos.</td>
+          <td>Foto real de un sitio puesta como si fuera de otro.</td>
+        </tr>
+        <tr>
+          <td><strong>Clickbait</strong></td>
+          <td>Titular exagerado para conseguir clics.</td>
+          <td>"¡Los científicos descubren algo INCREÍBLE! (no te lo creerás)".</td>
+        </tr>
+        <tr>
+          <td><strong>Deepfake</strong></td>
+          <td>Vídeo o audio generado con IA que simula a una persona real.</td>
+          <td>Vídeos falsos de personajes públicos hechos con IA.</td>
+        </tr>
+      </table>
+
+      <h4>Las 5 preguntas del fact-checker</h4>
+      <p>Ante cualquier afirmación sospechosa, aplica estas cinco preguntas antes de creerla o compartirla:</p>
+      <ol>
+        <li><strong>¿Quién lo dice?</strong> ¿Tiene autor identificable? ¿Es especialista en el tema?</li>
+        <li><strong>¿Cuándo?</strong> ¿Tiene fecha? ¿Se ha manipulado un dato antiguo como si fuera nuevo?</li>
+        <li><strong>¿Dónde se publicó?</strong> ¿Es un medio reconocido o un sitio sin autoría?</li>
+        <li><strong>¿Cómo lo sé?</strong> ¿Cita fuentes verificables? ¿Se pueden comprobar?</li>
+        <li><strong>¿Por qué me lo creo?</strong> ¿Me lo creo porque es verdad o porque encaja con lo que ya pensaba? (sesgo de confirmación).</li>
+      </ol>
+
+      <div class="destacado">
+        <strong>⚠️ Ojo con el sesgo de confirmación:</strong> tendemos a creer más fácilmente
+        aquella información que confirma nuestras ideas previas. Los bulos explotan este sesgo:
+        por eso hay que verificar incluso lo que "nos suena bien".
+      </div>
+
+      <h4>Herramientas útiles para verificar</h4>
+      <ul>
+        <li><strong>Búsqueda inversa de imágenes:</strong> Google Images, TinEye, Yandex.</li>
+        <li><strong>Verificadores:</strong> Maldita.es, Newtral, Snopes, AFP Factual.</li>
+        <li><strong>Comprobar la fuente original:</strong> buscar la noticia en medios reconocidos.</li>
+        <li><strong>Comprobar la fecha:</strong> mirar si la información es antigua o ha sido reciclada.</li>
+        <li><strong>Consultar webs oficiales:</strong> OMS, ministerios, institutos científicos, universidades.</li>
+      </ul>
+    </div>
+
+    <div class="actividad reveal" style="border-top:6px solid var(--magenta)">
+      <span class="kicker magenta">🎮 Reto 3 · ¿Verdadero, falso o dudoso?</span>
+      <h3>Clasifica cada afirmación</h3>
+      <p class="intro">
+        Lee cada afirmación y clasifícala como <strong>Verdadera</strong>, <strong>Falsa</strong>
+        o <strong>Necesita verificar</strong>. Recibirás la explicación del porqué y cómo
+        comprobarlo. Hay 8 afirmaciones.
+      </p>
+
+      <div class="bulos-wrap" id="bulosWrap"></div>
+      <div id="bulosMsg"></div>
+    </div>
+  </section>
+
+  <!-- ========== RETO 4: CONTRASTAR FUENTES ========== -->
+  <section id="contrastar">
+    <div class="sec-head reveal">
+      <span class="kicker">Bloque 4</span>
+      <h2>📚 Contrastar fuentes en conflicto</h2>
+      <p class="lead">
+        Cuando distintas fuentes ofrecen datos o versiones diferentes, no vale elegir al azar. Hay
+        que aplicar un <strong>método sistemático</strong>: identificar la naturaleza de cada
+        fuente, valorar su autoridad y, si es necesario, buscar información adicional.
+      </p>
+    </div>
+
+    <div class="teoria turquesa reveal">
+      <h3><span class="th-ico">📖</span> Jerarquía de fuentes y criterios de calidad</h3>
+      <p>
+        No todas las fuentes tienen el mismo valor. Conocer la <strong>jerarquía de fuentes</strong>
+        es imprescindible para trabajar con información rigurosa y para no dejarse llevar por la
+        primera opinión que encontremos.
+      </p>
+
+      <h4>Jerarquía de fuentes (de mayor a menor autoridad)</h4>
+      <ol>
+        <li>
+          <strong>Fuentes primarias / oficiales:</strong> documentos originales, organismos oficiales
+          (INE, IGN, OMS, ministerios, institutos científicos). Máxima autoridad.
+        </li>
+        <li>
+          <strong>Revisiones científicas y consensos:</strong> informes del IPCC, revisiones
+          sistemáticas, libros de texto universitarios revisados.
+        </li>
+        <li>
+          <strong>Artículos científicos revisados por pares:</strong> publicados en revistas
+          académicas con proceso de revisión.
+        </li>
+        <li>
+          <strong>Agencias de noticias internacionales:</strong> EFE, Reuters, AFP. Tienen
+          procesos editoriales y citan fuentes.
+        </li>
+        <li>
+          <strong>Medios de comunicación reconocidos:</strong> con redacción profesional y
+          corrección de errores.
+        </li>
+        <li>
+          <strong>Enciclopedias colaborativas:</strong> Wikipedia. Útil como punto de partida si
+          está bien referenciada, pero hay que comprobar las fuentes que cita.
+        </li>
+        <li>
+          <strong>Webs especializadas o divulgativas:</strong> blogs de expertos, museos, universidades.
+        </li>
+        <li>
+          <strong>Redes sociales, foros y blogs personales:</strong> sin verificación ni autoría
+          clara. No son fuentes fiables.
+        </li>
+      </ol>
+
+      <h4>Criterios para evaluar una fuente: método CRAAP</h4>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>C · Actualidad</h5>
+          <p>¿Cuándo se publicó o actualizó? ¿Sigue vigente para el tema?</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>R · Relevancia</h5>
+          <p>¿Responde a mi pregunta? ¿Es adecuada para mi nivel y objetivo?</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>A · Autoridad</h5>
+          <p>¿Quién es el autor? ¿Es especialista? ¿Está afiliado a una institución?</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>A · Precisión</h5>
+          <p>¿Cita fuentes? ¿Se puede verificar? ¿Los datos son coherentes?</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>P · Propósito</h5>
+          <p>¿Informar, vender, persuadir, entretener? ¿Hay conflicto de intereses?</p>
+        </div>
+      </div>
+
+      <h4>Estrategias para resolver conflictos entre fuentes</h4>
+      <ul>
+        <li><strong>Identificar la naturaleza de cada fuente:</strong> ¿es científica, comercial, divulgativa o personal?</li>
+        <li><strong>Acudir a la fuente oficial competente:</strong> ¿quién es la autoridad oficial sobre ese tema?</li>
+        <li><strong>Buscar el consenso científico:</strong> ¿qué dice la comunidad experta?</li>
+        <li><strong>Detectar conflicto de intereses:</strong> ¿quién gana algo diciendo eso?</li>
+        <li><strong>Aceptar la incertidumbre:</strong> a veces no hay una única respuesta, y lo más riguroso es reconocer el debate.</li>
+        <li><strong>Citar correctamente las fuentes utilizadas:</strong> siempre, aunque no las uses todas.</li>
+      </ul>
+
+      <div class="destacado">
+        <strong>💡 Regla de oro:</strong> si una fuente no dice quién es el autor, cuándo se publicó
+        y de dónde saca los datos, no es una fuente fiable para un trabajo académico. Da igual que
+        tenga muchos seguidores o aparezca primera en Google.
+      </div>
+
+      <h4>Señales de alarma: fuentes que NO son fiables</h4>
+      <ul>
+        <li>Sin autoría clara ni fecha de publicación.</li>
+        <li>Titulares sensacionalistas o escritos en mayúsculas.</li>
+        <li>Errores de ortografía y gramática numerosos.</li>
+        <li>Sin bibliografía, sin citas, sin enlaces verificables.</li>
+        <li>Presenta opiniones como si fueran hechos.</li>
+        <li>Pide compartir rápidamente ("¡URGENTE! Comparte antes de que lo borren").</li>
+        <li>La web tiene publicidad agresiva o vende productos.</li>
+        <li>Ataca a "los científicos" o "los medios" sin aportar pruebas.</li>
+      </ul>
+    </div>
+
+    <div class="actividad reveal" style="border-top:6px solid var(--turquesa)">
+      <span class="kicker turquesa">🎮 Reto 4 · ¿Qué fuente elegir?</span>
+      <h3>Resuelve cada conflicto entre fuentes</h3>
+      <p class="intro">
+        3 escenarios reales en los que distintas fuentes dan información contradictoria. Elige la
+        actitud más rigurosa en cada caso.
+      </p>
+
+      <div id="contrastarContainer"></div>
+      <div id="contrastarMsg"></div>
+    </div>
+  </section>
+
+  <!-- ========== RETO 5: EFICIENCIA ========== -->
+  <section id="eficiencia">
+    <div class="sec-head reveal">
+      <span class="kicker naranja">Bloque 5</span>
+      <h2>⚡ Resolver tareas de manera eficiente</h2>
+      <p class="lead">
+        La eficiencia digital consiste en <strong>conseguir el resultado</strong> con el menor
+        esfuerzo, tiempo y recursos posibles, <strong>sin perder calidad</strong>. Conocer atajos,
+        funciones automáticas y combinaciones inteligentes de herramientas marca la diferencia.
+      </p>
+    </div>
+
+    <div class="teoria naranja reveal">
+      <h3><span class="th-ico">🚀</span> Eficiencia y flujo de trabajo digital</h3>
+      <p>
+        Ser <strong>eficiente</strong> digitalmente no es solo ir rápido: es conseguir el resultado
+        con el mínimo esfuerzo, tiempo y recursos, sin perder calidad. Una persona eficiente
+        digitalmente <strong>automatiza lo repetitivo</strong>, <strong>combina herramientas</strong>
+        y <strong>evita duplicar trabajo</strong>.
+      </p>
+
+      <h4>Los 5 principios de la eficiencia digital</h4>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>1. Planifica antes de actuar</h5>
+          <p>Dedica 5 minutos a pensar cómo lo vas a hacer. Ahorrarás 50 minutos de trabajo mal hecho.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>2. Automatiza lo repetitivo</h5>
+          <p>Usa plantillas, macros, filtros y funciones avanzadas para tareas que se repiten.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>3. Combina herramientas</h5>
+          <p>Aprovecha las integraciones y funcionalidades que ya tienen las herramientas entre sí.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>4. Evita duplicar trabajo</h5>
+          <p>No hagas dos veces lo mismo. Ni tú, ni dos personas del mismo equipo.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>5. Aprende atajos</h5>
+          <p>Los atajos de teclado y funciones ocultas ahorran horas a lo largo del año.</p>
+        </div>
+      </div>
+
+      <h4>Funciones avanzadas que casi nadie usa</h4>
+      <ul>
+        <li><strong>Procesador de textos:</strong> estilos, índices automáticos, combinación de correspondencia, control de cambios, gestores de citas.</li>
+        <li><strong>Hojas de cálculo:</strong> funciones (BUSCARV, SI, CONTAR.SI), tablas dinámicas, validación de datos, formato condicional, macros.</li>
+        <li><strong>Presentaciones:</strong> patrón de diapositivas, animaciones, transiciones, presentador con notas.</li>
+        <li><strong>Navegadores:</strong> marcadores organizados, búsqueda por pestañas, extensiones, sincronización entre dispositivos.</li>
+        <li><strong>Correo electrónico:</strong> filtros, etiquetas, respuestas automáticas, plantillas.</li>
+        <li><strong>Ofimática en la nube:</strong> comentarios, historial de cambios, permisos de edición, trabajar a la vez.</li>
+      </ul>
+
+      <h4>Atajos de teclado imprescindibles</h4>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>Atajos universales</h5>
+          <p><strong>Ctrl+C / Ctrl+V:</strong> copiar y pegar.<br>
+          <strong>Ctrl+Z / Ctrl+Y:</strong> deshacer y rehacer.<br>
+          <strong>Ctrl+F:</strong> buscar.<br>
+          <strong>Ctrl+S:</strong> guardar.<br>
+          <strong>Alt+Tab:</strong> cambiar de ventana.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>Navegador</h5>
+          <p><strong>Ctrl+T:</strong> nueva pestaña.<br>
+          <strong>Ctrl+Shift+T:</strong> recuperar pestaña cerrada.<br>
+          <strong>Ctrl+W:</strong> cerrar pestaña.<br>
+          <strong>Ctrl+Shift+N:</strong> ventana privada.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>Procesador de textos</h5>
+          <p><strong>Ctrl+B / Ctrl+I / Ctrl+U:</strong> negrita, cursiva, subrayado.<br>
+          <strong>Ctrl+E / Ctrl+J:</strong> centrar y justificar.<br>
+          <strong>Ctrl+Inicio / Ctrl+Fin:</strong> ir al principio o final.</p>
+        </div>
+      </div>
+
+      <h4>Ejemplo real de eficiencia</h4>
+      <div class="ejemplo">
+        <strong>Tarea:</strong> aplicar el IVA (21%) a 500 filas en una hoja de cálculo.
+        <br>
+        <strong>Opción ineficiente:</strong> calcular a mano con la calculadora y escribir cada
+        resultado (500 × 2 operaciones = 1000 operaciones, media hora y errores casi seguros).
+        <br>
+        <strong>Opción eficiente:</strong> escribir la fórmula <code>=A1*1.21</code> en la
+        primera celda, arrastrarla hasta la fila 500. Total: 10 segundos y precisión total.
+      </div>
+
+      <h4>Eficiencia en trabajo colaborativo</h4>
+      <ul>
+        <li><strong>Nunca enviar archivos adjuntos por email.</strong> Subir a la nube y compartir enlace.</li>
+        <li><strong>Nombrar archivos con criterio:</strong> "proyecto_v2_2024-03-15.pdf" en lugar de "documento final bueno definitivo.pdf".</li>
+        <li><strong>Usar carpetas compartidas organizadas:</strong> cada cosa en su sitio, todos acceden a lo mismo.</li>
+        <li><strong>Trabajar en documentos compartidos simultáneamente:</strong> no en copias paralelas que se desincronizan.</li>
+        <li><strong>Registrar acuerdos en un solo documento:</strong> no en mensajes dispersos que se pierden.</li>
+        <li><strong>Aprovechar el control de versiones:</strong> no hace falta mandar "v2" por chat.</li>
+      </ul>
+
+      <div class="destacado">
+        <strong>💡 Piénsalo:</strong> si haces cada día una tarea de 10 minutos de forma manual
+        que se podría automatizar, estarás gastando más de 40 horas al año en algo que podrías
+        hacer en segundos. La eficiencia es un multiplicador de tu tiempo.
+      </div>
+    </div>
+
+    <div class="actividad reveal" style="border-top:6px solid var(--naranja)">
+      <span class="kicker naranja">🎮 Reto 5 · Optimiza cada tarea</span>
+      <h3>¿Cuál es la forma más eficiente de resolverla?</h3>
+      <p class="intro">
+        5 situaciones reales de trabajo digital. Elige la opción más eficiente en cada caso.
+      </p>
+
+      <div class="eficiencia-wrap" id="eficienciaWrap"></div>
+      <div id="efMsg"></div>
+    </div>
+
+    <!-- VOCABULARIO -->
+    <div class="actividad reveal" style="border-top:6px solid var(--cobalt-oscuro)">
+      <span class="kicker">📚 Vocabulario clave</span>
+      <h3>Diccionario interactivo</h3>
+      <p class="intro">Pulsa sobre cualquier término para ver su explicación detallada.</p>
+      <div class="voc-grid" id="vocGrid"></div>
+      <div id="vocDef"></div>
+    </div>
+  </section>
+
+  <!-- ========== QUIZ ========== -->
+  <section id="quiz">
+    <div class="sec-head reveal">
+      <span class="kicker naranja">🎯 Reto 6 · Cuestionario final</span>
+      <h2>Comprueba lo que has aprendido</h2>
+      <p class="lead">10 preguntas sobre entorno digital, evolución tecnológica, fact-checking, contrastar fuentes y eficiencia.</p>
+    </div>
+    <div id="quizContainer"></div>
+    <div id="quizResult" style="display:none;text-align:center;padding:1.8rem;border-radius:var(--radio);color:#fff;background:linear-gradient(135deg,#1e3a8a,#0c1445);box-shadow:var(--sombra-lg)">
+      <div id="quizScore" style="font-size:3rem;font-weight:900;line-height:1;margin-bottom:.4rem">0/10</div>
+      <h3 id="quizTitle" style="color:#fff">¡Buen trabajo!</h3>
+      <p id="quizMsg" style="color:#bfdbfe;max-width:560px;margin:0 auto"></p>
+    </div>
+  </section>
+
+  <!-- ========== CERTIFICADO ========== -->
+  <section id="certificado">
+    <div id="certificado">
+      <h2>🏆 Tu certificado de aprovechamiento</h2>
+      <p class="sub">Al completar las actividades obtendrás un certificado personalizado con tus resultados, que podrás descargar en PDF.</p>
+
+      <div class="cert-name" id="certNombre">—</div>
+
+      <div class="cert-stats" id="certStats"></div>
+
+      <div class="cert-warn" id="certWarn" style="display:none">
+        ⚠️ Aún no has completado ninguna actividad. Termina al menos una para generar tu certificado.
+      </div>
+
+      <button class="btn btn-naranja" id="btnCertificado" style="font-size:1rem;padding:.95rem 2rem">
+        📄 Descargar certificado en PDF
+      </button>
+      <p class="cert-note">El PDF se genera como imagen rasterizada: el texto no es editable ni seleccionable, garantizando su integridad.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p style="margin-bottom:.4rem"><strong>Entorno Digital</strong> · Herramientas · Evolución · Fuentes fiables · Eficiencia</p>
+  <p style="margin:0;font-size:.8rem">Aplicación educativa interactiva · Tu progreso se guarda en este navegador</p>
+</footer>
+
+<div id="toast"></div>
+
+<script>
+/* ================================================================
+   1. ESTADO PERSISTENTE
+================================================================ */
+const LS_KEY = 'entornoDigital_v3';
+const LS_KEY_OLD = 'entornoDigital_v2';
+const RETOS_TOTALES = 6;
+
+function detallesVacios(){
+  return {
+    mapa:       { respuestas: {} },
+    evolucion:  { vistos: [] },
+    bulos:      { orden: [], respuestas: {} },
+    contrastar: { respuestas: {} },
+    eficiencia: { respuestas: {} },
+    quiz:       { respuestas: {} }
+  };
+}
+
+function mergeDetalles(raw){
+  const s = raw || {};
+  const d = detallesVacios();
+  d.mapa       = { respuestas: (s.mapa && s.mapa.respuestas) || {} };
+  d.evolucion  = { vistos: Array.isArray(s.evolucion && s.evolucion.vistos) ? s.evolucion.vistos.slice() : [] };
+  d.bulos      = {
+    orden: Array.isArray(s.bulos && s.bulos.orden) ? s.bulos.orden.slice() : [],
+    respuestas: (s.bulos && s.bulos.respuestas) || {}
+  };
+  d.contrastar = { respuestas: (s.contrastar && s.contrastar.respuestas) || {} };
+  d.eficiencia = { respuestas: (s.eficiencia && s.eficiencia.respuestas) || {} };
+  d.quiz       = { respuestas: (s.quiz && s.quiz.respuestas) || {} };
+  return d;
+}
+
+let estado = {
+  nombre: '',
+  retos: [],
+  scores: { mapa:0, evolucion:0, bulos:0, contrastar:0, eficiencia:0, quiz:0 },
+  iniciado: null,
+  detalles: detallesVacios()
+};
+
+function guardarEstado(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(estado)); }catch(e){} }
+function cargarEstado(){
+  try{
+    let raw = localStorage.getItem(LS_KEY);
+    if(!raw) raw = localStorage.getItem(LS_KEY_OLD); // migración desde v2
+    if(!raw) return;
+    const d = JSON.parse(raw);
+    if(!d || typeof d !== 'object') return;
+    estado = Object.assign(estado, d);
+    estado.scores = Object.assign({mapa:0,evolucion:0,bulos:0,contrastar:0,eficiencia:0,quiz:0}, d.scores || {});
+    estado.retos = Array.isArray(d.retos) ? d.retos : [];
+    estado.detalles = mergeDetalles(d.detalles);
+  }catch(e){}
+}
+// Cargamos ANTES de renderizar para que la UI se reconstruya con los datos guardados.
+cargarEstado();
+
+/* ================================================================
+   2. PROGRESO
+================================================================ */
+function actualizarProgreso(){
+  const n = estado.retos.length;
+  document.getElementById('progresoPill').textContent = n + ' / ' + RETOS_TOTALES + ' retos';
+  document.getElementById('progresoBarra').style.width = (n / RETOS_TOTALES * 100) + '%';
+}
+function completarReto(id, msg){
+  if(!estado.retos.includes(id)) estado.retos.push(id);
+  guardarEstado();
+  actualizarProgreso();
+  actualizarCertificado();
+  if(msg) toast(msg);
+}
+let toastTimer;
+function toast(texto){
+  const t = document.getElementById('toast');
+  t.innerHTML = '🏅 ' + texto;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 3500);
+}
+
+/* ================================================================
+   3. LOGIN
+================================================================ */
+const overlay = document.getElementById('loginOverlay');
+const card = document.getElementById('loginCard');
+
+function mostrarLogin(){
+  if(estado.nombre){
+    card.innerHTML = `
+      <span class="login-emoji">🌐</span>
+      <h1>¡Hola de nuevo!</h1>
+      <p class="sub">Hemos guardado tu progreso en este navegador.</p>
+      <div class="welcome-back">
+        Continuar como <strong>${escaparHTML(estado.nombre)}</strong><br>
+        <span style="font-size:.82rem">Retos completados: ${estado.retos.length} / ${RETOS_TOTALES}</span>
+      </div>
+      <div class="login-btns">
+        <button class="btn btn-primary" id="btnContinuar">▶ Continuar</button>
+        <button class="btn btn-ghost" id="btnCambiar" style="background:#f1f5f9;color:#0f172a;border-color:#e2e8f0">👤 Cambiar nombre</button>
+      </div>
+    `;
+    document.getElementById('btnContinuar').addEventListener('click', iniciarApp);
+    document.getElementById('btnCambiar').addEventListener('click', ()=>{
+      estado.nombre = '';
+      estado.retos = [];
+      estado.scores = {mapa:0,evolucion:0,bulos:0,contrastar:0,eficiencia:0,quiz:0};
+      estado.detalles = detallesVacios();
+      estado.iniciado = null;
+      guardarEstado();
+      renderLoginForm();
+    });
+  } else {
+    renderLoginForm();
+  }
+}
+
+function renderLoginForm(){
+  card.innerHTML = `
+    <span class="login-emoji">🌐</span>
+    <h1>Bienvenido/a a Entorno Digital</h1>
+    <p class="sub">Antes de empezar, dinos cómo te llamas. Tu progreso se guardará en este navegador para que puedas continuar cuando quieras.</p>
+    <input type="text" id="inputNombre" placeholder="Escribe tu nombre" maxlength="40" autocomplete="off">
+    <button class="btn btn-primary" id="btnEntrar">🚀 Comenzar la aventura</button>
+    <div class="login-error" id="loginError"></div>
+  `;
+  const inp = document.getElementById('inputNombre');
+  const btn = document.getElementById('btnEntrar');
+  const err = document.getElementById('loginError');
+  const submit = ()=>{
+    const v = inp.value.trim();
+    if(v.length < 2){ err.textContent = 'Por favor, introduce al menos 2 caracteres.'; inp.focus(); return; }
+    estado.nombre = v;
+    estado.iniciado = new Date().toISOString();
+    guardarEstado();
+    iniciarApp();
+  };
+  btn.addEventListener('click', submit);
+  inp.addEventListener('keydown', e=>{ if(e.key === 'Enter') submit(); });
+  setTimeout(()=>inp.focus(), 200);
+}
+
+function iniciarApp(){
+  overlay.classList.add('hidden');
+  document.body.classList.remove('locked');
+  document.getElementById('navUserName').textContent = estado.nombre;
+  document.getElementById('heroNombre').textContent = estado.nombre;
+
+  // Reconstruimos TODAS las actividades con el estado guardado.
+  initMapa();
+  initEvolucion();
+  initBulos();
+  initContrastar();
+  initEficiencia();
+  initQuiz();
+  initVoc();
+
+  actualizarProgreso();
+  actualizarCertificado();
+}
+
+function escaparHTML(s){
+  return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ================================================================
+   4. REVEAL
+================================================================ */
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach((e,i)=>{
+    if(e.isIntersecting){
+      setTimeout(()=>e.target.classList.add('in'), i*70);
+      io.unobserve(e.target);
+    }
+  });
+},{threshold:.12, rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+/* ================================================================
+   5. NAV ACTIVO
+================================================================ */
+const secciones = [...document.querySelectorAll('section[id]')];
+const navLinks = [...document.querySelectorAll('.nav-links a')];
+window.addEventListener('scroll', ()=>{
+  let actual = '';
+  secciones.forEach(s=>{ if(window.scrollY >= s.offsetTop - 120) actual = s.id; });
+  navLinks.forEach(a=>a.classList.toggle('active', a.getAttribute('href') === '#'+actual));
+});
+
+/* ================================================================
+   6. RETO 1 · MAPA ENTORNO DIGITAL
+================================================================ */
+const mapaHerramientas = [
+  {id:'h1', ico:'💬', nombre:'WhatsApp', desc:'Aplicación de mensajería instantánea para chatear con contactos.', cat:'comunicacion',
+   why:'WhatsApp es una herramienta de COMUNICACIÓN: sirve para enviar mensajes, llamar y compartir contenido con otras personas.'},
+  {id:'h2', ico:'☁️', nombre:'Google Drive', desc:'Plataforma en la nube de Google para guardar y compartir archivos.', cat:'almacenamiento',
+   why:'Google Drive es una herramienta de ALMACENAMIENTO en la nube: guarda archivos en servidores remotos accesibles desde cualquier lugar.'},
+  {id:'h3', ico:'📋', nombre:'Notion', desc:'Aplicación para tomar notas, gestionar tareas y organizar información.', cat:'productividad',
+   why:'Notion es una herramienta de PRODUCTIVIDAD: permite organizar notas, tareas, bases de datos y proyectos en un mismo espacio.'},
+  {id:'h4', ico:'🎨', nombre:'Canva', desc:'Editor gráfico online para crear diseños, presentaciones y carteles.', cat:'creacion',
+   why:'Canva es una herramienta de CREACIÓN DE CONTENIDO: sirve para diseñar gráficos, carteles, presentaciones e infografías.'},
+  {id:'h5', ico:'🎮', nombre:'Discord', desc:'Plataforma de chat por canales para comunidades y equipos.', cat:'comunicacion',
+   why:'Discord es una herramienta de COMUNICACIÓN: organiza la conversación en canales de texto y voz para comunidades o equipos.'},
+  {id:'h6', ico:'📦', nombre:'Dropbox', desc:'Servicio en la nube para almacenar y sincronizar archivos.', cat:'almacenamiento',
+   why:'Dropbox es una herramienta de ALMACENAMIENTO en la nube: guarda y sincroniza archivos entre dispositivos.'},
+  {id:'h7', ico:'📊', nombre:'Trello', desc:'Tablero digital para organizar tareas en columnas y asignar responsables.', cat:'productividad',
+   why:'Trello es una herramienta de PRODUCTIVIDAD: gestiona tareas con un tablero Kanban, asignando responsables y estados.'},
+  {id:'h8', ico:'✏️', nombre:'Figma', desc:'Herramienta para diseñar interfaces y prototipos de apps de forma colaborativa.', cat:'creacion',
+   why:'Figma es una herramienta de CREACIÓN DE CONTENIDO: permite diseñar interfaces, prototipos y elementos gráficos en equipo.'}
+];
+
+let mapaContadores = {comunicacion:0, almacenamiento:0, productividad:0, creacion:0};
+let mapaAciertos = 0;
+let mapaRespondidas = 0;
+
+function initMapa(){
+  const cont = document.getElementById('mapaTools');
+  if(!cont) return;
+  cont.innerHTML = '';
+
+  const guardadas = estado.detalles.mapa.respuestas || {};
+
+  // Derivamos contadores, aciertos y respondidas desde las respuestas guardadas.
+  mapaContadores = {comunicacion:0, almacenamiento:0, productividad:0, creacion:0};
+  mapaAciertos = 0;
+  mapaRespondidas = 0;
+  mapaHerramientas.forEach(h=>{
+    if(guardadas[h.id] !== undefined){
+      mapaContadores[h.cat]++;
+      mapaRespondidas++;
+      if(guardadas[h.id] === h.cat) mapaAciertos++;
+    }
+  });
+
+  // Refrescamos la fila de categorías
+  Object.keys(mapaContadores).forEach(cat=>{
+    const cntEl = document.getElementById('cnt_' + cat);
+    if(cntEl) cntEl.textContent = mapaContadores[cat] + '/2';
+    const catEl = document.querySelector(`.mapa-cat[data-cat="${cat}"]`);
+    if(catEl && mapaContadores[cat] === 2) catEl.classList.add('completado');
+  });
+
+  mapaHerramientas.forEach(h=>{
+    const div = document.createElement('div');
+    div.className = 'mapa-tool';
+    div.innerHTML = `
+      <div class="mt-head">
+        <span class="mt-ico">${h.ico}</span>
+        <div>
+          <p class="mt-nombre">${h.nombre}</p>
+          <p class="mt-desc">${h.desc}</p>
+        </div>
+      </div>
+      <div class="mt-opciones">
+        <button class="mt-btn" data-id="${h.id}" data-v="comunicacion">💬 Comunicación</button>
+        <button class="mt-btn" data-id="${h.id}" data-v="almacenamiento">☁️ Almacenamiento</button>
+        <button class="mt-btn" data-id="${h.id}" data-v="productividad">📋 Productividad</button>
+        <button class="mt-btn" data-id="${h.id}" data-v="creacion">🎨 Creación</button>
+      </div>
+      <div class="mt-fb"></div>
+    `;
+    cont.appendChild(div);
+
+    const btns = div.querySelectorAll('.mt-btn');
+    const fb = div.querySelector('.mt-fb');
+    const elegida = guardadas[h.id];
+
+    if(elegida !== undefined){
+      // Restaurar como ya respondida
+      const acierto = elegida === h.cat;
+      btns.forEach(x=>{
+        x.disabled = true;
+        if(x.dataset.v === h.cat) x.classList.add('correct');
+        if(x.dataset.v === elegida && !acierto) x.classList.add('wrong');
+      });
+      fb.innerHTML = (acierto ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>No exactamente.</strong> ') + h.why;
+      fb.classList.add('show');
+      div.classList.add('done');
+    } else {
+      // Añadir listeners sólo a las no respondidas
+      btns.forEach(b=>{
+        b.addEventListener('click', ()=>{
+          const elegido = b.dataset.v;
+          const acierto = elegido === h.cat;
+          btns.forEach(x=>{
+            x.disabled = true;
+            if(x.dataset.v === h.cat) x.classList.add('correct');
+          });
+          if(!acierto) b.classList.add('wrong');
+          fb.innerHTML = (acierto ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>No exactamente.</strong> ') + h.why;
+          fb.classList.add('show');
+          div.classList.add('done');
+
+          // Guardar respuesta en estado
+          estado.detalles.mapa.respuestas[h.id] = elegido;
+
+          mapaContadores[h.cat]++;
+          const cntEl = document.getElementById('cnt_' + h.cat);
+          if(cntEl) cntEl.textContent = mapaContadores[h.cat] + '/2';
+          if(mapaContadores[h.cat] === 2){
+            const catEl = document.querySelector(`.mapa-cat[data-cat="${h.cat}"]`);
+            if(catEl) catEl.classList.add('completado');
+          }
+
+          mapaRespondidas++;
+          if(acierto) mapaAciertos++;
+
+          if(mapaRespondidas === mapaHerramientas.length){
+            if(mapaAciertos > estado.scores.mapa){
+              estado.scores.mapa = mapaAciertos;
+            }
+            document.getElementById('mapaMsg').innerHTML = mensajeMapa();
+            completarReto('mapa', '¡Mapa del entorno digital completado!');
+          } else {
+            guardarEstado();
+          }
+        });
+      });
+    }
+  });
+
+  // Si ya estaba completo, mostrar mensaje final
+  if(mapaRespondidas === mapaHerramientas.length){
+    document.getElementById('mapaMsg').innerHTML = mensajeMapa();
+  }
+}
+
+function mensajeMapa(){
+  return `Has clasificado correctamente <strong>${mapaAciertos} de ${mapaHerramientas.length}</strong> herramientas. ` +
+    (mapaAciertos >= 6 ? '¡Conoces bien tu entorno digital!' : 'Repasa las herramientas falladas.');
+}
+
+/* ================================================================
+   7. RETO 2 · EVOLUCIÓN DIGITAL
+================================================================ */
+const evolucionData = [
+  {año:'1991', ico:'🌐', titulo:'Nace la World Wide Web',
+   desc:'Tim Berners-Lee publica la primera página web y libera el código de forma gratuita. Nace la Web 1.0: páginas estáticas que solo permiten leer.',
+   clave:'La información viaja por primera vez a escala global a través de hipervínculos.'},
+  {año:'2004', ico:'💬', titulo:'Auge de la Web 2.0',
+   desc:'Aparecen blogs, wikis y redes sociales. Por primera vez, cualquier persona puede crear y publicar contenido sin saber programar.',
+   clave:'El usuario deja de ser solo consumidor y se convierte en creador de contenido.'},
+  {año:'2007', ico:'📱', titulo:'Era del smartphone y la nube',
+   desc:'El iPhone populariza los móviles táctiles. Google Drive, iCloud y Dropbox traen la nube: los archivos ya no están en un solo dispositivo.',
+   clave:'Acceso permanente a datos y servicios desde cualquier lugar con conexión.'},
+  {año:'2012', ico:'📸', titulo:'Redes sociales masivas',
+   desc:'Instagram, WhatsApp y YouTube se consolidan. La comunicación se vuelve visual, instantánea y global.',
+   clave:'La información circula a velocidad vertiginosa: crece la necesidad de verificar fuentes.'},
+  {año:'2016', ico:'🤖', titulo:'Auge de la inteligencia artificial',
+   desc:'Los asistentes de voz, las recomendaciones personalizadas y la visión artificial se integran en la vida cotidiana.',
+   clave:'La IA empieza a tomar decisiones por nosotros: aparece la necesidad de entenderla críticamente.'},
+  {año:'2020s', ico:'✨', titulo:'IA generativa y Web 3.0',
+   desc:'ChatGPT y otros modelos generan texto, imagen y vídeo. El IoT conecta millones de objetos. El cloud y el edge computing se combinan.',
+   clave:'Vivimos en la era de la información generada por IA: la alfabetización digital es más crítica que nunca.'}
+];
+
+let evoVistos = new Set();
+
+function initEvolucion(){
+  const cont = document.getElementById('evoPoints');
+  if(!cont) return;
+  cont.innerHTML = '';
+
+  const guardados = estado.detalles.evolucion.vistos || [];
+  evoVistos = new Set(guardados.map(n => Number(n)).filter(n => Number.isInteger(n) && n >= 0 && n < evolucionData.length));
+
+  evolucionData.forEach((h, i)=>{
+    const p = document.createElement('div');
+    p.className = 'evo-point';
+    p.dataset.id = i;
+    p.textContent = i+1;
+    p.title = h.año + ' - ' + h.titulo;
+    if(evoVistos.has(i)) p.classList.add('visto');
+    p.addEventListener('click', ()=>clickEvo(i));
+    cont.appendChild(p);
+  });
+
+  document.getElementById('evoProgreso').textContent =
+    `Hitos explorados: ${evoVistos.size} / ${evolucionData.length}`;
+
+  // Si ya estaban todos vistos, mostrar también el último consultado
+  if(evoVistos.size > 0){
+    const ultimo = Math.max(...evoVistos);
+    pintarEvoInfo(ultimo, false);
+  }
+
+  if(evoVistos.size === evolucionData.length){
+    // Asegurar que el score está actualizado
+    if(evoVistos.size > estado.scores.evolucion){
+      estado.scores.evolucion = evoVistos.size;
+      guardarEstado();
+    }
+  }
+}
+
+function pintarEvoInfo(i, marcarActivo){
+  const h = evolucionData[i];
+  if(marcarActivo){
+    document.querySelectorAll('.evo-point').forEach((p, idx)=>{
+      p.classList.toggle('activo', idx === i);
+    });
+  }
+  document.getElementById('evoInfo').innerHTML = `
+    <span class="ei-año">${h.año}</span>
+    <h4>${h.ico} ${h.titulo}</h4>
+    <p>${h.desc}</p>
+    <div class="ei-clave"><strong>💡 Impacto clave:</strong> ${h.clave}</div>
+  `;
+}
+
+function clickEvo(i){
+  pintarEvoInfo(i, true);
+  document.querySelector(`.evo-point[data-id="${i}"]`).classList.add('visto');
+
+  const esNuevo = !evoVistos.has(i);
+  evoVistos.add(i);
+
+  document.getElementById('evoProgreso').textContent =
+    `Hitos explorados: ${evoVistos.size} / ${evolucionData.length}`;
+
+  // Guardar en estado
+  estado.detalles.evolucion.vistos = Array.from(evoVistos).sort((a,b)=>a-b);
+  if(evoVistos.size > estado.scores.evolucion){
+    estado.scores.evolucion = evoVistos.size;
+  }
+  guardarEstado();
+  actualizarCertificado();
+
+  if(evoVistos.size === evolucionData.length && esNuevo){
+    completarReto('evolucion', '¡Evolución digital explorada!');
+  }
+}
+
+/* ================================================================
+   8. RETO 3 · DETECTIVE DE BULOS
+================================================================ */
+const bulosData = [
+  {id:'b1', frase:'El sol sale por el este y se pone por el oeste.', tipo:'verdadero',
+   why:'Es un hecho astronómico básico, consecuencia de la rotación de la Tierra. Se puede verificar observando el cielo durante varios días.'},
+  {id:'b2', frase:'Los murciélagos son ciegos y por eso usan la ecolocalización.', tipo:'falso',
+   why:'Es un mito muy extendido. Los murciélagos NO son ciegos: tienen ojos funcionales, aunque la mayoría también usa ecolocalización para orientarse.'},
+  {id:'b3', frase:'Beber exactamente 8 vasos de agua al día es obligatorio para estar sano.', tipo:'verificar',
+   why:'La cantidad de agua necesaria depende de la persona, el clima, la actividad física y la dieta. La recomendación "8 vasos" es una simplificación popular, no una regla científica universal.'},
+  {id:'b4', frase:'Los antibióticos no funcionan contra los virus.', tipo:'verdadero',
+   why:'Los antibióticos actúan sobre bacterias. Contra los virus (como la gripe o el resfriado común) no tienen efecto. Es un consenso científico establecido.'},
+  {id:'b5', frase:'La Gran Muralla China es la única construcción humana visible desde la Luna.', tipo:'falso',
+   why:'Es un mito muy famoso. Los astronautas han confirmado que la Gran Muralla NO es visible a simple vista desde la Luna. Es demasiado estrecha.'},
+  {id:'b6', frase:'El 5G provoca problemas de salud en las personas.', tipo:'verificar',
+   why:'Existe un consenso científico internacional de que el 5G, dentro de los límites establecidos, no es peligroso. Sin embargo, se necesita consultar fuentes como la OMS para descartar la desinformación viral.'},
+  {id:'b7', frase:'Los peces solo tienen 3 segundos de memoria.', tipo:'falso',
+   why:'Es un mito popular sin base científica. Se ha demostrado que muchos peces tienen memoria que dura meses e incluso años.'},
+  {id:'b8', frase:'El agua hierve a 100 °C cuando la presión es de 1 atmósfera al nivel del mar.', tipo:'verdadero',
+   why:'Es un hecho físico establecido: la temperatura de ebullición del agua depende de la presión. A presión estándar (nivel del mar), es 100 °C.'}
+];
+
+const BULOS_LABEL = {
+  verdadero: {txt:'Verdadero', ico:'✅'},
+  falso:     {txt:'Falso',     ico:'❌'},
+  verificar: {txt:'Verificar', ico:'🔍'}
+};
+
+let bulosRespondidas = 0, bulosAciertos = 0;
+
+function initBulos(){
+  const cont = document.getElementById('bulosWrap');
+  if(!cont) return;
+  cont.innerHTML = '';
+
+  const guardadas = estado.detalles.bulos.respuestas || {};
+  const ordenGuardado = estado.detalles.bulos.orden || [];
+
+  // Validar orden guardado: debe contener los 8 ids exactos
+  const idsEsperados = bulosData.map(b=>b.id).slice().sort();
+  const idsGuardados = ordenGuardado.slice().sort();
+  let orden;
+  if(ordenGuardado.length === bulosData.length && JSON.stringify(idsEsperados) === JSON.stringify(idsGuardados)){
+    orden = ordenGuardado;
+  } else {
+    orden = [...bulosData].sort(()=>Math.random()-0.5).map(b=>b.id);
+    estado.detalles.bulos.orden = orden;
+    guardarEstado();
+  }
+
+  bulosRespondidas = 0;
+  bulosAciertos = 0;
+
+  orden.forEach(id=>{
+    const b = bulosData.find(x=>x.id === id);
+    if(!b) return;
+    const div = document.createElement('div');
+    div.className = 'bulo-card';
+    div.innerHTML = `
+      <div class="bulo-frase">${b.frase}</div>
+      <div class="bulo-opciones">
+        <button class="bulo-btn" data-id="${b.id}" data-v="verdadero"><span class="bb-ico">✅</span>Verdadero</button>
+        <button class="bulo-btn" data-id="${b.id}" data-v="falso"><span class="bb-ico">❌</span>Falso</button>
+        <button class="bulo-btn" data-id="${b.id}" data-v="verificar"><span class="bb-ico">🔍</span>Verificar</button>
+      </div>
+      <div class="bulo-fb"></div>
+    `;
+    cont.appendChild(div);
+
+    const btns = div.querySelectorAll('.bulo-btn');
+    const fb = div.querySelector('.bulo-fb');
+    const elegida = guardadas[b.id];
+
+    if(elegida !== undefined){
+      const acierto = elegida === b.tipo;
+      btns.forEach(x=>{
+        x.disabled = true;
+        if(x.dataset.v === b.tipo) x.classList.add('correct');
+        if(x.dataset.v === elegida && !acierto) x.classList.add('wrong');
+      });
+      const lbl = BULOS_LABEL[b.tipo];
+      fb.innerHTML = (acierto ? '✅ <strong>¡Correcto!</strong> ' : `❌ <strong>No exactamente. Es ${lbl.txt.toLowerCase()}.</strong> `) + b.why;
+      fb.classList.add('show');
+      div.classList.add('done');
+
+      bulosRespondidas++;
+      if(acierto) bulosAciertos++;
+    } else {
+      btns.forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const elegido = btn.dataset.v;
+          const acierto = elegido === b.tipo;
+          btns.forEach(x=>{
+            x.disabled = true;
+            if(x.dataset.v === b.tipo) x.classList.add('correct');
+          });
+          if(!acierto) btn.classList.add('wrong');
+          const lbl = BULOS_LABEL[b.tipo];
+          fb.innerHTML = (acierto ? '✅ <strong>¡Correcto!</strong> ' : `❌ <strong>No exactamente. Es ${lbl.txt.toLowerCase()}.</strong> `) + b.why;
+          fb.classList.add('show');
+          div.classList.add('done');
+
+          estado.detalles.bulos.respuestas[b.id] = elegido;
+
+          bulosRespondidas++;
+          if(acierto) bulosAciertos++;
+
+          if(bulosRespondidas === bulosData.length){
+            if(bulosAciertos > estado.scores.bulos){
+              estado.scores.bulos = bulosAciertos;
+            }
+            document.getElementById('bulosMsg').innerHTML = mensajeBulos();
+            completarReto('bulos', '¡Detective de bulos completado!');
+          } else {
+            guardarEstado();
+          }
+        });
+      });
+    }
+  });
+
+  if(bulosRespondidas === bulosData.length){
+    document.getElementById('bulosMsg').innerHTML = mensajeBulos();
+  }
+}
+
+function mensajeBulos(){
+  return `Has acertado <strong>${bulosAciertos} de ${bulosData.length}</strong> afirmaciones. ` +
+    (bulosAciertos >= 6 ? '¡Tienes un criterio excelente para detectar bulos!' : 'Repasa las afirmaciones falladas.');
+}
+
+/* ================================================================
+   9. RETO 4 · CONTRASTAR FUENTES
+================================================================ */
+const contrastarData = [
+  {
+    id:'c1',
+    titulo:'La altura del Teide',
+    contexto:'Necesitas la altura exacta del Teide para un trabajo de Geografía. Encuentras tres datos distintos:',
+    fuentes:[
+      {tipo:'Enciclopedia abierta', nombre:'Wikipedia', dato:'3.718 m', desc:'Artículo editado por voluntarios, con referencias a estudios.'},
+      {tipo:'Web turística', nombre:'Guía de viajes comercial', dato:'3.715 m', desc:'Página de una agencia que ofrece excursiones al Teide.'},
+      {tipo:'Libro antiguo', nombre:'Guía de 1985', dato:'3.710 m', desc:'Publicación de hace casi 40 años.'}
+    ],
+    opciones:[
+      {t:'Usar el dato de la web turística, porque está actualizada.', ok:false,
+       why:'Una web comercial tiene interés en atraer turistas, no en ser precisa con datos técnicos. No es la fuente más autorizada.'},
+      {t:'Consultar la fuente oficial del IGN (Instituto Geográfico Nacional).', ok:true,
+       why:'¡Correcto! Cuando hay conflicto entre fuentes, la mejor estrategia es acudir a la fuente oficial competente: el IGN es la autoridad cartográfica en España.'},
+      {t:'Promediar los tres valores y usar la media.', ok:false,
+       why:'Promediar sin criterio da un dato que no refleja la realidad. No todas las fuentes tienen la misma fiabilidad.'},
+      {t:'Elegir el valor más alto, porque "es el más moderno".', ok:false,
+       why:'Que un dato sea más alto no significa que sea más reciente ni más correcto. Hay que verificar la autoridad de la fuente.'}
+    ]
+  },
+  {
+    id:'c2',
+    titulo:'El cambio climático',
+    contexto:'Buscas información sobre las causas del cambio climático. Encuentras:',
+    fuentes:[
+      {tipo:'Informe científico internacional', nombre:'IPCC (ONU)', dato:'Múltiples evidencias', desc:'Consenso de miles de científicos de todo el mundo.'},
+      {tipo:'Blog personal', nombre:'Blog negacionista', dato:'"Es un ciclo natural"', desc:'Web sin autoría verificable ni referencias científicas.'},
+      {tipo:'Titular sensacionalista', nombre:'Periódico digital', dato:'"Los científicos ocultan la verdad"', desc:'Titular con gancho emocional, sin citar fuentes.'}
+    ],
+    opciones:[
+      {t:'Confiar en el blog, porque es más directo y sin intereses.', ok:false,
+       why:'Un blog sin autoría verificable y sin referencias científicas no es una fuente fiable. La ausencia de "intereses" no la convierte en rigurosa.'},
+      {t:'Dar más peso al informe del IPCC por su método científico y consenso internacional.', ok:true,
+       why:'¡Correcto! El IPCC agrupa el trabajo de miles de científicos y sintetiza la evidencia disponible. Es la fuente de mayor autoridad científica en cambio climático.'},
+      {t:'Evitar el tema porque hay opiniones enfrentadas.', ok:false,
+       why:'Que existan opiniones enfrentadas no significa que todas tengan el mismo peso. Hay que valorar la calidad de cada fuente.'},
+      {t:'Elegir el titular del periódico porque es más reciente.', ok:false,
+       why:'Que sea reciente no garantiza que sea veraz. Un titular sensacionalista sin fuentes no es una fuente fiable.'}
+    ]
+  },
+  {
+    id:'c3',
+    titulo:'El inicio de la Revolución Industrial',
+    contexto:'Encuentras tres fechas distintas para el inicio de la Revolución Industrial:',
+    fuentes:[
+      {tipo:'Manual de Historia', nombre:'Manual universitario actual', dato:'~1760 en Inglaterra', desc:'Obra académica revisada, publicada en 2022.'},
+      {tipo:'Blog de viajes', nombre:'Blog sobre Inglaterra', dato:'1750', desc:'Artículo turístico sin referencias.'},
+      {tipo:'Enciclopedia antigua', nombre:'Enciclopedia de 1970', dato:'1780', desc:'Edición desactualizada, sin aparato crítico actual.'}
+    ],
+    opciones:[
+      {t:'Elegir la fecha más antigua, porque "empezó antes".', ok:false,
+       why:'La antigüedad de la fecha no determina su veracidad. Hay que basarse en el trabajo historiográfico actualizado.'},
+      {t:'Consultar varias fuentes académicas y reconocer que existe un debate historiográfico sobre la fecha exacta.', ok:true,
+       why:'¡Correcto! La Revolución Industrial no tuvo una fecha única de inicio: los historiadores manejan un rango aproximado (1750-1780). Reconocer el debate es más riguroso que elegir un dato concreto.'},
+      {t:'Elegir el dato del blog porque es el más sencillo.', ok:false,
+       why:'La sencillez no es criterio de fiabilidad. Un blog de viajes no es una fuente histórica autorizada.'},
+      {t:'Usar el manual más moderno sin más, sin cuestionarlo.', ok:false,
+       why:'El manual moderno es la mejor opción entre las tres, pero en historia es importante reconocer que hay debate. La respuesta más rigurosa es valorar el conjunto.'}
+    ]
+  }
+];
+
+let contrastarRespondidas = 0, contrastarAciertos = 0;
+
+function initContrastar(){
+  const cont = document.getElementById('contrastarContainer');
+  if(!cont) return;
+  cont.innerHTML = '';
+
+  const guardadas = estado.detalles.contrastar.respuestas || {};
+  contrastarRespondidas = 0;
+  contrastarAciertos = 0;
+
+  contrastarData.forEach((c)=>{
+    const div = document.createElement('div');
+    div.className = 'contrastar-caso';
+    div.innerHTML = `
+      <h4>📚 Caso: ${c.titulo}</h4>
+      <p>${c.contexto}</p>
+    `;
+    const fuentesDiv = document.createElement('div');
+    fuentesDiv.className = 'fuentes-lista';
+    fuentesDiv.innerHTML = c.fuentes.map(f=>`
+      <div class="fuente-item">
+        <span class="fi-tipo">${f.tipo}</span>
+        <span class="fi-nombre">${f.nombre}</span>
+        <span class="fi-dato">${f.dato}</span>
+        <p class="fi-desc">${f.desc}</p>
+      </div>
+    `).join('');
+    div.appendChild(fuentesDiv);
+
+    const opsDiv = document.createElement('div');
+    opsDiv.className = 'contrastar-opciones';
+    opsDiv.innerHTML = c.opciones.map((o,i)=>`
+      <button class="contrastar-op" data-id="${c.id}" data-v="${i}">
+        <span class="co-letra">${String.fromCharCode(65+i)}</span>
+        <span>${o.t}</span>
+      </button>
+    `).join('');
+    div.appendChild(opsDiv);
+
+    const fbDiv = document.createElement('div');
+    fbDiv.className = 'contrastar-fb';
+    div.appendChild(fbDiv);
+
+    cont.appendChild(div);
+
+    const btns = div.querySelectorAll('.contrastar-op');
+    const elegidoGuardado = guardadas[c.id];
+
+    if(elegidoGuardado !== undefined){
+      const op = c.opciones[elegidoGuardado];
+      btns.forEach(x=>{
+        x.disabled = true;
+        const xi = parseInt(x.dataset.v, 10);
+        if(c.opciones[xi].ok) x.classList.add('correct');
+        if(xi === elegidoGuardado && !op.ok) x.classList.add('wrong');
+      });
+      fbDiv.innerHTML = (op.ok ? '✅ <strong>¡Buena estrategia!</strong> ' : '❌ <strong>Estrategia mejorable.</strong> ') + op.why;
+      fbDiv.classList.add('show');
+      contrastarRespondidas++;
+      if(op.ok) contrastarAciertos++;
+    } else {
+      btns.forEach(b=>{
+        b.addEventListener('click', ()=>{
+          const i = parseInt(b.dataset.v, 10);
+          const op = c.opciones[i];
+          btns.forEach(x=>x.disabled = true);
+          btns.forEach(x=>{
+            const xi = parseInt(x.dataset.v, 10);
+            if(c.opciones[xi].ok) x.classList.add('correct');
+          });
+          if(!op.ok) b.classList.add('wrong');
+          fbDiv.innerHTML = (op.ok ? '✅ <strong>¡Buena estrategia!</strong> ' : '❌ <strong>Estrategia mejorable.</strong> ') + op.why;
+          fbDiv.classList.add('show');
+
+          estado.detalles.contrastar.respuestas[c.id] = i;
+
+          contrastarRespondidas++;
+          if(op.ok) contrastarAciertos++;
+
+          if(contrastarRespondidas === contrastarData.length){
+            if(contrastarAciertos > estado.scores.contrastar){
+              estado.scores.contrastar = contrastarAciertos;
+            }
+            document.getElementById('contrastarMsg').innerHTML = mensajeContrastar();
+            completarReto('contrastar', '¡Contraste de fuentes completado!');
+          } else {
+            guardarEstado();
+          }
+        });
+      });
+    }
+  });
+
+  if(contrastarRespondidas === contrastarData.length){
+    document.getElementById('contrastarMsg').innerHTML = mensajeContrastar();
+  }
+}
+
+function mensajeContrastar(){
+  return `Has resuelto correctamente <strong>${contrastarAciertos} de ${contrastarData.length}</strong> casos de contraste de fuentes. ` +
+    (contrastarAciertos >= 2 ? '¡Sabes contrastar información como un investigador/a!' : 'Repasa los casos fallados.');
+}
+
+/* ================================================================
+   10. RETO 5 · EFICIENCIA DIGITAL
+================================================================ */
+const eficienciaData = [
+  {
+    id:'e1', ico:'📝', titulo:'Escribir un trabajo de 20 páginas',
+    desc:'Necesitas escribir un trabajo largo con portada, índice, títulos, subtítulos, citas y bibliografía, que cumpla normas académicas.',
+    opciones:[
+      {t:'Escribirlo todo en un cuaderno a mano y luego pasarlo al ordenador.', ok:false,
+       why:'Hacerlo dos veces es el doble de trabajo y más posibilidades de error. Nada eficiente.'},
+      {t:'Usar un procesador de textos (Word, Docs) con estilos, índice automático y gestor de citas.', ok:true,
+       why:'¡Correcto! Los procesadores de textos tienen funciones avanzadas que ahorran horas: estilos, índices automáticos, bibliografías, saltos de página.'},
+      {t:'Escribirlo todo en el bloc de notas sin formato.', ok:false,
+       why:'El bloc de notas no permite aplicar formato, ni índices, ni bibliografía. Tendrías que rehacer el trabajo al final.'},
+      {t:'Escribirlo en una hoja de cálculo.', ok:false,
+       why:'Una hoja de cálculo está pensada para números y tablas, no para textos largos con formato.'}
+    ]
+  },
+  {
+    id:'e2', ico:'📸', titulo:'Compartir 200 fotos con el equipo',
+    desc:'Has hecho 200 fotos en una excursión para un proyecto. Necesitas que tus 4 compañeros/as las vean y puedan descargarlas.',
+    opciones:[
+      {t:'Enviarlas una por una por email.', ok:false,
+       why:'Enviar 200 emails es lentísimo y satura la bandeja de entrada. Nada práctico.'},
+      {t:'Enviarlas todas por WhatsApp en un solo chat.', ok:false,
+       why:'WhatsApp comprime las imágenes y pierde calidad. Además es difícil organizarlas.'},
+      {t:'Subirlas a una carpeta compartida en la nube (Drive, Dropbox) y compartir el enlace con el equipo.', ok:true,
+       why:'¡Correcto! Subir las fotos a una carpeta compartida y pasar el enlace es la forma más rápida, ordenada y sin pérdida de calidad.'},
+      {t:'Imprimirlas todas y repartirlas en mano.', ok:false,
+       why:'Imprimir 200 fotos es caro, lento y poco sostenible. No tiene sentido si las puedes compartir digitalmente.'}
+    ]
+  },
+  {
+    id:'e3', ico:'📊', titulo:'Aplicar la misma fórmula a 500 filas',
+    desc:'Tienes una hoja de cálculo con 500 filas y necesitas aplicar la misma operación (por ejemplo, IVA) a cada una.',
+    opciones:[
+      {t:'Hacerlo fila por fila a mano.', ok:false,
+       why:'Hacer 500 cálculos a mano es lentísimo y aumenta las posibilidades de error.'},
+      {t:'Usar una función en la primera celda y arrastrarla o copiarla al resto.', ok:true,
+       why:'¡Correcto! Con una función (por ejemplo =A1*1.21) y arrastrarla al resto de celdas se resuelve en segundos.'},
+      {t:'Calcular los valores con la calculadora y escribirlos uno a uno.', ok:false,
+       why:'Es aún más lento que hacerlo en la propia hoja de cálculo.'},
+      {t:'Cambiar a otro programa porque la hoja de cálculo es lenta.', ok:false,
+       why:'La hoja de cálculo está perfectamente preparada para esto. El problema no es la herramienta.'}
+    ]
+  },
+  {
+    id:'e4', ico:'🔍', titulo:'Buscar información para un trabajo en 30 minutos',
+    desc:'Tienes media hora para encontrar información fiable sobre un tema técnico que no conoces.',
+    opciones:[
+      {t:'Buscar al azar en Google y usar lo primero que aparezca.', ok:false,
+       why:'Buscar sin estrategia hace perder el tiempo y lleva a fuentes poco fiables.'},
+      {t:'Preguntar a un compañero/a sin más.', ok:false,
+       why:'Depender de otra persona no es eficiente y puede dar información sin verificar.'},
+      {t:'Planificar la búsqueda: palabras clave, fuentes académicas, bibliotecas digitales y verificación cruzada.', ok:true,
+       why:'¡Correcto! Planificar la búsqueda, usar términos precisos y acudir a fuentes académicas ahorra tiempo y mejora la calidad del resultado.'},
+      {t:'Usar solo Wikipedia sin comprobar nada.', ok:false,
+       why:'Wikipedia puede ser un punto de partida, pero hay que comprobar sus referencias y contrastar con otras fuentes.'}
+    ]
+  },
+  {
+    id:'e5', ico:'📹', titulo:'Presentar una propuesta al equipo a distancia',
+    desc:'Tienes que explicar una propuesta con datos a un equipo que está en otras ciudades.',
+    opciones:[
+      {t:'Enviar un email con todo el texto pegado.', ok:false,
+       why:'Un email con texto largo es fácil de ignorar y no permite preguntar en el momento.'},
+      {t:'Enviar mensajes de voz de WhatsApp uno detrás de otro.', ok:false,
+       why:'Los mensajes de voz son útiles para cosas cortas, pero malos para presentar información estructurada.'},
+      {t:'Hacer una videollamada con presentación compartida y enviar después un resumen por escrito.', ok:true,
+       why:'¡Correcto! La videollamada con presentación permite explicar, mostrar datos y responder preguntas en directo. El resumen posterior deja constancia.'},
+      {t:'Llamar por teléfono sin soporte visual.', ok:false,
+       why:'Sin soporte visual es muy difícil explicar datos y gráficos. La videollamada con compartir pantalla es mucho más eficaz.'}
+    ]
+  }
+];
+
+let efRespondidas = 0, efAciertos = 0;
+
+function initEficiencia(){
+  const cont = document.getElementById('eficienciaWrap');
+  if(!cont) return;
+  cont.innerHTML = '';
+
+  const guardadas = estado.detalles.eficiencia.respuestas || {};
+  efRespondidas = 0;
+  efAciertos = 0;
+
+  eficienciaData.forEach((item)=>{
+    const div = document.createElement('div');
+    div.className = 'ef-card';
+    div.innerHTML = `
+      <div class="ef-head">
+        <span class="ef-ico">${item.ico}</span>
+        <div>
+          <p class="ef-titulo">${item.titulo}</p>
+          <p class="ef-desc">${item.desc}</p>
+        </div>
+      </div>
+      <div class="ef-opciones">
+        ${item.opciones.map((o,i)=>`
+          <button class="ef-op" data-id="${item.id}" data-v="${i}">
+            <span class="eo-letra">${String.fromCharCode(65+i)}</span>
+            <span>${o.t}</span>
+          </button>
+        `).join('')}
+      </div>
+      <div class="ef-fb"></div>
+    `;
+    cont.appendChild(div);
+
+    const btns = div.querySelectorAll('.ef-op');
+    const fb = div.querySelector('.ef-fb');
+    const elegidoGuardado = guardadas[item.id];
+
+    if(elegidoGuardado !== undefined){
+      const op = item.opciones[elegidoGuardado];
+      btns.forEach(x=>{
+        x.disabled = true;
+        const xi = parseInt(x.dataset.v, 10);
+        if(item.opciones[xi].ok) x.classList.add('correct');
+        if(xi === elegidoGuardado && !op.ok) x.classList.add('wrong');
+      });
+      fb.innerHTML = (op.ok ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>No es la opción más eficiente.</strong> ') + op.why;
+      fb.classList.add('show');
+      div.classList.add('done');
+      efRespondidas++;
+      if(op.ok) efAciertos++;
+    } else {
+      btns.forEach(b=>{
+        b.addEventListener('click', ()=>{
+          const i = parseInt(b.dataset.v, 10);
+          const op = item.opciones[i];
+          btns.forEach(x=>x.disabled = true);
+          btns.forEach(x=>{
+            const xi = parseInt(x.dataset.v, 10);
+            if(item.opciones[xi].ok) x.classList.add('correct');
+          });
+          if(!op.ok) b.classList.add('wrong');
+          fb.innerHTML = (op.ok ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>No es la opción más eficiente.</strong> ') + op.why;
+          fb.classList.add('show');
+          div.classList.add('done');
+
+          estado.detalles.eficiencia.respuestas[item.id] = i;
+
+          efRespondidas++;
+          if(op.ok) efAciertos++;
+
+          if(efRespondidas === eficienciaData.length){
+            if(efAciertos > estado.scores.eficiencia){
+              estado.scores.eficiencia = efAciertos;
+            }
+            document.getElementById('efMsg').innerHTML = mensajeEficiencia();
+            completarReto('eficiencia', '¡Eficiencia digital dominada!');
+          } else {
+            guardarEstado();
+          }
+        });
+      });
+    }
+  });
+
+  if(efRespondidas === eficienciaData.length){
+    document.getElementById('efMsg').innerHTML = mensajeEficiencia();
+  }
+}
+
+function mensajeEficiencia(){
+  return `Has elegido la opción más eficiente en <strong>${efAciertos} de ${eficienciaData.length}</strong> casos. ` +
+    (efAciertos >= 4 ? '¡Sabes optimizar tareas digitales!' : 'Repasa los casos fallados.');
+}
+
+/* ================================================================
+   11. VOCABULARIO
+================================================================ */
+const vocabulario = [
+  {ico:'🌐', t:'Entorno personal digital', d:'Conjunto de aplicaciones, dispositivos y servicios digitales que una persona utiliza habitualmente para comunicarse, trabajar, crear, aprender y entretenerse.'},
+  {ico:'☁️', t:'Almacenamiento en la nube', d:'Servicio que permite guardar archivos en servidores remotos accesibles desde internet. Ejemplos: Google Drive, Dropbox, iCloud, OneDrive.'},
+  {ico:'📋', t:'Herramienta de productividad', d:'Aplicación que ayuda a organizar tareas, notas, calendarios o proyectos para trabajar de forma más eficiente. Ejemplos: Notion, Trello, Google Calendar.'},
+  {ico:'🎨', t:'Herramienta de creación de contenido', d:'Aplicación para producir material visual, audiovisual o multimedia: carteles, infografías, vídeos, interfaces. Ejemplos: Canva, Figma, CapCut.'},
+  {ico:'📡', t:'Evolución de la tecnología digital', d:'Cambio progresivo de las tecnologías digitales a lo largo del tiempo: Web 1.0 (solo lectura), Web 2.0 (creación de contenido), era móvil, IA y Web 3.0.'},
+  {ico:'🌐', t:'Web 1.0', d:'Primera etapa de la web (años 90). Las páginas eran estáticas, solo de lectura, y los usuarios no podían publicar contenido.'},
+  {ico:'💬', t:'Web 2.0', d:'Etapa que comienza hacia 2004. Los usuarios pueden crear y compartir contenido: blogs, wikis, redes sociales, vídeos. La web se vuelve participativa.'},
+  {ico:'🤖', t:'Inteligencia Artificial', d:'Rama de la informática que desarrolla sistemas capaces de aprender de datos y realizar tareas asociadas a la inteligencia humana: reconocimiento de imágenes, lenguaje natural, predicciones.'},
+  {ico:'✨', t:'IA generativa', d:'Tipo de inteligencia artificial capaz de generar contenido nuevo (texto, imagen, audio, vídeo) a partir de instrucciones. Ejemplos: ChatGPT, DALL·E, Midjourney.'},
+  {ico:'🔍', t:'Fact-checking', d:'Proceso de verificar afirmaciones para comprobar si son verdaderas, falsas o dudosas. Es una práctica esencial contra la desinformación.'},
+  {ico:'🚫', t:'Bulo', d:'Noticia o afirmación falsa que se difunde como si fuera verdadera, especialmente a través de redes sociales y mensajería. También llamado "fake news".'},
+  {ico:'📚', t:'Fuente fiable', d:'Información cuya autoría es verificable, cuya fecha se conoce y cuyas afirmaciones se pueden contrastar con otras fuentes independientes.'},
+  {ico:'⚖️', t:'Contrastar información', d:'Comprobar un dato o afirmación con varias fuentes independientes para confirmar si es correcto. Es una práctica básica del pensamiento crítico.'},
+  {ico:'🎯', t:'Autoridad de una fuente', d:'Grado de credibilidad de una fuente basado en su especialización, rigor, independencia y reconocimiento por parte de la comunidad experta.'},
+  {ico:'⚡', t:'Eficiencia digital', d:'Capacidad de completar tareas digitales con el menor esfuerzo, tiempo y recursos posibles sin perder calidad. Implica conocer funciones avanzadas y combinar herramientas.'},
+  {ico:'🎓', t:'Función avanzada', d:'Utilidad que va más allá de lo básico en una aplicación (estilos, índices automáticos, filtros, macros, atajos de teclado). Conocerlas ahorra mucho tiempo.'},
+  {ico:'🔗', t:'Automatización', d:'Uso de herramientas o procesos que realizan tareas repetitivas de forma automática, sin intervención manual. Ejemplos: macros, plantillas, filtros.'},
+  {ico:'🧭', t:'Alfabetización digital', d:'Conjunto de conocimientos, habilidades y actitudes necesarios para usar las tecnologías digitales de forma crítica, segura, eficiente y responsable.'}
+];
+
+function initVoc(){
+  const grid = document.getElementById('vocGrid');
+  const defBox = document.getElementById('vocDef');
+  if(!grid) return;
+  grid.innerHTML = '';
+  if(defBox){ defBox.classList.remove('show'); defBox.innerHTML = ''; }
+  vocabulario.forEach((v)=>{
+    const b = document.createElement('button');
+    b.className = 'voc-term';
+    b.innerHTML = `<span style="font-size:1.1rem">${v.ico}</span><span>${v.t}</span>`;
+    b.addEventListener('click', ()=>{
+      const yaActivo = b.classList.contains('active');
+      grid.querySelectorAll('.voc-term').forEach(x=>x.classList.remove('active'));
+      if(yaActivo){
+        defBox.classList.remove('show');
+        setTimeout(()=>{ defBox.innerHTML=''; }, 500);
+        return;
+      }
+      b.classList.add('active');
+      defBox.innerHTML = `<h4>${v.ico} ${v.t}</h4><p>${v.d}</p>`;
+      defBox.classList.add('show');
+    });
+    grid.appendChild(b);
+  });
+}
+
+/* ================================================================
+   12. QUIZ FINAL
+   — Opciones reescritas para que la correcta NO sea siempre la más larga.
+================================================================ */
+const preguntasQuiz = [
+  {
+    q:'¿Qué categoría de herramientas digitales sirve para ORGANIZAR tareas y proyectos?',
+    o:[
+      'Las de creación de contenido multimedia, como Canva o Figma',
+      'Productividad',
+      'Almacenamiento en la nube',
+      'Comunicación'
+    ],
+    c:1,
+    e:'Las herramientas de productividad (Notion, Trello, Google Calendar) sirven para organizar tareas, notas, calendarios y proyectos.'
+  },
+  {
+    q:'¿Qué caracteriza a la Web 2.0 frente a la Web 1.0?',
+    o:[
+      'Que solo permite leer contenido estático sin que el usuario pueda publicar nada',
+      'Que permite a los usuarios crear y compartir contenido',
+      'Que funciona solo sin conexión a internet',
+      'Que solo sirve para comprar online'
+    ],
+    c:1,
+    e:'La Web 2.0 (a partir de 2004) hizo que los usuarios pudieran crear y compartir contenido: blogs, wikis, redes sociales, vídeos.'
+  },
+  {
+    q:'¿Qué es la "IA generativa"?',
+    o:[
+      'Un sistema que solo analiza datos y hace predicciones estadísticas complejas',
+      'Una IA que genera contenido nuevo (texto, imagen, audio o vídeo)',
+      'Un programa antivirus',
+      'Un tipo de red social'
+    ],
+    c:1,
+    e:'La IA generativa (ChatGPT, DALL·E, Midjourney) genera contenido nuevo a partir de instrucciones del usuario.'
+  },
+  {
+    q:'Encuentras una afirmación muy llamativa en redes sociales. ¿Qué deberías hacer?',
+    o:[
+      'Compartirla rápidamente con todos mis contactos para avisar a los demás',
+      'Verificar antes de creer o compartir, buscando fuentes fiables',
+      'Ignorarla siempre',
+      'Creerla solo si tiene muchos likes'
+    ],
+    c:1,
+    e:'Antes de creer o compartir una afirmación hay que verificarla. Los likes no son indicador de veracidad.'
+  },
+  {
+    q:'Cuando dos fuentes dan datos distintos sobre un mismo tema, ¿qué estrategia es más rigurosa?',
+    o:[
+      'Elegir sin más la fuente que parezca más moderna y actualizada, sin comprobar nada',
+      'Elegir el dato más llamativo',
+      'Consultar la fuente oficial competente en la materia',
+      'Promediar los valores'
+    ],
+    c:2,
+    e:'La estrategia más rigurosa es acudir a la fuente oficial competente (IGN para geografía, IPCC para clima, OMS para salud...).'
+  },
+  {
+    q:'¿Cuál de estas afirmaciones es un BULO típico?',
+    o:[
+      '"El agua hierve a 100 °C al nivel del mar"',
+      '"Los murciélagos son ciegos"',
+      '"Los antibióticos no sirven contra virus"',
+      '"La fotosíntesis produce oxígeno"'
+    ],
+    c:1,
+    e:'"Los murciélagos son ciegos" es un mito muy extendido. En realidad, tienen ojos funcionales y usan también la ecolocalización.'
+  },
+  {
+    q:'Tienes 200 fotos que compartir con el equipo. ¿Cuál es la forma más eficiente?',
+    o:[
+      'Enviarlas una por una por email a cada uno de los cuatro compañeros del equipo',
+      'Enviarlas por WhatsApp en un chat',
+      'Subirlas a una carpeta compartida en la nube y pasar el enlace',
+      'Imprimirlas y repartirlas'
+    ],
+    c:2,
+    e:'Subir a una carpeta compartida en la nube y compartir el enlace es rápido, ordenado y no pierde calidad.'
+  },
+  {
+    q:'Necesitas aplicar la misma operación a 500 filas de una hoja de cálculo. ¿Qué haces?',
+    o:[
+      'Hacerlo fila por fila a mano con mucha paciencia, una detrás de otra sin saltarme ninguna',
+      'Usar una función en la primera celda y arrastrarla al resto',
+      'Cambiar de programa',
+      'Pedir a un compañero que lo haga todo por mí'
+    ],
+    c:1,
+    e:'Con una función (=A1*1.21, por ejemplo) y arrastrarla al resto de celdas, resuelves 500 filas en segundos.'
+  },
+  {
+    q:'¿Qué implica "contrastar la información"?',
+    o:[
+      'Copiar la información de varias webs sin comprobar nada de lo que dicen',
+      'Comprobar un dato o afirmación con varias fuentes independientes',
+      'Elegir la primera fuente que aparezca en Google',
+      'Preguntar a una sola persona'
+    ],
+    c:1,
+    e:'Contrastar es comprobar con varias fuentes independientes. Es una práctica básica del pensamiento crítico.'
+  },
+  {
+    q:'¿Qué significa "autoridad de una fuente"?',
+    o:[
+      'Que tiene muchos seguidores, likes y comparticiones en todas las redes sociales',
+      'Que es rigurosa, independiente y reconocida por los expertos',
+      'Que es la más popular',
+      'Que se publica rápido'
+    ],
+    c:1,
+    e:'La autoridad de una fuente se basa en su especialización, rigor, independencia y reconocimiento por parte de expertos. No en la popularidad.'
+  }
+];
+
+let quizRespondidas = 0, quizAciertos = 0;
+
+function initQuiz(){
+  const cont = document.getElementById('quizContainer');
+  if(!cont) return;
+  cont.innerHTML = '';
+
+  const guardadas = estado.detalles.quiz.respuestas || {};
+  quizRespondidas = 0;
+  quizAciertos = 0;
+
+  preguntasQuiz.forEach((p, i)=>{
+    const div = document.createElement('div');
+    div.className = 'q reveal';
+    div.innerHTML = `
+      <span class="q-num">PREGUNTA ${i+1}</span>
+      <h4>${p.q}</h4>
+      <div class="opts">
+        ${p.o.map((o,j)=>`
+          <button class="opt" data-i="${i}" data-j="${j}">
+            <span class="letter">${String.fromCharCode(65+j)}</span>
+            <span>${o}</span>
+          </button>`).join('')}
+      </div>
+      <div class="expl"></div>
+    `;
+    cont.appendChild(div);
+    io.observe(div);
+
+    const btns = div.querySelectorAll('.opt');
+    const expl = div.querySelector('.expl');
+    const elegida = guardadas[i];
+
+    if(elegida !== undefined){
+      const acierto = elegida === p.c;
+      btns.forEach(x=>{
+        x.disabled = true;
+        if(parseInt(x.dataset.j,10) === p.c) x.classList.add('correct');
+        if(parseInt(x.dataset.j,10) === elegida && !acierto) x.classList.add('wrong');
+      });
+      expl.innerHTML = (acierto ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>Respuesta incorrecta.</strong> ') + p.e;
+      expl.classList.add('show');
+      quizRespondidas++;
+      if(acierto) quizAciertos++;
+    } else {
+      btns.forEach(b=>{
+        b.addEventListener('click', ()=>{
+          const j = parseInt(b.dataset.j,10);
+          btns.forEach(x=>x.disabled = true);
+          btns.forEach(x=>{ if(parseInt(x.dataset.j,10) === p.c) x.classList.add('correct'); });
+          if(j !== p.c) b.classList.add('wrong');
+          const acierto = j === p.c;
+          if(acierto) quizAciertos++;
+          expl.innerHTML = (acierto ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>Respuesta incorrecta.</strong> ') + p.e;
+          expl.classList.add('show');
+
+          estado.detalles.quiz.respuestas[i] = j;
+
+          quizRespondidas++;
+          if(quizRespondidas === preguntasQuiz.length){
+            // mostrar resultado y completar
+            actualizarResultadoQuizUI();
+            document.getElementById('quizResult').scrollIntoView({behavior:'smooth', block:'center'});
+            if(quizAciertos > estado.scores.quiz){
+              estado.scores.quiz = quizAciertos;
+            }
+            completarReto('quiz', '¡Cuestionario final completado! ' + quizAciertos + '/' + preguntasQuiz.length);
+          } else {
+            guardarEstado();
+          }
+        });
+      });
+    }
+  });
+
+  // Si ya estaba todo respondido, mostrar el resultado sin scroll ni toast
+  if(quizRespondidas === preguntasQuiz.length){
+    actualizarResultadoQuizUI();
+    if(quizAciertos > estado.scores.quiz){
+      estado.scores.quiz = quizAciertos;
+      guardarEstado();
+    }
+  }
+}
+
+function actualizarResultadoQuizUI(){
+  const res = document.getElementById('quizResult');
+  if(!res) return;
+  document.getElementById('quizScore').textContent = quizAciertos + '/' + preguntasQuiz.length;
+  const pct = Math.round(quizAciertos / preguntasQuiz.length * 100);
+  let titulo, msg;
+  if(pct === 100){ titulo = '🏆 ¡Perfecto!'; msg = 'Dominas tu entorno digital, la evolución de la tecnología, el fact-checking y la eficiencia.'; }
+  else if(pct >= 75){ titulo = '🌟 ¡Muy bien!'; msg = 'Tienes una comprensión sólida. Repasa las preguntas falladas para afinar los detalles.'; }
+  else if(pct >= 50){ titulo = '👍 Buen intento'; msg = 'Vas por el camino correcto. Vuelve a las secciones de mapa, evolución, bulos, fuentes y eficiencia.'; }
+  else { titulo = '📚 A seguir aprendiendo'; msg = 'Revisa con calma cada sección y vuelve a intentarlo.'; }
+  document.getElementById('quizTitle').textContent = titulo;
+  document.getElementById('quizMsg').textContent = msg;
+  res.style.display = 'block';
+}
+
+/* ================================================================
+   13. CERTIFICADO Y PDF RASTERIZADO
+================================================================ */
+function actualizarCertificado(){
+  const stats = document.getElementById('certStats');
+  const nombreEl = document.getElementById('certNombre');
+  const warn = document.getElementById('certWarn');
+  const btn = document.getElementById('btnCertificado');
+
+  nombreEl.textContent = estado.nombre || '—';
+
+  const s = estado.scores;
+  const nRetos = estado.retos.length;
+
+  const items = [
+    {num: (s.mapa>0 ? s.mapa + '/8' : '—'), lbl:'Entorno'},
+    {num: (s.evolucion>0 ? s.evolucion + '/6' : '—'), lbl:'Evolución'},
+    {num: (s.bulos>0 ? s.bulos + '/8' : '—'), lbl:'Bulos'},
+    {num: (s.contrastar>0 ? s.contrastar + '/3' : '—'), lbl:'Fuentes'},
+    {num: (s.eficiencia>0 ? s.eficiencia + '/5' : '—'), lbl:'Eficiencia'},
+    {num: (s.quiz>0 ? s.quiz + '/10' : '—'), lbl:'Cuestionario'},
+    {num: nRetos + '/' + RETOS_TOTALES, lbl:'Retos totales'}
+  ];
+
+  stats.innerHTML = items.map(it=>`
+    <div class="cert-stat">
+      <div class="num">${it.num}</div>
+      <div class="lbl">${it.lbl}</div>
+    </div>
+  `).join('');
+
+  if(nRetos === 0){
+    warn.style.display = 'block';
+    btn.disabled = true;
+    btn.style.opacity = .55;
+    btn.style.cursor = 'not-allowed';
+  } else {
+    warn.style.display = 'none';
+    btn.disabled = false;
+    btn.style.opacity = 1;
+    btn.style.cursor = 'pointer';
+  }
+}
+
+document.getElementById('btnCertificado').addEventListener('click', ()=>{
+  if(!estado.nombre){ toast('Introduce tu nombre primero'); return; }
+  if(estado.retos.length === 0){ toast('Completa al menos un reto para obtener el certificado'); return; }
+  generarPDFRasterizado();
+});
+
+function generarPDFRasterizado(){
+  if(!(window.jspdf && window.jspdf.jsPDF)){
+    toast('No se ha podido cargar la librería PDF. Inténtalo de nuevo.');
+    return;
+  }
+  try{
+    const DPI = 300;
+    const W_MM = 297, H_MM = 210;
+    const W = Math.round(W_MM / 25.4 * DPI);
+    const H = Math.round(H_MM / 25.4 * DPI);
+    const mm = v => v / 25.4 * DPI;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = '#eff6ff';
+    ctx.fillRect(0,0,W,H);
+
+    ctx.strokeStyle = '#1e3a8a';
+    ctx.lineWidth = mm(2);
+    ctx.strokeRect(mm(10), mm(10), W-mm(20), H-mm(20));
+    ctx.lineWidth = mm(0.5);
+    ctx.strokeRect(mm(14), mm(14), W-mm(28), H-mm(28));
+
+    ctx.fillStyle = '#1e3a8a';
+    ctx.fillRect(mm(14), mm(14), mm(20), mm(3));
+    ctx.fillRect(mm(14), mm(14), mm(3), mm(20));
+    ctx.fillRect(W-mm(34), mm(14), mm(20), mm(3));
+    ctx.fillRect(W-mm(17), mm(14), mm(3), mm(20));
+    ctx.fillRect(mm(14), H-mm(17), mm(20), mm(3));
+    ctx.fillRect(mm(14), H-mm(34), mm(3), mm(20));
+    ctx.fillRect(W-mm(34), H-mm(17), mm(20), mm(3));
+    ctx.fillRect(W-mm(17), H-mm(34), mm(3), mm(20));
+
+    ctx.fillStyle = '#1e3a8a';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = `bold ${mm(9)}px Arial, sans-serif`;
+    ctx.fillText('CERTIFICADO DE APROVECHAMIENTO', W/2, mm(38));
+
+    ctx.fillStyle = '#64748b';
+    ctx.font = `${mm(4)}px Arial, sans-serif`;
+    ctx.fillText('Entorno Digital · Herramientas, evolución, fuentes fiables y eficiencia', W/2, mm(48));
+
+    ctx.strokeStyle = '#c026d3';
+    ctx.lineWidth = mm(0.8);
+    ctx.beginPath();
+    ctx.moveTo(W/2 - mm(60), mm(53));
+    ctx.lineTo(W/2 + mm(60), mm(53));
+    ctx.stroke();
+
+    ctx.fillStyle = '#475569';
+    ctx.font = `${mm(4.5)}px Arial, sans-serif`;
+    ctx.fillText('Se certifica que', W/2, mm(68));
+
+    ctx.fillStyle = '#0f172a';
+    ctx.font = `bold ${mm(14)}px Arial, sans-serif`;
+    ctx.fillText(estado.nombre, W/2, mm(85));
+
+    ctx.fillStyle = '#334155';
+    ctx.font = `${mm(4)}px Arial, sans-serif`;
+    ctx.fillText('ha completado las actividades interactivas de la aplicación educativa sobre el uso', W/2, mm(97));
+    ctx.fillText('competente del entorno digital, obteniendo los siguientes resultados:', W/2, mm(104));
+
+    const s = estado.scores;
+    const resultados = [
+      ['Clasificación del entorno digital', s.mapa>0 ? s.mapa + ' / 8 herramientas' : 'No realizado'],
+      ['Evolución de las tecnologías digitales', s.evolucion>0 ? s.evolucion + ' / 6 hitos' : 'No realizado'],
+      ['Detección de bulos (fact-checking)', s.bulos>0 ? s.bulos + ' / 8 aciertos' : 'No realizado'],
+      ['Contraste de fuentes en conflicto', s.contrastar>0 ? s.contrastar + ' / 3 casos' : 'No realizado'],
+      ['Eficiencia digital', s.eficiencia>0 ? s.eficiencia + ' / 5 aciertos' : 'No realizado'],
+      ['Cuestionario final', s.quiz>0 ? s.quiz + ' / 10' : 'No realizado'],
+      ['Retos completados', estado.retos.length + ' / ' + RETOS_TOTALES]
+    ];
+
+    const tableX = mm(60);
+    const tableY = mm(116);
+    const rowH = mm(9);
+    const colW1 = mm(110), colW2 = mm(70);
+    const totalW = colW1 + colW2;
+
+    ctx.fillStyle = '#1e3a8a';
+    ctx.fillRect(tableX, tableY, totalW, mm(9));
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `bold ${mm(3.6)}px Arial, sans-serif`;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('ACTIVIDAD', tableX + mm(4), tableY + mm(4.5));
+    ctx.fillText('RESULTADO', tableX + colW1 + mm(4), tableY + mm(4.5));
+
+    resultados.forEach((row, i)=>{
+      const y = tableY + mm(9) + i * rowH;
+      if(i % 2 === 0){
+        ctx.fillStyle = '#dbeafe';
+        ctx.fillRect(tableX, y, totalW, rowH);
+      }
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = mm(0.2);
+      ctx.strokeRect(tableX, y, totalW, rowH);
+      ctx.fillStyle = '#1e293b';
+      ctx.font = `${mm(3.6)}px Arial, sans-serif`;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(row[0], tableX + mm(4), y + rowH/2);
+      ctx.font = `bold ${mm(3.6)}px Arial, sans-serif`;
+      ctx.fillText(row[1], tableX + colW1 + mm(4), y + rowH/2);
+    });
+
+    const fecha = new Date().toLocaleDateString('es-ES', {day:'numeric', month:'long', year:'numeric'});
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#64748b';
+    ctx.font = `${mm(3.5)}px Arial, sans-serif`;
+    ctx.fillText('Fecha de emisión: ' + fecha, W/2, H - mm(24));
+    ctx.font = `${mm(3)}px Arial, sans-serif`;
+    ctx.fillText('Este certificado acredita la realización de las actividades interactivas de la aplicación educativa.', W/2, H - mm(17));
+
+    const imgData = canvas.toDataURL('image/png');
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
+    doc.addImage(imgData, 'PNG', 0, 0, W_MM, H_MM, undefined, 'FAST');
+    doc.save('Certificado_EntornoDigital_' + estado.nombre.replace(/[^a-zA-Z0-9]/g,'_') + '.pdf');
+    toast('¡Certificado descargado!');
+  } catch(err){
+    console.error(err);
+    toast('No se pudo generar el PDF.');
+  }
+}
+
+/* ================================================================
+   14. INICIALIZACIÓN
+================================================================ */
+mostrarLogin();
+actualizarProgreso();
+actualizarCertificado();
+</script>
+</body>
+</html>
