@@ -1,0 +1,2486 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arquitectura Bioclimática y Ecotransporte · Canarias Sostenible</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --verde:#059669; --verde-claro:#d1fae5; --verde-oscuro:#065f46;
+  --azul:#2563eb; --azul-claro:#dbeafe; --azul-oscuro:#1e3a8a;
+  --ambar:#d97706; --ambar-claro:#fef3c7; --ambar-oscuro:#92400e;
+  --rojo:#dc2626; --rojo-claro:#fee2e2; --rojo-oscuro:#991b1b;
+  --morado:#7c3aed; --morado-claro:#ede9fe;
+  --gris:#64748b; --gris-claro:#f1f5f9; --gris-oscuro:#1e293b;
+  --blanco:#fff; --negro:#0f172a;
+  --sombra:0 10px 30px rgba(15,23,42,.08);
+  --sombra-lg:0 20px 50px rgba(15,23,42,.14);
+  --radio:20px;
+  --fuente:'Segoe UI',system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+  --mono:'Consolas','Monaco','Courier New',monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0; font-family:var(--fuente); background:var(--gris-claro); color:var(--negro); line-height:1.7; -webkit-font-smoothing:antialiased;}
+body.locked{overflow:hidden}
+h1,h2,h3,h4{line-height:1.2; margin:0 0 .5rem}
+p{margin:0 0 1rem}
+
+/* LOGIN */
+#loginOverlay{
+  position:fixed; inset:0; z-index:2000;
+  background:radial-gradient(1000px 600px at 20% 10%,#065f46 0%,transparent 60%),
+             radial-gradient(900px 500px at 85% 90%,#92400e 0%,transparent 55%),
+             linear-gradient(160deg,#022c22,#0f172a);
+  display:grid; place-items:center; padding:1.2rem;
+  transition:opacity .6s, visibility .6s;
+}
+#loginOverlay.hidden{opacity:0; visibility:hidden; pointer-events:none}
+.login-card{
+  background:#fff; border-radius:26px; padding:2.2rem 2rem;
+  max-width:500px; width:100%; box-shadow:0 30px 70px rgba(0,0,0,.4);
+  text-align:center; position:relative; overflow:hidden;
+  animation:aparecer .6s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes aparecer{from{opacity:0;transform:translateY(24px) scale(.96)}to{opacity:1;transform:none}}
+.login-card::before{content:""; position:absolute; top:0; left:0; right:0; height:6px;
+  background:linear-gradient(90deg,var(--verde),var(--azul),var(--ambar),var(--morado));}
+.login-emoji{font-size:3.4rem; line-height:1; margin-bottom:.5rem; display:block}
+.login-card h1{font-size:1.55rem; color:var(--verde-oscuro); letter-spacing:-.4px}
+.login-card p.sub{font-size:.94rem; color:var(--gris); margin-bottom:1.5rem}
+.login-card input{width:100%; font-family:inherit; font-size:1.02rem; padding:.95rem 1.1rem;
+  border-radius:14px; border:2px solid #e2e8f0; background:#f8fafc; color:var(--negro);
+  transition:.2s; text-align:center; font-weight:600; margin-bottom:1rem;}
+.login-card input:focus{outline:none; border-color:var(--verde); background:#fff; box-shadow:0 0 0 5px rgba(5,150,105,.14);}
+.login-card .btn{width:100%; justify-content:center}
+.login-error{font-size:.82rem; color:var(--rojo); margin-top:.7rem; min-height:1.2em; font-weight:700}
+.welcome-back{background:var(--verde-claro); border:1.5px solid #a7f3d0; border-radius:14px;
+  padding:1rem; margin-bottom:1.2rem; font-size:.92rem; color:var(--verde-oscuro);}
+.welcome-back strong{font-size:1.05rem}
+.login-btns{display:flex; gap:.6rem; flex-wrap:wrap; justify-content:center}
+.login-btns .btn{flex:1; min-width:130px; justify-content:center}
+
+/* PROGRESO */
+#progresoGlobal{position:fixed; top:0; left:0; right:0; height:5px; background:rgba(255,255,255,.2); z-index:1000;}
+#progresoBarra{height:100%; width:0%; transition:width .6s cubic-bezier(.2,.8,.2,1);
+  background:linear-gradient(90deg,var(--verde),var(--azul),var(--ambar),var(--morado));
+  box-shadow:0 0 12px rgba(5,150,105,.6);}
+
+/* NAV */
+nav{position:sticky; top:0; z-index:900; background:rgba(255,255,255,.9); backdrop-filter:blur(14px);
+  border-bottom:1px solid #e2e8f0; padding:.55rem .8rem;}
+.nav-inner{max-width:1200px; margin:0 auto; display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;}
+.nav-brand{font-weight:800; font-size:.92rem; letter-spacing:.5px; color:var(--verde-oscuro);
+  display:flex; align-items:center; gap:.45rem; margin-right:auto;}
+.nav-brand .dot{width:11px;height:11px;border-radius:50%;background:linear-gradient(135deg,var(--verde),var(--azul));}
+.nav-user{font-size:.8rem; font-weight:800; color:var(--verde-oscuro);
+  background:var(--verde-claro); padding:.3rem .8rem; border-radius:999px;
+  display:flex; align-items:center; gap:.35rem;}
+.nav-links{display:flex; gap:.3rem; flex-wrap:wrap}
+.nav-links a{font-size:.8rem; font-weight:600; text-decoration:none; color:var(--gris-oscuro);
+  padding:.35rem .7rem; border-radius:999px; transition:.25s; white-space:nowrap;}
+.nav-links a:hover{background:var(--verde-claro); color:var(--verde-oscuro)}
+.nav-links a.active{background:var(--verde-oscuro); color:#fff}
+#progresoPill{font-size:.72rem; font-weight:800; color:var(--verde-oscuro); background:var(--verde-claro);
+  padding:.3rem .7rem; border-radius:999px; white-space:nowrap;}
+
+/* HERO */
+header.hero{position:relative; overflow:hidden; color:#fff;
+  background:radial-gradient(1200px 600px at 15% -10%,#065f46 0%,transparent 60%),
+             radial-gradient(900px 500px at 90% 10%,#92400e 0%,transparent 55%),
+             linear-gradient(160deg,#022c22,#0f172a);
+  padding:4.5rem 1.2rem 4rem;}
+.blob{position:absolute; border-radius:50%; filter:blur(70px); opacity:.4; animation:flotar 14s ease-in-out infinite}
+.blob.b1{width:340px;height:340px;background:#059669;top:-90px;left:-60px}
+.blob.b2{width:280px;height:280px;background:#2563eb;bottom:-110px;right:-40px;animation-delay:-5s}
+.blob.b3{width:220px;height:220px;background:#d97706;top:40%;right:25%;animation-delay:-9s}
+@keyframes flotar{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(28px,-32px) scale(1.12)}}
+.hero-inner{position:relative; max-width:1000px; margin:0 auto; text-align:center}
+.badge-top{display:inline-flex; align-items:center; gap:.5rem; font-size:.76rem; font-weight:800;
+  letter-spacing:1.4px; text-transform:uppercase; color:#6ee7b7;
+  background:rgba(5,150,105,.18); border:1px solid rgba(110,231,183,.4);
+  padding:.42rem 1rem; border-radius:999px; margin-bottom:1.2rem;}
+header.hero h1{font-size:clamp(1.85rem,5.2vw,3.3rem); font-weight:900; letter-spacing:-1px; margin-bottom:.7rem;}
+header.hero h1 span{background:linear-gradient(90deg,#6ee7b7,#93c5fd,#fbbf24);
+  -webkit-background-clip:text; background-clip:text; color:transparent;}
+.hero-sub{max-width:800px; margin:0 auto 1.6rem; color:#cbd5e1; font-size:clamp(.95rem,2.2vw,1.1rem)}
+.hero-sub strong{color:#6ee7b7}
+.hero-chips{display:flex; gap:.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:2rem}
+.chip{font-size:.74rem; font-weight:800; letter-spacing:.6px; padding:.34rem .8rem; border-radius:999px;
+  background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.22); color:#e2e8f0;}
+.hero-cta{display:flex; gap:.7rem; justify-content:center; flex-wrap:wrap}
+.btn{display:inline-flex; align-items:center; gap:.45rem; cursor:pointer; border:none;
+  font-family:inherit; font-size:.92rem; font-weight:800; padding:.8rem 1.5rem; border-radius:999px;
+  text-decoration:none; transition:transform .2s, box-shadow .2s, background .2s;}
+.btn-primary{background:linear-gradient(135deg,var(--verde),var(--verde-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(5,150,105,.4)}
+.btn-primary:hover{transform:translateY(-3px); box-shadow:0 16px 34px rgba(5,150,105,.5)}
+.btn-ghost{background:rgba(255,255,255,.1); color:#fff; border:1.5px solid rgba(255,255,255,.3)}
+.btn-ghost:hover{background:rgba(255,255,255,.2); transform:translateY(-3px)}
+.btn-azul{background:linear-gradient(135deg,var(--azul),var(--azul-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(37,99,235,.4)}
+.btn-azul:hover{transform:translateY(-3px)}
+.btn-ambar{background:linear-gradient(135deg,var(--ambar),var(--ambar-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(217,119,6,.4)}
+.btn-ambar:hover{transform:translateY(-3px)}
+
+/* LAYOUT */
+main{max-width:1200px; margin:0 auto; padding:0 1.1rem 5rem}
+section{padding:3.2rem 0 1rem; scroll-margin-top:70px}
+.sec-head{margin-bottom:1.8rem}
+.kicker{display:inline-block; font-size:.72rem; font-weight:900; letter-spacing:1.6px; text-transform:uppercase;
+  color:var(--verde-oscuro); background:var(--verde-claro); padding:.3rem .75rem; border-radius:999px; margin-bottom:.7rem;}
+.kicker.azul{color:var(--azul-oscuro); background:var(--azul-claro)}
+.kicker.ambar{color:var(--ambar-oscuro); background:var(--ambar-claro)}
+.kicker.rojo{color:var(--rojo-oscuro); background:var(--rojo-claro)}
+.kicker.morado{color:var(--morado); background:var(--morado-claro)}
+.sec-head h2{font-size:clamp(1.5rem,3.6vw,2.15rem); font-weight:900; letter-spacing:-.6px}
+.sec-head p.lead{color:var(--gris); max-width:900px; font-size:1rem}
+.card{background:var(--blanco); border-radius:var(--radio); padding:1.6rem; box-shadow:var(--sombra); border:1px solid #e2e8f0;}
+.grid{display:grid; gap:1.1rem}
+.g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.reveal{opacity:0; transform:translateY(26px); transition:opacity .7s cubic-bezier(.2,.8,.2,1), transform .7s cubic-bezier(.2,.8,.2,1)}
+.reveal.in{opacity:1; transform:none}
+
+/* PILARES */
+.pilar{background:#fff; border-radius:16px; padding:1.3rem; border:1px solid #e2e8f0;
+  border-top:5px solid var(--verde); box-shadow:var(--sombra); transition:.3s;}
+.pilar:hover{transform:translateY(-6px); box-shadow:var(--sombra-lg)}
+.pilar .ico{font-size:2rem; display:block; margin-bottom:.5rem}
+.pilar h4{font-size:1.05rem; color:var(--verde-oscuro)}
+.pilar p{font-size:.9rem; color:var(--gris); margin:0}
+
+/* TEORÍA EXPANDIDA */
+.teoria{
+  background:#fff; border-radius:var(--radio); padding:1.6rem; box-shadow:var(--sombra);
+  border:1px solid #e2e8f0; margin-bottom:1.4rem;
+}
+.teoria h3{
+  color:var(--verde-oscuro); font-size:1.15rem; margin-bottom:.8rem;
+  display:flex; align-items:center; gap:.5rem;
+}
+.teoria h3 .th-ico{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:34px; height:34px; border-radius:10px;
+  background:var(--verde-claro); color:var(--verde-oscuro);
+  font-size:1rem;
+}
+.teoria h4{
+  color:var(--verde-oscuro); font-size:1rem; margin-top:1.2rem; margin-bottom:.5rem;
+  padding-left:.6rem; border-left:4px solid var(--verde);
+}
+.teoria p{font-size:.94rem; color:var(--gris-oscuro); margin-bottom:.8rem}
+.teoria ul, .teoria ol{font-size:.92rem; color:var(--gris-oscuro); margin:0 0 1rem; padding-left:1.3rem}
+.teoria li{margin-bottom:.35rem}
+.teoria li strong{color:var(--verde-oscuro)}
+.teoria .destacado{
+  background:linear-gradient(150deg,var(--verde-claro),#fff);
+  border-left:4px solid var(--verde); border-radius:0 12px 12px 0;
+  padding:.9rem 1.1rem; margin:1rem 0; font-size:.92rem;
+  color:var(--verde-oscuro);
+}
+.teoria .destacado strong{color:var(--verde-oscuro); font-weight:900}
+.teoria.azul .th-ico{background:var(--azul-claro); color:var(--azul-oscuro)}
+.teoria.azul h3{color:var(--azul-oscuro)}
+.teoria.azul h4{color:var(--azul-oscuro); border-color:var(--azul)}
+.teoria.azul li strong{color:var(--azul-oscuro)}
+.teoria.azul .destacado{background:linear-gradient(150deg,var(--azul-claro),#fff); border-color:var(--azul); color:var(--azul-oscuro)}
+.teoria.ambar .th-ico{background:var(--ambar-claro); color:var(--ambar-oscuro)}
+.teoria.ambar h3{color:var(--ambar-oscuro)}
+.teoria.ambar h4{color:var(--ambar-oscuro); border-color:var(--ambar)}
+.teoria.ambar li strong{color:var(--ambar-oscuro)}
+.teoria.ambar .destacado{background:linear-gradient(150deg,var(--ambar-claro),#fff); border-color:var(--ambar); color:var(--ambar-oscuro)}
+.teoria.rojo .th-ico{background:var(--rojo-claro); color:var(--rojo-oscuro)}
+.teoria.rojo h3{color:var(--rojo-oscuro)}
+.teoria.rojo h4{color:var(--rojo-oscuro); border-color:var(--rojo)}
+.teoria.rojo li strong{color:var(--rojo-oscuro)}
+.teoria.rojo .destacado{background:linear-gradient(150deg,var(--rojo-claro),#fff); border-color:var(--rojo); color:var(--rojo-oscuro)}
+.teoria.morado .th-ico{background:var(--morado-claro); color:var(--morado)}
+.teoria.morado h3{color:var(--morado)}
+.teoria.morado h4{color:var(--morado); border-color:var(--morado)}
+.teoria.morado li strong{color:var(--morado)}
+.teoria.morado .destacado{background:linear-gradient(150deg,var(--morado-claro),#fff); border-color:var(--morado); color:var(--morado)}
+.teoria .ejemplo{
+  background:#f8fafc; border-radius:10px; padding:.7rem .9rem;
+  font-size:.85rem; color:var(--gris-oscuro); margin:.5rem 0;
+  border-left:3px solid var(--gris);
+}
+.teoria .tabla-tipos{
+  width:100%; border-collapse:collapse; margin:.8rem 0 1rem;
+  font-size:.86rem;
+}
+.teoria .tabla-tipos th, .teoria .tabla-tipos td{
+  padding:.6rem .7rem; text-align:left;
+  border-bottom:1px solid #e2e8f0;
+}
+.teoria .tabla-tipos th{
+  background:var(--verde-claro); color:var(--verde-oscuro);
+  font-weight:900; font-size:.78rem; text-transform:uppercase; letter-spacing:.4px;
+}
+.teoria.azul .tabla-tipos th{background:var(--azul-claro); color:var(--azul-oscuro)}
+.teoria.ambar .tabla-tipos th{background:var(--ambar-claro); color:var(--ambar-oscuro)}
+.teoria.rojo .tabla-tipos th{background:var(--rojo-claro); color:var(--rojo-oscuro)}
+.teoria.morado .tabla-tipos th{background:var(--morado-claro); color:var(--morado)}
+.teoria .tabla-tipos tr:nth-child(even) td{background:#f8fafc}
+.teoria .grid-teoria{
+  display:grid; gap:.8rem; grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  margin:1rem 0;
+}
+.teoria .bloque-teoria{
+  background:#f8fafc; border-radius:12px; padding:.9rem 1rem;
+  border-top:3px solid var(--verde);
+}
+.teoria.azul .bloque-teoria{border-color:var(--azul)}
+.teoria.ambar .bloque-teoria{border-color:var(--ambar)}
+.teoria.rojo .bloque-teoria{border-color:var(--rojo)}
+.teoria.morado .bloque-teoria{border-color:var(--morado)}
+.teoria .bloque-teoria h5{
+  font-size:.88rem; font-weight:900; color:var(--verde-oscuro);
+  margin:0 0 .4rem;
+}
+.teoria.azul .bloque-teoria h5{color:var(--azul-oscuro)}
+.teoria.ambar .bloque-teoria h5{color:var(--ambar-oscuro)}
+.teoria.rojo .bloque-teoria h5{color:var(--rojo-oscuro)}
+.teoria.morado .bloque-teoria h5{color:var(--morado)}
+.teoria .bloque-teoria p{font-size:.85rem; margin:0; color:var(--gris)}
+.teoria .fases{
+  display:grid; gap:.6rem; grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  margin:1rem 0;
+}
+.teoria .fase{
+  background:#fff; border:2px solid var(--verde-claro); border-radius:12px;
+  padding:.75rem; text-align:center; position:relative;
+}
+.teoria .fase .fase-num{
+  display:inline-block; font-size:.72rem; font-weight:900; background:var(--verde);
+  color:#fff; padding:.15rem .55rem; border-radius:999px; margin-bottom:.35rem;
+}
+.teoria .fase h6{font-size:.85rem; font-weight:900; color:var(--verde-oscuro); margin:.2rem 0}
+.teoria .fase p{font-size:.75rem; color:var(--gris); margin:0; line-height:1.35}
+
+/* ACTIVIDADES */
+.actividad{background:#fff; border-radius:var(--radio); padding:1.6rem; box-shadow:var(--sombra);
+  border:1px solid #e2e8f0; margin-top:1.6rem;}
+.actividad h3{color:var(--verde-oscuro); font-size:1.15rem; margin-bottom:.3rem}
+.actividad .intro{font-size:.93rem; color:var(--gris); margin-bottom:1rem}
+
+/* RETO 1: CLASIFICA */
+#clasificaGrid{display:grid; gap:.9rem; grid-template-columns:repeat(auto-fit,minmax(290px,1fr))}
+.clas-card{
+  background:#fff; border:2px solid #e2e8f0; border-radius:16px; padding:1rem 1.1rem;
+  transition:.3s; display:flex; flex-direction:column; gap:.7rem;
+}
+.clas-card p{margin:0; font-weight:600; font-size:.93rem; color:var(--negro)}
+.clas-btns{display:flex; gap:.5rem}
+.clas-btns button{
+  flex:1; font-family:inherit; font-size:.82rem; font-weight:800; cursor:pointer;
+  padding:.5rem .4rem; border-radius:10px; border:2px solid #e2e8f0; background:#f8fafc; color:var(--gris-oscuro);
+  transition:.2s;
+}
+.clas-btns button:hover:not(:disabled){border-color:var(--verde); background:var(--verde-claro); color:var(--verde-oscuro)}
+.clas-btns button:disabled{cursor:default; opacity:.55}
+.clas-btns button.correct{background:#dcfce7; border-color:#16a34a; color:#15803d; opacity:1}
+.clas-btns button.wrong{background:#fee2e2; border-color:#dc2626; color:#b91c1c; opacity:1}
+.clas-fb{font-size:.82rem; border-radius:10px; padding:0; max-height:0; overflow:hidden; transition:.35s; color:var(--gris-oscuro)}
+.clas-fb.show{max-height:240px; padding:.6rem .75rem; background:#f8fafc; border-left:3px solid var(--verde)}
+.clas-card.done{border-color:var(--verde); background:#f0fdf4}
+#clasificaResumen{text-align:center; margin-top:1rem; font-weight:800; color:var(--verde-oscuro); min-height:1.4em}
+
+/* RETO 2: MEMORIA */
+.mem-info{display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; margin-bottom:1rem;
+  font-size:.9rem; font-weight:800;}
+.mem-info span{background:var(--verde-claro); color:var(--verde-oscuro); padding:.4rem .9rem; border-radius:999px;}
+.mem-grid{display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:.6rem;
+  max-width:780px; margin:0 auto;}
+.mem-card{aspect-ratio:1; perspective:900px; cursor:pointer;}
+.mem-inner{position:relative; width:100%; height:100%;
+  transition:transform .55s cubic-bezier(.2,.8,.2,1); transform-style:preserve-3d;}
+.mem-card.flipped .mem-inner, .mem-card.matched .mem-inner{transform:rotateY(180deg);}
+.mem-face{position:absolute; inset:0; backface-visibility:hidden; border-radius:14px;
+  display:grid; place-items:center; text-align:center; box-shadow:0 4px 12px rgba(15,23,42,.1);
+  padding:.5rem; overflow:hidden;}
+.mem-front{background:linear-gradient(135deg,#065f46,#022c22); color:#6ee7b7;
+  font-size:2rem; font-weight:900; border:2px solid #0f766e;}
+.mem-back{background:#fff; border:2px solid var(--verde); color:var(--verde-oscuro);
+  transform:rotateY(180deg); font-weight:800; line-height:1.2;
+  font-size:clamp(.62rem, 1.4vw, .82rem); word-break:break-word; hyphens:auto;}
+.mem-card[data-tipo="definicion"] .mem-back{background:#fef9c3; border-color:var(--ambar);
+  color:var(--ambar-oscuro); font-weight:600; font-size:clamp(.58rem, 1.3vw, .76rem);}
+.mem-card.matched .mem-back{background:#d1fae5; border-color:var(--verde); color:var(--verde-oscuro);}
+.mem-card.matched[data-tipo="definicion"] .mem-back{background:#fde68a; border-color:var(--ambar); color:var(--ambar-oscuro);}
+.mem-card.matched{pointer-events:none;}
+#memMensaje{text-align:center; margin-top:1.2rem; font-weight:800; color:var(--verde-oscuro);
+  font-size:1rem; min-height:1.4em;}
+.mem-btns{text-align:center; margin-top:1rem}
+.mem-leyenda{display:flex; justify-content:center; gap:1rem; margin-top:.8rem; font-size:.78rem;
+  color:var(--gris); flex-wrap:wrap;}
+.mem-leyenda span{display:inline-flex; align-items:center; gap:.3rem;}
+.mem-leyenda i{width:14px; height:14px; border-radius:4px; display:inline-block; border:2px solid;}
+
+/* RETO 3: SIMULADOR BIOCLIMÁTICO */
+.bio-wrap{display:grid; gap:1.4rem; grid-template-columns:1.25fr .75fr}
+@media(max-width:820px){.bio-wrap{grid-template-columns:1fr}}
+.switch-item{
+  display:flex; align-items:flex-start; gap:.75rem; padding:.7rem .85rem; border-radius:12px;
+  cursor:pointer; transition:.22s; border:1.5px solid transparent; font-size:.9rem;
+}
+.switch-item:hover{background:#f8fafc; border-color:#e2e8f0}
+.switch-item input{position:absolute; opacity:0; pointer-events:none}
+.switch-box{
+  flex:0 0 44px; height:24px; border-radius:999px; background:#cbd5e1; position:relative; transition:.3s; margin-top:2px;
+}
+.switch-box::after{
+  content:""; position:absolute; width:18px; height:18px; border-radius:50%; background:#fff; top:3px; left:3px;
+  transition:.3s cubic-bezier(.2,.8,.2,1); box-shadow:0 2px 5px rgba(0,0,0,.25);
+}
+.switch-item input:checked + .switch-box{background:var(--verde)}
+.switch-item input:checked + .switch-box::after{left:23px}
+.switch-item input:checked ~ .switch-txt{color:var(--verde-oscuro); font-weight:700}
+.switch-txt{flex:1}
+.gauge-box{
+  background:linear-gradient(160deg,#065f46,#022c22); border-radius:var(--radio); padding:1.6rem 1.2rem;
+  text-align:center; color:#fff; display:flex; flex-direction:column; align-items:center; gap:.9rem;
+  position:sticky; top:80px; height:fit-content;
+}
+.gauge{
+  width:168px; height:168px; border-radius:50%; display:grid; place-items:center;
+  background:conic-gradient(#059669 0deg,#e2e8f0 0deg); transition:background .5s;
+  box-shadow:0 0 0 8px rgba(255,255,255,.07);
+}
+.gauge-inner{
+  width:128px; height:128px; border-radius:50%; background:#022c22; display:grid; place-items:center;
+}
+.gauge-num{font-size:2.1rem; font-weight:900; line-height:1}
+.gauge-lbl{font-size:.68rem; letter-spacing:1.4px; text-transform:uppercase; color:#94a3b8; font-weight:800}
+#bioResultado{font-size:.92rem; color:#d1fae5; min-height:3.4em}
+
+/* RETO 4: ECOTRANSPORTE */
+.eco-intro{
+  background:linear-gradient(150deg,#ecfdf5,#fff); border-left:6px solid var(--azul);
+  border-radius:0 16px 16px 0; padding:1.2rem 1.3rem; margin-bottom:1.2rem;
+}
+.eco-intro h4{color:var(--azul-oscuro); font-size:1.02rem; margin-bottom:.4rem}
+.eco-intro p{font-size:.9rem; color:var(--gris-oscuro); margin:0 0 .6rem}
+.eco-intro p:last-child{margin-bottom:0}
+#ecoResultado{margin-top:1rem; font-size:1rem}
+#ecoResultado .barra{
+  height:26px; border-radius:8px; background:#e2e8f0; overflow:hidden; margin:.4rem 0 .8rem;
+}
+#ecoResultado .barra div{
+  height:100%; width:0%; transition:width .6s ease; border-radius:8px;
+}
+.eco-slider{width:100%; margin:.5rem 0}
+
+/* RETO 5: DILEMAS */
+.dilema-card{
+  background:linear-gradient(150deg,#fff7ed,#fff); border-radius:16px; padding:1.1rem 1.2rem;
+  border-left:5px solid var(--ambar); margin-bottom:1.1rem;
+  box-shadow:var(--sombra);
+}
+.dilema-card .dc-head{
+  display:flex; gap:.7rem; align-items:flex-start; margin-bottom:.7rem;
+}
+.dilema-card .dc-ico{font-size:1.6rem; flex-shrink:0}
+.dilema-card .dc-titulo{
+  font-size:.85rem; font-weight:900; letter-spacing:.5px; text-transform:uppercase;
+  color:var(--ambar-oscuro); margin:0 0 .2rem;
+}
+.dilema-card .dc-desc{font-size:.9rem; color:var(--gris-oscuro); margin:0}
+.dilema-opciones{display:grid; gap:.5rem;}
+.dilema-op{
+  text-align:left; font-family:inherit; font-size:.86rem; font-weight:600; cursor:pointer;
+  padding:.7rem .9rem; border-radius:11px; border:2px solid #e2e8f0; background:#fff; color:var(--gris-oscuro);
+  transition:.2s; display:flex; gap:.6rem; align-items:flex-start;
+}
+.dilema-op:hover:not(:disabled){border-color:var(--ambar); background:var(--ambar-claro); color:var(--ambar-oscuro); transform:translateX(4px)}
+.dilema-op:disabled{cursor:default}
+.dilema-op.correct{background:#dcfce7; border-color:#16a34a; color:#14532d}
+.dilema-op.wrong{background:#fee2e2; border-color:#dc2626; color:#7f1d1d}
+.dilema-op .do-letra{
+  flex:0 0 24px; height:24px; border-radius:7px; background:#e2e8f0; color:var(--gris-oscuro);
+  display:grid; place-items:center; font-size:.75rem; font-weight:900;
+}
+.dilema-op.correct .do-letra{background:#16a34a; color:#fff}
+.dilema-op.wrong .do-letra{background:#dc2626; color:#fff}
+.dilema-fb{
+  margin-top:.7rem; font-size:.84rem; background:#f8fafc; border-left:4px solid var(--ambar);
+  padding:.6rem .85rem; border-radius:0 10px 10px 0; display:none; color:var(--gris-oscuro);
+}
+.dilema-fb.show{display:block}
+#dilemasMsg{text-align:center; margin-top:1.2rem; font-weight:800; color:var(--ambar-oscuro); min-height:1.4em}
+
+/* QUIZ */
+.q{background:#fff; border-radius:16px; padding:1.3rem 1.4rem; box-shadow:var(--sombra);
+  border:1px solid #e2e8f0; margin-bottom:1rem;}
+.q-num{display:inline-block; font-size:.72rem; font-weight:900; letter-spacing:1px; color:#fff;
+  background:var(--verde-oscuro); padding:.2rem .6rem; border-radius:8px; margin-bottom:.6rem;}
+.q h4{font-size:1rem; margin-bottom:.9rem}
+.opts{display:grid; gap:.5rem}
+.opt{text-align:left; font-family:inherit; font-size:.9rem; font-weight:600; cursor:pointer;
+  padding:.7rem .9rem; border-radius:12px; border:2px solid #e2e8f0; background:#f8fafc; color:var(--gris-oscuro);
+  transition:.2s; display:flex; gap:.6rem; align-items:flex-start;}
+.opt:hover:not(:disabled){border-color:var(--verde); background:var(--verde-claro); color:var(--verde-oscuro); transform:translateX(4px)}
+.opt:disabled{cursor:default}
+.opt .letter{flex:0 0 24px; height:24px; border-radius:7px; background:#e2e8f0; color:var(--gris-oscuro);
+  display:grid; place-items:center; font-size:.75rem; font-weight:900;}
+.opt.correct{background:#dcfce7; border-color:#16a34a; color:#14532d}
+.opt.correct .letter{background:#16a34a; color:#fff}
+.opt.wrong{background:#fee2e2; border-color:#dc2626; color:#7f1d1d}
+.opt.wrong .letter{background:#dc2626; color:#fff}
+.expl{margin-top:.85rem; font-size:.86rem; background:#f0fdf4; border-left:4px solid var(--verde);
+  padding:.7rem .9rem; border-radius:0 10px 10px 0; color:var(--gris-oscuro); display:none;}
+.expl.show{display:block}
+#quizResult{display:none;text-align:center;padding:1.8rem;border-radius:var(--radio);color:#fff;
+  background:linear-gradient(135deg,#065f46,#022c22);box-shadow:var(--sombra-lg)}
+#quizResult.show{display:block; animation:aparecer .5s}
+#quizScore{font-size:3rem;font-weight:900;line-height:1;margin-bottom:.4rem}
+
+/* VOCABULARIO */
+.voc-grid{display:grid; gap:.6rem; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); margin-bottom:1rem}
+.voc-term{text-align:left; font-family:inherit; font-size:.88rem; font-weight:800; cursor:pointer;
+  padding:.85rem 1rem; border-radius:14px; border:2px solid #e2e8f0; background:#fff;
+  color:var(--gris-oscuro); transition:.25s; display:flex; align-items:center; gap:.5rem;}
+.voc-term:hover{border-color:var(--verde); background:var(--verde-claro); color:var(--verde-oscuro); transform:translateY(-3px)}
+.voc-term.active{background:var(--verde-oscuro); color:#fff; border-color:var(--verde-oscuro)}
+#vocDef{max-height:0; overflow:hidden; transition:max-height .5s cubic-bezier(.2,.8,.2,1), padding .3s;
+  background:linear-gradient(150deg,#065f46,#022c22); color:#fff; border-radius:16px; padding:0 1.4rem;}
+#vocDef.show{max-height:440px; padding:1.3rem 1.4rem}
+#vocDef h4{color:#6ee7b7; font-size:1.05rem; margin-bottom:.5rem}
+#vocDef p{color:#a7f3d0; font-size:.92rem; margin:0}
+
+/* CERTIFICADO */
+#certificado{
+  background:linear-gradient(150deg,#065f46,#022c22); color:#fff; border-radius:26px;
+  padding:2.4rem 1.8rem; box-shadow:var(--sombra-lg); text-align:center; position:relative; overflow:hidden;
+}
+#certificado::before{content:""; position:absolute; inset:14px; border:2px solid rgba(110,231,183,.35);
+  border-radius:18px; pointer-events:none;}
+#certificado h2{color:#6ee7b7; font-size:1.5rem; margin-bottom:.3rem}
+#certificado p.sub{color:#a7f3d0; font-size:.95rem; max-width:560px; margin:0 auto 1.4rem}
+.cert-name{font-size:clamp(1.6rem,5vw,2.4rem); font-weight:900; letter-spacing:-.5px; margin:.6rem 0 1rem;
+  background:linear-gradient(90deg,#6ee7b7,#93c5fd,#fbbf24);
+  -webkit-background-clip:text; background-clip:text; color:transparent;}
+.cert-stats{display:grid; gap:.7rem; grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  max-width:820px; margin:0 auto 1.6rem;}
+.cert-stat{background:rgba(255,255,255,.09); border:1px solid rgba(110,231,183,.3);
+  border-radius:14px; padding:.8rem .6rem; text-align:center;}
+.cert-stat .num{font-size:1.35rem; font-weight:900; color:#fbbf24; line-height:1}
+.cert-stat .lbl{font-size:.7rem; color:#a7f3d0; text-transform:uppercase; letter-spacing:.9px; font-weight:800; margin-top:.3rem}
+.cert-warn{background:rgba(251,191,36,.14); border:1px solid rgba(251,191,36,.4);
+  color:#fde68a; font-size:.86rem; padding:.7rem 1rem; border-radius:12px;
+  max-width:600px; margin:0 auto 1.2rem;}
+.cert-note{font-size:.78rem; color:#94a3b8; margin-top:1rem; max-width:560px; margin-left:auto; margin-right:auto;}
+
+/* Toast */
+#toast{
+  position:fixed; bottom:1.4rem; left:50%; transform:translate(-50%,140%); z-index:1200;
+  background:var(--negro); color:#fff; font-weight:700; font-size:.88rem; padding:.85rem 1.4rem;
+  border-radius:999px; box-shadow:var(--sombra-lg); transition:transform .45s cubic-bezier(.2,.8,.2,1);
+  display:flex; align-items:center; gap:.55rem; max-width:92vw; text-align:center;
+}
+#toast.show{transform:translate(-50%,0)}
+
+/* BADGE RETO COMPLETADO */
+.reto-badge{display:inline-flex; align-items:center; gap:.3rem; font-size:.72rem; font-weight:900;
+  color:#15803d; background:#dcfce7; border:1.5px solid #16a34a; padding:.22rem .7rem;
+  border-radius:999px; margin-left:.6rem; vertical-align:middle; white-space:nowrap;}
+
+footer{background:var(--negro); color:#94a3b8; text-align:center; padding:2.6rem 1.2rem; font-size:.85rem;}
+footer strong{color:#6ee7b7}
+
+@media(max-width:640px){
+  .card{padding:1.2rem}
+  .nav-brand span.txt{display:none}
+  .mem-grid{grid-template-columns:repeat(2, minmax(0, 1fr)); max-width:480px;}
+}
+</style>
+</head>
+<body class="locked">
+
+<div id="loginOverlay">
+  <div class="login-card" id="loginCard"></div>
+</div>
+
+<div id="progresoGlobal"><div id="progresoBarra"></div></div>
+
+<nav>
+  <div class="nav-inner">
+    <div class="nav-brand"><span class="dot"></span><span class="txt">Canarias Sostenible</span></div>
+    <div class="nav-user">👤 <span id="navUserName">—</span></div>
+    <div class="nav-links">
+      <a href="#intro">Inicio</a>
+      <a href="#bioclimatica">Bioclimática</a>
+      <a href="#ecotransporte">Ecotransporte</a>
+      <a href="#canarias">Canarias</a>
+      <a href="#quiz">Quiz</a>
+      <a href="#certificado">Certificado</a>
+    </div>
+    <div id="progresoPill">0 / 6 retos</div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+  <div class="hero-inner">
+    <div class="badge-top">🌋 Tecnología, territorio y clima</div>
+    <h1>Arquitectura bioclimática y <span>ecotransporte</span> en Canarias</h1>
+    <p class="hero-sub">
+      Hola, <strong id="heroNombre">amigo/a</strong>. Vas a analizar, con pensamiento científico,
+      cómo la <strong>arquitectura bioclimática</strong> y el <strong>ecotransporte</strong> cuidan
+      el entorno y contribuyen al <strong>desarrollo sostenible de Canarias</strong>, teniendo en
+      cuenta su insularidad y su orografía.
+    </p>
+    <div class="hero-chips">
+      <span class="chip">🏠 Bioclimática</span>
+      <span class="chip">🚲 Ecotransporte</span>
+      <span class="chip">🌋 Canarias</span>
+      <span class="chip">🌍 Sostenibilidad</span>
+    </div>
+    <div class="hero-cta">
+      <a href="#intro" class="btn btn-primary">🚀 Empezar</a>
+      <a href="#certificado" class="btn btn-ghost">🏆 Mi certificado</a>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============ INTRO ==================== -->
+  <section id="intro">
+    <div class="sec-head reveal">
+      <span class="kicker">Punto de partida</span>
+      <h2>La tecnología que cuida el entorno</h2>
+      <p class="lead">
+        El criterio 6.2 nos invita a <strong>utilizar el pensamiento científico</strong> para analizar
+        los beneficios ambientales de dos grandes ámbitos tecnológicos: la <strong>arquitectura
+        bioclimática</strong> y el <strong>ecotransporte</strong>. En Canarias, con su territorio
+        fragmentado en islas y su relieve volcánico, estos análisis cobran una relevancia especial.
+      </p>
+    </div>
+
+    <div class="teoria reveal">
+      <h3><span class="th-ico">📘</span> ¿Qué vamos a aprender?</h3>
+      <p>
+        Este recurso desarrolla el <strong>criterio de evaluación 6.2</strong> de la materia de
+        Tecnología de 4.º de ESO:
+      </p>
+      <div class="destacado">
+        <strong>6.2.</strong> Utilizar el pensamiento científico para analizar los beneficios, en el
+        cuidado del entorno, que aportan la arquitectura bioclimática y el ecotransporte, valorando
+        tanto su impacto global como la contribución de las tecnologías al desarrollo sostenible de
+        Canarias. <em>(Descriptores: CCL1, STEM2, STEM5, CC4)</em>
+      </div>
+
+      <h4>¿Por qué es importante el pensamiento científico aquí?</h4>
+      <p>
+        El <strong>pensamiento científico</strong> nos permite analizar datos, medir impactos y
+        comparar alternativas con criterios objetivos, en lugar de guiarnos por intuiciones. Aplicado
+        a la arquitectura y al transporte, nos ayuda a:
+      </p>
+      <ul>
+        <li><strong>Medir</strong> el consumo energético y las emisiones asociadas a distintas soluciones.</li>
+        <li><strong>Comparar</strong> tecnologías (por ejemplo, un coche diésel frente a uno eléctrico o la bicicleta).</li>
+        <li><strong>Analizar</strong> cómo el clima, la orientación o el relieve modifican los resultados.</li>
+        <li><strong>Valorar</strong> el impacto global y local de las decisiones técnicas.</li>
+        <li><strong>Argumentar</strong> con datos y fuentes fiables, contribuyendo a una ciudadanía crítica.</li>
+      </ul>
+
+      <h4>Contexto: Canarias, un territorio singular</h4>
+      <p>
+        Canarias es un archipiélago atlántico formado por ocho islas habitadas, con un relieve
+        volcánico abrupto, un clima subtropical y una dependencia enorme del exterior para
+        materiales, alimentos y energía. Su <strong>insularidad</strong> y su <strong>orografía</strong>
+        condicionan tanto la forma de construir como la forma de desplazarse. Por eso, cuando
+        hablamos de arquitectura bioclimática y ecotransporte en Canarias, no hablamos de teoría
+        abstracta: hablamos de decisiones concretas con consecuencias medibles.
+      </p>
+
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>🌋 Insularidad</h5>
+          <p>El transporte de mercancías y personas entre islas encarece la energía y los materiales. La autosuficiencia energética es un reto estratégico.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>⛰️ Orografía</h5>
+          <p>Las pendientes fuertes dificultan la movilidad y favorecen el uso del vehículo privado en detrimento del transporte público y la bicicleta.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>☀️ Clima subtropical</h5>
+          <p>Muchas horas de sol, temperaturas suaves y alisios constantes: condiciones ideales para la arquitectura bioclimática pasiva y las renovables.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>💧 Escasez de agua</h5>
+          <p>La captación, desalación y depuración son intensivas en energía. El diseño bioclimático y el ahorro de agua son claves.</p>
+        </div>
+      </div>
+
+      <h4>Las cuatro ideas clave del criterio 6.2</h4>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>🏠 Arquitectura bioclimática</h5>
+          <p>Diseñar edificios aprovechando el clima (sol, viento, vegetación) para reducir el consumo energético y mejorar el confort.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🚲 Ecotransporte</h5>
+          <p>Priorizar modos de movilidad de baja emisión: caminar, bicicleta, transporte público, vehículo eléctrico compartido.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🌍 Impacto global</h5>
+          <p>Valorar las emisiones, el consumo de recursos y los efectos sociales de cada opción técnica.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🇮🇨 Desarrollo sostenible de Canarias</h5>
+          <p>Aplicar todo lo anterior a la realidad insular: renovables, movilidad, agua, patrimonio y calidad de vida.</p>
+        </div>
+      </div>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> ni la arquitectura ni el transporte son neutrales. Cada decisión
+        técnica tiene un impacto ambiental y social medible. El pensamiento científico nos da las
+        herramientas para tomar decisiones informadas y responsables.
+      </div>
+    </div>
+
+    <div class="grid g4">
+      <div class="pilar reveal">
+        <span class="ico">🏠</span>
+        <h4>Bioclimática</h4>
+        <p>Aprovechar el clima para reducir el consumo de energía en los edificios.</p>
+      </div>
+      <div class="pilar reveal" style="border-top-color:var(--azul)">
+        <span class="ico">🚲</span>
+        <h4>Ecotransporte</h4>
+        <p>Mover personas y mercancías con el menor impacto ambiental posible.</p>
+      </div>
+      <div class="pilar reveal" style="border-top-color:var(--ambar)">
+        <span class="ico">🌋</span>
+        <h4>Canarias</h4>
+        <p>Aplicar soluciones adaptadas a la insularidad y a la orografía.</p>
+      </div>
+      <div class="pilar reveal" style="border-top-color:var(--morado)">
+        <span class="ico">🔬</span>
+        <h4>Pensamiento científico</h4>
+        <p>Medir, comparar y argumentar con datos para decidir mejor.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ARQUITECTURA BIOCLIMÁTICA ==================== -->
+  <section id="bioclimatica">
+    <div class="sec-head reveal">
+      <span class="kicker">Bloque 1</span>
+      <h2>🏠 Arquitectura bioclimática: construir con el clima</h2>
+      <p class="lead">
+        La arquitectura bioclimática diseña edificios que aprovechan las condiciones del entorno
+        (sol, viento, vegetación, materiales locales) para lograr confort con el mínimo consumo
+        energético posible.
+      </p>
+    </div>
+
+    <div class="teoria reveal">
+      <h3><span class="th-ico">🏠</span> Fundamentos de la arquitectura bioclimática</h3>
+      <p>
+        La <strong>arquitectura bioclimática</strong> es aquella que, mediante el diseño y la
+        elección de materiales, aprovecha las condiciones climáticas del lugar para conseguir
+        confort térmico y luminoso con un consumo energético reducido. No es una moda reciente:
+        las casas tradicionales canarias, con sus patios, muros gruesos de piedra y cubiertas de
+        teja, ya aplicaban muchos de estos principios.
+      </p>
+
+      <h4>1. La orientación: el primer factor</h4>
+      <p>
+        En el hemisferio norte, el sol recorre el cielo de este a oeste pasando por el sur. Por eso,
+        en Canarias (latitud ~28° N):
+      </p>
+      <ul>
+        <li>Las <strong>fachadas sur</strong> reciben más radiación en invierno: son ideales para captar calor.</li>
+        <li>Las <strong>fachadas norte</strong> reciben menos sol: son las más frescas en verano.</li>
+        <li>Las <strong>fachadas este</strong> reciben sol por la mañana y <strong>oeste</strong> por la tarde, con riesgo de sobrecalentamiento estival.</li>
+        <li>La <strong>vegetación caduca</strong> al sur da sombra en verano y deja pasar el sol en invierno.</li>
+      </ul>
+
+      <div class="ejemplo">
+        <strong>Ejemplo canario:</strong> una vivienda en Las Palmas de Gran Canaria con salón
+        orientado al sur capta gratis la energía solar en invierno; si además tiene un alero ancho,
+        ese mismo alero bloquea el sol alto del verano. Dos decisiones de diseño, cero energía
+        consumida.
+      </div>
+
+      <h4>2. Estrategias pasivas: calefacción, refrigeración y ventilación</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Estrategia</th>
+          <th>Qué hace</th>
+          <th>Ejemplo en Canarias</th>
+        </tr>
+        <tr>
+          <td><strong>Muro Trombe</strong></td>
+          <td>Acumula calor durante el día y lo cede por la noche.</td>
+          <td>Muros gruesos de piedra volcánica orientados al sur.</td>
+        </tr>
+        <tr>
+          <td><strong>Inercia térmica</strong></td>
+          <td>Amortigua las oscilaciones de temperatura.</td>
+          <td>Muros de bloque, piedra o tierra comprimida.</td>
+        </tr>
+        <tr>
+          <td><strong>Ventilación cruzada</strong></td>
+          <td>Renueva el aire y enfría por convección.</td>
+          <td>Aberturas en fachadas opuestas para aprovechar los alisios.</td>
+        </tr>
+        <tr>
+          <td><strong>Chimenea solar</strong></td>
+          <td>Aspira aire caliente hacia arriba y lo expulsa.</td>
+          <td>Torretas o lucernarios en cubierta.</td>
+        </tr>
+        <tr>
+          <td><strong>Aleros y toldos</strong></td>
+          <td>Bloquean el sol alto del verano, dejan pasar el bajo del invierno.</td>
+          <td>Aleros de madera, toldos textiles, celosías.</td>
+        </tr>
+        <tr>
+          <td><strong>Patios interiores</strong></td>
+          <td>Regulan temperatura y aportan luz natural.</td>
+          <td>Casas tradicionales canarias con patio central.</td>
+        </tr>
+        <tr>
+          <td><strong>Enfriamiento evaporativo</strong></td>
+          <td>Usa agua para enfriar el aire.</td>
+          <td>Fuentes, estanques, vegetación en patios.</td>
+        </tr>
+        <tr>
+          <td><strong>Cubiertas verdes</strong></td>
+          <td>Aíslan del calor y captan CO₂.</td>
+          <td>Azoteas ajardinadas en zonas urbanas.</td>
+        </tr>
+        <tr>
+          <td><strong>Vegetación</strong></td>
+          <td>Da sombra, enfría por evapotranspiración y filtra el aire.</td>
+          <td>Palmeras, dragos, tabaibas y cardones estratégicamente situados.</td>
+        </tr>
+      </table>
+
+      <h4>3. Materiales y construcción</h4>
+      <p>
+        La elección de materiales tiene un impacto enorme en la huella de carbono del edificio.
+        En Canarias, además, el transporte de materiales desde la Península o desde otros países
+        multiplica su impacto. Priorizar materiales locales y de baja energía incorporada es una
+        decisión técnica con consecuencias ambientales directas.
+      </p>
+      <ul>
+        <li><strong>Piedra volcánica local</strong> (basalto, toba): bajo impacto de transporte, gran inercia térmica.</li>
+        <li><strong>Madera certificada FSC</strong>: renovable, fija CO₂ durante décadas.</li>
+        <li><strong>Bloques de tierra comprimida (BTC)</strong>: mínima energía de fabricación.</li>
+        <li><strong>Aislamientos naturales</strong>: corcho, lana de oveja, fibra de madera, celulosa.</li>
+        <li><strong>Cal, arcilla y morteros tradicionales</strong>: transpirables, saludables, duraderos.</li>
+        <li><strong>Vidrios dobles con cámara</strong>: reducen las pérdidas térmicas.</li>
+      </ul>
+
+      <h4>4. Energías renovables integradas</h4>
+      <p>
+        Un edificio bioclimático bien diseñado reduce su demanda energética al mínimo; la energía
+        que aún necesita puede cubrirse con fuentes renovables:
+      </p>
+      <ul>
+        <li><strong>Solar fotovoltaica</strong> en cubierta para electricidad.</li>
+        <li><strong>Solar térmica</strong> para agua caliente sanitaria.</li>
+        <li><strong>Geotermia</strong> de baja entalpía (aprovechando la temperatura estable del subsuelo).</li>
+        <li><strong>Aerotermia</strong> para climatización eficiente.</li>
+        <li><strong>Minieólica</strong> en zonas con vientos constantes.</li>
+      </ul>
+
+      <h4>5. Beneficios ambientales medibles</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Beneficio</th>
+          <th>Impacto típico</th>
+        </tr>
+        <tr>
+          <td><strong>Reducción de consumo energético</strong></td>
+          <td>Hasta un 70 % frente a una vivienda convencional equivalente.</td>
+        </tr>
+        <tr>
+          <td><strong>Reducción de emisiones de CO₂</strong></td>
+          <td>Entre 2 y 4 toneladas al año por vivienda, según clima y uso.</td>
+        </tr>
+        <tr>
+          <td><strong>Mejora del confort interior</strong></td>
+          <td>Menos oscilaciones térmicas, mejor calidad del aire, más luz natural.</td>
+        </tr>
+        <tr>
+          <td><strong>Reducción de la demanda de agua</strong></td>
+          <td>Captación de lluvia, reutilización, riego con aguas grises.</td>
+        </tr>
+        <tr>
+          <td><strong>Durabilidad</strong></td>
+          <td>Materiales locales y técnicas tradicionales alargan la vida útil del edificio.</td>
+        </tr>
+      </table>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> la arquitectura bioclimática no es solo "poner placas
+        solares": es <em>diseñar el edificio para que necesite menos energía</em>. La mejor energía
+        es la que no se consume.
+      </div>
+
+      <h4>Arquitectura bioclimática y tradición canaria</h4>
+      <p>
+        La arquitectura tradicional canaria ya incorporaba muchos principios bioclimáticos:
+        casas con <strong>patios interiores</strong> que ventilaban y daban luz, <strong>muros
+        gruesos de piedra volcánica</strong> que amortiguaban el calor, <strong>cubiertas de
+        teja árabe</strong> con cámara de aire, <strong>aleros amplios</strong> para dar sombra,
+        <strong>ventanas pequeñas al norte</strong> y mayores al sur, y <strong>vegetación
+        estratégica</strong> (parras, higueras, palmeras) para dar sombra y frescor. Recuperar y
+        adaptar estas soluciones es una forma de sostenibilidad patrimonial.
+      </p>
+    </div>
+
+    <!-- RETO 1: CLASIFICA BIOCLIMÁTICO -->
+    <div class="actividad reveal" style="border-top:6px solid var(--verde)" data-reto="clasifica">
+      <span class="kicker">🎮 Reto 1 · Clasifica</span>
+      <h3>¿Es bioclimático o no lo es?</h3>
+      <p class="intro">
+        Lee cada situación y decide si es una estrategia bioclimática adecuada o no. Recibirás
+        feedback inmediato con la explicación.
+      </p>
+      <div id="clasificaGrid"></div>
+      <div id="clasificaResumen"></div>
+    </div>
+
+    <!-- RETO 2: MEMORIA VOCABULARIO -->
+    <div class="actividad reveal" style="border-top:6px solid var(--morado)" data-reto="memoria">
+      <span class="kicker morado">🎮 Reto 2 · Juego de memoria</span>
+      <h3>Relaciona concepto y definición</h3>
+      <p class="intro">
+        Encuentra las 8 parejas emparejando cada <strong>término</strong> con su <strong>definición
+        o ejemplo</strong>. Gira dos cartas a la vez.
+      </p>
+      <div class="mem-info">
+        <span>👀 Movimientos: <strong id="memMov">0</strong></span>
+        <span>✅ Parejas: <strong id="memParejas">0</strong> / 8</span>
+      </div>
+      <div class="mem-grid" id="memGrid"></div>
+      <div class="mem-leyenda">
+        <span><i style="background:#fff;border-color:#059669"></i> Término</span>
+        <span><i style="background:#fef9c3;border-color:#d97706"></i> Definición / ejemplo</span>
+      </div>
+      <div id="memMensaje"></div>
+      <div class="mem-btns"><button class="btn btn-azul" id="btnMemReiniciar" style="font-size:.85rem;padding:.65rem 1.3rem">🔄 Reiniciar juego</button></div>
+    </div>
+
+    <!-- RETO 3: SIMULADOR BIOCLIMÁTICO -->
+    <div class="actividad reveal" style="border-top:6px solid var(--verde-oscuro)" data-reto="bioclimatica">
+      <span class="kicker">🎮 Reto 3 · Simulador</span>
+      <h3>Diseña una vivienda bioclimática en Canarias</h3>
+      <p class="intro">
+        Elige un tipo de edificio y activa las estrategias bioclimáticas que consideres adecuadas.
+        Verás cómo mejora su eficiencia ambiental.
+      </p>
+      <div style="display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;margin:1rem 0">
+        <select id="selEdificio" style="flex:1;min-width:220px;font-family:inherit;font-size:.9rem;padding:.7rem .8rem;border-radius:12px;border:2px solid #e2e8f0;background:#fff;cursor:pointer">
+          <option value="vivienda">🏡 Vivienda unifamiliar en Tenerife</option>
+          <option value="oficina">🏢 Oficina en Las Palmas</option>
+          <option value="colegio">🏫 Colegio en Lanzarote</option>
+        </select>
+      </div>
+      <div class="bio-wrap">
+        <div id="bioList" style="display:grid;gap:.2rem"></div>
+        <div class="gauge-box">
+          <div class="gauge" id="gaugeBio">
+            <div class="gauge-inner">
+              <div>
+                <div class="gauge-num" id="gaugeBioNum">0<span style="font-size:1rem">%</span></div>
+                <div class="gauge-lbl">Eficiencia</div>
+              </div>
+            </div>
+          </div>
+          <div id="bioResultado">Activa estrategias para empezar a diseñar.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ECOTRANSPORTE ==================== -->
+  <section id="ecotransporte">
+    <div class="sec-head reveal">
+      <span class="kicker azul">Bloque 2</span>
+      <h2>🚲 Ecotransporte: movernos sin dañar el entorno</h2>
+      <p class="lead">
+        El ecotransporte agrupa todos los modos de movilidad que reducen las emisiones, el consumo
+        de energía y el impacto ambiental del desplazamiento de personas y mercancías.
+      </p>
+    </div>
+
+    <div class="teoria azul reveal">
+      <h3><span class="th-ico">🚲</span> Fundamentos del ecotransporte</h3>
+      <p>
+        El <strong>transporte</strong> es responsable de aproximadamente una cuarta parte de las
+        emisiones globales de gases de efecto invernadero. En Canarias, la insularidad y la
+        orografía hacen que el vehículo privado tenga un peso enorme, lo que agrava el problema.
+        El <strong>ecotransporte</strong> propone alternativas de bajas emisiones, más eficientes
+        y más justas socialmente.
+      </p>
+
+      <h4>1. La jerarquía de la movilidad sostenible</h4>
+      <p>
+        No todos los modos de transporte tienen el mismo impacto. El orden de prioridad —de menor a
+        mayor impacto— es:
+      </p>
+      <div class="fases">
+        <div class="fase" style="border-color:#a7f3d0">
+          <span class="fase-num" style="background:#059669">1</span>
+          <h6>🚶 Caminar</h6>
+          <p>Cero emisiones, cero energía, saludable.</p>
+        </div>
+        <div class="fase" style="border-color:#a7f3d0">
+          <span class="fase-num" style="background:#059669">2</span>
+          <h6>🚲 Bicicleta</h6>
+          <p>Cero emisiones directas, muy eficiente.</p>
+        </div>
+        <div class="fase" style="border-color:#bfdbfe">
+          <span class="fase-num" style="background:#2563eb">3</span>
+          <h6>🚌 Transporte público</h6>
+          <p>Bajas emisiones por persona transportada.</p>
+        </div>
+        <div class="fase" style="border-color:#fde68a">
+          <span class="fase-num" style="background:#d97706">4</span>
+          <h6>🚗 Coche compartido</h6>
+          <p>Reparte emisiones entre varias personas.</p>
+        </div>
+        <div class="fase" style="border-color:#fecaca">
+          <span class="fase-num" style="background:#dc2626">5</span>
+          <h6>🚙 Coche privado</h6>
+          <p>Alto impacto por persona y por km.</p>
+        </div>
+        <div class="fase" style="border-color:#fecaca">
+          <span class="fase-num" style="background:#dc2626">6</span>
+          <h6>✈️ Avión</h6>
+          <p>Máximas emisiones por pasajero y km.</p>
+        </div>
+      </div>
+
+      <h4>2. Modos de ecotransporte</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Modo</th>
+          <th>Emisiones típicas (g CO₂/pasajero·km)</th>
+          <th>Ventajas</th>
+        </tr>
+        <tr>
+          <td><strong>🚶 A pie</strong></td>
+          <td>0</td>
+          <td>Salud, cero coste, cero emisiones.</td>
+        </tr>
+        <tr>
+          <td><strong>🚲 Bicicleta</strong></td>
+          <td>0 (fabricación amortizada)</td>
+          <td>Rápida en distancias cortas, saludable.</td>
+        </tr>
+        <tr>
+          <td><strong>🚌 Guagua / autobús</strong></td>
+          <td>30–80</td>
+          <td>Alta ocupación, económica, accesible.</td>
+        </tr>
+        <tr>
+          <td><strong>🚊 Tranvía / metro ligero</strong></td>
+          <td>20–50</td>
+          <td>Eléctrico, rápido, gran capacidad.</td>
+        </tr>
+        <tr>
+          <td><strong>🚗 Coche eléctrico</strong></td>
+          <td>20–60 (según mix eléctrico)</td>
+          <td>Sin emisiones locales, silencioso.</td>
+        </tr>
+        <tr>
+          <td><strong>🚙 Coche gasolina/diésel</strong></td>
+          <td>120–200</td>
+          <td>Autonomía, flexibilidad.</td>
+        </tr>
+        <tr>
+          <td><strong>✈️ Avión (corto radio)</strong></td>
+          <td>200–300</td>
+          <td>Rapidez en largas distancias.</td>
+        </tr>
+        <tr>
+          <td><strong>🚢 Ferry / barco</strong></td>
+          <td>50–150</td>
+          <td>Imprescindible entre islas para mercancías.</td>
+        </tr>
+      </table>
+
+      <h4>3. El vehículo eléctrico: ¿es siempre sostenible?</h4>
+      <p>
+        El coche eléctrico es una pieza clave del ecotransporte, pero no es una solución mágica.
+        Su sostenibilidad depende de:
+      </p>
+      <ul>
+        <li><strong>El mix eléctrico</strong>: si la electricidad viene de renovables, las emisiones son muy bajas; si viene del carbón, apenas mejora.</li>
+        <li><strong>La fabricación de la batería</strong>: consume minerales críticos (litio, cobalto) y energía.</li>
+        <li><strong>La gestión al final de su vida</strong>: el reciclaje de baterías es esencial.</li>
+        <li><strong>El uso</strong>: compartir el coche multiplica el beneficio ambiental.</li>
+      </ul>
+
+      <h4>4. Ecotransporte en Canarias: retos y soluciones</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Reto</th>
+          <th>Solución tecnológica</th>
+        </tr>
+        <tr>
+          <td><strong>Insularidad</strong>: mercancías y personas dependen del barco y el avión.</td>
+          <td>Barcos eléctricos e híbridos para trayectos interinsulares; optimización de rutas.</td>
+        </tr>
+        <tr>
+          <td><strong>Orografía</strong>: pendientes fuertes dificultan bici y caminar.</td>
+          <td>Bicicletas eléctricas, funiculares, ascensores urbanos, transporte público adaptado.</td>
+        </tr>
+        <tr>
+          <td><strong>Dispersión urbana</strong>: distancias largas entre barrios.</td>
+          <td>Redes de guaguas y tranvía eficientes; carriles bici; coche compartido.</td>
+        </tr>
+        <tr>
+          <td><strong>Turismo</strong>: alta movilidad estacional.</td>
+          <td>Guaguas turísticas eléctricas, rutas a pie, alquiler de bicis eléctricas.</td>
+        </tr>
+        <tr>
+          <td><strong>Dependencia energética</strong>: combustibles fósiles importados.</td>
+          <td>Electrificación del transporte con renovables locales (eólica, solar).</td>
+        </tr>
+      </table>
+
+      <h4>5. Beneficios medibles del ecotransporte</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Beneficio</th>
+          <th>Impacto típico</th>
+        </tr>
+        <tr>
+          <td><strong>Reducción de emisiones de CO₂</strong></td>
+          <td>Sustituir 10.000 km anuales en coche por guagua + bici puede ahorrar 1,5 t CO₂ al año.</td>
+        </tr>
+        <tr>
+          <td><strong>Mejora de la calidad del aire</strong></td>
+          <td>Menos partículas y NOx, menos enfermedades respiratorias.</td>
+        </tr>
+        <tr>
+          <td><strong>Reducción del ruido</strong></td>
+          <td>Menos contaminación acústica urbana.</td>
+        </tr>
+        <tr>
+          <td><strong>Menos ocupación de suelo</strong></td>
+          <td>Una guagua ocupa el espacio de 3 coches y lleva 50 personas.</td>
+        </tr>
+        <tr>
+          <td><strong>Salud pública</strong></td>
+          <td>Caminar y pedalear reducen el sedentarismo y las enfermedades asociadas.</td>
+        </tr>
+        <tr>
+          <td><strong>Ahorro económico</strong></td>
+          <td>El transporte público y la bici son más baratos que el coche privado.</td>
+        </tr>
+      </table>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> el ecotransporte no consiste solo en cambiar el motor del
+        coche: consiste en <em>cambiar la forma de movernos</em>. Menos kilómetros, modos más
+        limpios y mejor compartidos.
+      </div>
+    </div>
+
+    <!-- RETO 4: CALCULADORA ECOTRANSPORTE -->
+    <div class="actividad reveal" style="border-top:6px solid var(--azul)" data-reto="ecotransporte">
+      <span class="kicker azul">🎮 Reto 4 · Calculadora de emisiones</span>
+      <h3>Compara el impacto de distintos modos de transporte</h3>
+
+      <div class="eco-intro">
+        <h4>📖 ¿Cómo se mide el impacto del transporte?</h4>
+        <p>
+          La <strong>huella de carbono del transporte</strong> se mide en <strong>gramos de CO₂
+          equivalente por pasajero y kilómetro</strong> (g CO₂e/pkm). Esta unidad permite comparar
+          modos muy distintos en igualdad de condiciones. Se calcula a partir del consumo de
+          combustible, la ocupación media del vehículo y el mix eléctrico (si es eléctrico).
+        </p>
+        <p>
+          En Canarias, la insularidad y la orografía hacen que las distancias sean relativamente
+          cortas pero con muchas pendientes, lo que incrementa el consumo real de los vehículos.
+          Los datos siguientes son orientativos y proceden de fuentes como la Agencia Europea de
+          Medio Ambiente (AEMA), el ITU y estudios locales.
+        </p>
+      </div>
+
+      <div style="display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;margin:1rem 0">
+        <select id="selTransporte" style="flex:1;min-width:220px;font-family:inherit;font-size:.9rem;padding:.7rem .8rem;border-radius:12px;border:2px solid #e2e8f0;background:#fff;cursor:pointer">
+          <option value="caminar">🚶 Caminar</option>
+          <option value="bici">🚲 Bicicleta</option>
+          <option value="guagua">🚌 Guagua urbana</option>
+          <option value="tranvia">🚊 Tranvía</option>
+          <option value="coche_electrico">🚗 Coche eléctrico</option>
+          <option value="coche_gasolina">🚙 Coche gasolina</option>
+          <option value="avion">✈️ Avión interinsular</option>
+          <option value="ferry">🚢 Ferry interinsular</option>
+        </select>
+      </div>
+      <label style="display:block;font-size:.88rem;font-weight:800;color:var(--gris-oscuro);margin-bottom:.3rem">
+        Distancia del trayecto: <span id="distLabel" style="color:var(--azul-oscuro)">10 km</span>
+      </label>
+      <input type="range" id="rangoDist" min="1" max="200" value="10" class="eco-slider">
+      <div style="display:flex;justify-content:center;margin-top:.5rem">
+        <button class="btn btn-azul" id="btnEco" style="font-size:.85rem;padding:.7rem 1.3rem">Calcular emisiones</button>
+      </div>
+      <div id="ecoResultado"></div>
+    </div>
+
+    <!-- RETO 5: DILEMAS CANARIAS -->
+    <div class="actividad reveal" style="border-top:6px solid var(--ambar)" data-reto="dilemas">
+      <span class="kicker ambar">🎮 Reto 5 · Dilemas de sostenibilidad en Canarias</span>
+      <h3>¿Qué decisión tomarías?</h3>
+      <p class="intro">
+        Lee cada situación y elige la opción que consideres más sostenible y justificada
+        científicamente. Descubre las consecuencias de cada decisión.
+      </p>
+      <div id="dilemasContainer"></div>
+      <div id="dilemasMsg"></div>
+    </div>
+  </section>
+
+  <!-- ============ CANARIAS ==================== -->
+  <section id="canarias">
+    <div class="sec-head reveal">
+      <span class="kicker morado">Bloque 3</span>
+      <h2>🌋 Canarias: tecnología para un desarrollo sostenible insular</h2>
+      <p class="lead">
+        Aplicar el pensamiento científico al análisis de la arquitectura bioclimática y del
+        ecotransporte en Canarias exige tener en cuenta la insularidad, la orografía, el clima
+        subtropical y la dependencia energética exterior.
+      </p>
+    </div>
+
+    <div class="teoria morado reveal">
+      <h3><span class="th-ico">🌋</span> Canarias: contexto y soluciones</h3>
+
+      <h4>1. La insularidad como condicionante</h4>
+      <p>
+        Canarias está formada por ocho islas habitadas, separadas por el mar. Esa condición
+        <strong>insular</strong> implica:
+      </p>
+      <ul>
+        <li>Dependencia del <strong>transporte marítimo y aéreo</strong> para mercancías, alimentos, combustibles y personas.</li>
+        <li><strong>Sobrecoste energético</strong> y mayor huella de carbono de los productos importados.</li>
+        <li>Necesidad de <strong>autosuficiencia energética</strong> basada en fuentes renovables locales.</li>
+        <li>Gestión compleja de <strong>residuos</strong>, <strong>agua</strong> y <strong>energía</strong>.</li>
+        <li>Oportunidad para <strong>soluciones adaptadas</strong>: no sirven las recetas continentales.</li>
+      </ul>
+
+      <h4>2. La orografía como condicionante</h4>
+      <p>
+        El relieve volcánico de las islas (con alturas como el Teide a 3.718 m) condiciona:
+      </p>
+      <ul>
+        <li>La <strong>movilidad</strong>: pendientes fuertes dificultan la bici y favorecen el coche.</li>
+        <li>La <strong>dispersión urbana</strong>: núcleos separados por barrancos y montañas.</li>
+        <li>El <strong>clima local</strong>: zonas húmedas al norte, áridas al sur; diferencias notables en pocos km.</li>
+        <li>La <strong>arquitectura</strong>: necesidad de adaptar el diseño a cada orientación y altitud.</li>
+      </ul>
+
+      <h4>3. El clima subtropical como aliado</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Factor climático</th>
+          <th>Oportunidad tecnológica</th>
+        </tr>
+        <tr>
+          <td><strong>Alta insolación</strong> (más de 2.500 h de sol al año)</td>
+          <td>Solar fotovoltaica y térmica, secaderos solares, arquitectura pasiva.</td>
+        </tr>
+        <tr>
+          <td><strong>Alisios constantes</strong></td>
+          <td>Energía eólica, ventilación natural cruzada, refrigeración pasiva.</td>
+        </tr>
+        <tr>
+          <td><strong>Temperaturas suaves</strong></td>
+          <td>Menor demanda de calefacción y refrigeración que en la Península.</td>
+        </tr>
+        <tr>
+          <td><strong>Escasez de lluvia</strong></td>
+          <td>Captación de nieblas, reutilización de aguas grises, riego eficiente.</td>
+        </tr>
+        <tr>
+          <td><strong>Riesgo volcánico</strong></td>
+          <td>Diseño sísmico y volcánico, materiales locales resistentes.</td>
+        </tr>
+      </table>
+
+      <h4>4. Tecnologías clave para la sostenibilidad canaria</h4>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>☀️ Solar fotovoltaica</h5>
+          <p>Cubiertas y parques solares. Canarias recibe una de las mayores irradiaciones de Europa.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>💨 Energía eólica</h5>
+          <p>Los alisios permiten parques eólicos tanto en tierra como offshore.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🌊 Energía marina</h5>
+          <p>Olas, corrientes y gradiente térmico oceánico: recurso aún poco explotado.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🔥 Geotermia</h5>
+          <p>El vulcanismo ofrece potencial geotérmico, especialmente en Tenerife y La Palma.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>💧 Desalación eficiente</h5>
+          <p>Ósmosis inversa con recuperación de energía para reducir el consumo eléctrico.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🚊 Movilidad eléctrica</h5>
+          <p>Tranvía de Tenerife, guaguas eléctricas, bicis eléctricas compartidas.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🏠 Rehabilitación bioclimática</h5>
+          <p>Adaptar viviendas existentes con aislamiento, aleros y vegetación.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>♻️ Economía circular insular</h5>
+          <p>Reutilizar, reparar y reciclar en circuitos cortos, minimizando la dependencia exterior.</p>
+        </div>
+      </div>
+
+      <h4>5. Casos concretos en Canarias</h4>
+      <ul>
+        <li><strong>Tranvía de Tenerife</strong>: transporte eléctrico entre Santa Cruz y La Laguna, con alta ocupación y bajas emisiones.</li>
+        <li><strong>Parques eólicos</strong> en Gran Canaria, Tenerife y Fuerteventura, integrados en el sistema eléctrico insular.</li>
+        <li><strong>Central hidroeléctrica de El Hierro</strong>: sistema pionero que combina eólica y bombeo para abastecer la isla con renovables.</li>
+        <li><strong>Arquitectura tradicional</strong>: casas de piedra, patios, aleros y cubiertas de teja que aplican principios bioclimáticos desde hace siglos.</li>
+        <li><strong>Desaladoras</strong> en Lanzarote, Fuerteventura y Gran Canaria, cada vez más eficientes.</li>
+        <li><strong>Redes de guaguas interurbanas</strong> y carriles bici en las principales ciudades.</li>
+      </ul>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> Canarias no puede copiar sin más las soluciones continentales.
+        Su insularidad y su orografía exigen <em>diseñar para el territorio</em>, aprovechando el sol,
+        el viento y los materiales locales, y priorizando la autosuficiencia energética.
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ==================== -->
+  <section id="quiz">
+    <div class="sec-head reveal" data-reto="quiz">
+      <span class="kicker ambar">🎯 Reto final · Cuestionario</span>
+      <h2>Comprueba lo que has aprendido</h2>
+      <p class="lead">10 preguntas sobre arquitectura bioclimática, ecotransporte y sostenibilidad en Canarias.</p>
+    </div>
+    <div id="quizContainer"></div>
+    <div id="quizResult">
+      <div id="quizScore">0/10</div>
+      <h3 id="quizTitle" style="color:#fff">¡Buen trabajo!</h3>
+      <p id="quizMsg" style="color:#a7f3d0;max-width:560px;margin:0 auto"></p>
+    </div>
+  </section>
+
+  <!-- ============ VOCABULARIO ==================== -->
+  <section id="vocabulario">
+    <div class="actividad reveal" style="border-top:6px solid var(--verde-oscuro)">
+      <span class="kicker">📚 Vocabulario clave</span>
+      <h3>Diccionario interactivo</h3>
+      <p class="intro">Pulsa sobre cualquier término para ver su explicación detallada.</p>
+      <div class="voc-grid" id="vocGrid"></div>
+      <div id="vocDef"></div>
+    </div>
+  </section>
+
+  <!-- ============ CERTIFICADO ==================== -->
+  <section id="certificado">
+    <div id="certificado">
+      <h2>🏆 Tu certificado de aprovechamiento</h2>
+      <p class="sub">Al completar las actividades obtendrás un certificado personalizado con tus resultados, que podrás descargar en PDF.</p>
+
+      <div class="cert-name" id="certNombre">—</div>
+
+      <div class="cert-stats" id="certStats"></div>
+
+      <div class="cert-warn" id="certWarn" style="display:none">
+        ⚠️ Aún no has completado ninguna actividad. Termina al menos una para generar tu certificado.
+      </div>
+
+      <button class="btn btn-ambar" id="btnCertificado" style="font-size:1rem;padding:.95rem 2rem">
+        📄 Descargar certificado en PDF
+      </button>
+      <p class="cert-note">El PDF se genera como imagen rasterizada: el texto no es editable ni seleccionable, garantizando su integridad.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p style="margin-bottom:.4rem"><strong>Canarias Sostenible</strong> · Arquitectura bioclimática · Ecotransporte · Pensamiento científico</p>
+  <p style="margin:0;font-size:.8rem">Aplicación educativa interactiva · Criterio 6.2 · Tecnología 4.º ESO · Tu progreso se guarda en este navegador</p>
+</footer>
+
+<div id="toast"></div>
+
+<script>
+/* ================================================================
+   1. ESTADO PERSISTENTE
+================================================================ */
+const LS_KEY = 'tecnoCanarias_v1';
+const RETOS_TOTALES = 6;
+
+/* Estado detallado de cada actividad: se guarda en cada interacción para que,
+   al volver a abrir la app, se vean las actividades ya realizadas
+   (respuestas marcadas, feedback, simulaciones, resultados...),
+   y no solo el resumen final del certificado. */
+function actividadesDefault(){
+  return {
+    clasifica:     { respuestas: [] },                                    // respuesta elegida en cada tarjeta (true/false)
+    memoria:       { layout: [], encontradas: [], movimientos: 0, terminado: false },
+    bioclimatica:  { edificio: 'vivienda', checks: {} },                   // checks[edificio] = [bool, ...]
+    ecotransporte: { calculado: false, transporte: 'guagua', distancia: 10 },
+    dilemas:       { respuestas: [] },                                    // índice elegido en cada dilema
+    quiz:          { respuestas: [] }                                     // índice elegido en cada pregunta
+  };
+}
+
+let estado = {
+  nombre: '',
+  retos: [],
+  scores: {
+    clasifica: 0,
+    memoria: 0,
+    memoriaOk: false,
+    bioclimatica: 0,
+    ecotransporte: 0,
+    dilemas: 0,
+    quiz: 0
+  },
+  actividades: actividadesDefault(),
+  iniciado: null
+};
+
+function act(nombre){ return estado.actividades[nombre]; }
+
+/* Mientras se restauran las actividades guardadas no se muestran avisos (toasts) */
+let restaurando = false;
+
+function guardarEstado(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(estado)); }catch(e){} }
+function cargarEstado(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(raw){
+      const d = JSON.parse(raw);
+      if(d && typeof d === 'object'){
+        estado = Object.assign(estado, d);
+        estado.scores = Object.assign({clasifica:0,memoria:0,memoriaOk:false,bioclimatica:0,ecotransporte:0,dilemas:0,quiz:0}, d.scores || {});
+        estado.retos = Array.isArray(d.retos) ? d.retos : [];
+        estado.actividades = actividadesDefault();
+        if(d.actividades && typeof d.actividades === 'object'){
+          Object.keys(estado.actividades).forEach(k=>{
+            if(d.actividades[k] && typeof d.actividades[k] === 'object'){
+              estado.actividades[k] = Object.assign(estado.actividades[k], d.actividades[k]);
+            }
+          });
+        }
+      }
+    }
+  }catch(e){}
+}
+/* El estado se carga ANTES de construir las actividades,
+   para poder restaurar lo que el usuario ya había realizado */
+cargarEstado();
+restaurando = true;
+
+/* ================================================================
+   2. PROGRESO
+================================================================ */
+function actualizarProgreso(){
+  const n = estado.retos.length;
+  document.getElementById('progresoPill').textContent = n + ' / ' + RETOS_TOTALES + ' retos';
+  document.getElementById('progresoBarra').style.width = (n / RETOS_TOTALES * 100) + '%';
+}
+function completarReto(id, msg){
+  if(!estado.retos.includes(id)) estado.retos.push(id);
+  guardarEstado();
+  actualizarProgreso();
+  actualizarCertificado();
+  actualizarBadgesRetos();
+  if(msg) toast(msg);
+}
+
+/* Muestra u oculta el distintivo "✔ Completado" en cada reto */
+function actualizarBadgesRetos(){
+  document.querySelectorAll('[data-reto]').forEach(el=>{
+    const h = el.querySelector('h3, h2');
+    if(!h) return;
+    let badge = h.querySelector('.reto-badge');
+    if(estado.retos.includes(el.dataset.reto)){
+      if(!badge){
+        badge = document.createElement('span');
+        badge.className = 'reto-badge';
+        badge.textContent = '✔ Completado';
+        h.appendChild(badge);
+      }
+    } else if(badge){
+      badge.remove();
+    }
+  });
+}
+
+let toastTimer;
+function toast(texto){
+  if(restaurando) return; // no molestar con avisos al reabrir la app
+  const t = document.getElementById('toast');
+  t.innerHTML = '🏅 ' + texto;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 3500);
+}
+
+/* ================================================================
+   3. LOGIN
+================================================================ */
+const overlay = document.getElementById('loginOverlay');
+const card = document.getElementById('loginCard');
+
+function mostrarLogin(){
+  if(estado.nombre){
+    card.innerHTML = `
+      <span class="login-emoji">🌋</span>
+      <h1>¡Hola de nuevo!</h1>
+      <p class="sub">Hemos guardado tu progreso en este navegador.</p>
+      <div class="welcome-back">
+        Continuar como <strong>${escaparHTML(estado.nombre)}</strong><br>
+        <span style="font-size:.82rem">Retos completados: ${estado.retos.length} / ${RETOS_TOTALES}</span>
+      </div>
+      <div class="login-btns">
+        <button class="btn btn-primary" id="btnContinuar">▶ Continuar</button>
+        <button class="btn btn-ghost" id="btnCambiar" style="background:#f1f5f9;color:#0f172a;border-color:#e2e8f0">👤 Cambiar nombre</button>
+      </div>
+    `;
+    document.getElementById('btnContinuar').addEventListener('click', iniciarApp);
+    document.getElementById('btnCambiar').addEventListener('click', ()=>{
+      estado.nombre = '';
+      estado.retos = [];
+      estado.scores = {clasifica:0,memoria:0,memoriaOk:false,bioclimatica:0,ecotransporte:0,dilemas:0,quiz:0};
+      estado.actividades = actividadesDefault();
+      estado.iniciado = null;
+      guardarEstado();
+      renderLoginForm();
+      location.reload(); // reinicia también en pantalla las actividades realizadas
+    });
+  } else {
+    renderLoginForm();
+  }
+}
+
+function renderLoginForm(){
+  card.innerHTML = `
+    <span class="login-emoji">🌋</span>
+    <h1>Bienvenido/a a Canarias Sostenible</h1>
+    <p class="sub">Antes de empezar, dinos cómo te llamas. Tu progreso se guardará en este navegador para que puedas continuar cuando quieras.</p>
+    <input type="text" id="inputNombre" placeholder="Escribe tu nombre" maxlength="40" autocomplete="off">
+    <button class="btn btn-primary" id="btnEntrar">🚀 Comenzar la aventura</button>
+    <div class="login-error" id="loginError"></div>
+  `;
+  const inp = document.getElementById('inputNombre');
+  const btn = document.getElementById('btnEntrar');
+  const err = document.getElementById('loginError');
+  const submit = ()=>{
+    const v = inp.value.trim();
+    if(v.length < 2){ err.textContent = 'Por favor, introduce al menos 2 caracteres.'; inp.focus(); return; }
+    estado.nombre = v;
+    estado.iniciado = new Date().toISOString();
+    guardarEstado();
+    iniciarApp();
+  };
+  btn.addEventListener('click', submit);
+  inp.addEventListener('keydown', e=>{ if(e.key === 'Enter') submit(); });
+  setTimeout(()=>inp.focus(), 200);
+}
+
+function iniciarApp(){
+  overlay.classList.add('hidden');
+  document.body.classList.remove('locked');
+  document.getElementById('navUserName').textContent = estado.nombre;
+  document.getElementById('heroNombre').textContent = estado.nombre;
+  actualizarProgreso();
+  actualizarCertificado();
+}
+
+function escaparHTML(s){
+  return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ================================================================
+   4. REVEAL
+================================================================ */
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach((e,i)=>{
+    if(e.isIntersecting){
+      setTimeout(()=>e.target.classList.add('in'), i*70);
+      io.unobserve(e.target);
+    }
+  });
+},{threshold:.12, rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+/* ================================================================
+   5. NAV ACTIVO
+================================================================ */
+const secciones = [...document.querySelectorAll('section[id]')];
+const navLinks = [...document.querySelectorAll('.nav-links a')];
+window.addEventListener('scroll', ()=>{
+  let actual = '';
+  secciones.forEach(s=>{ if(window.scrollY >= s.offsetTop - 120) actual = s.id; });
+  navLinks.forEach(a=>a.classList.toggle('active', a.getAttribute('href') === '#'+actual));
+});
+
+/* ================================================================
+   6. RETO 1 · CLASIFICA BIOCLIMÁTICO
+================================================================ */
+const clasificaData = [
+  {t:"Orientar el salón al sur para captar sol en invierno.", ok:true,
+   why:"En el hemisferio norte, la fachada sur recibe más radiación invernal. Es una estrategia bioclimática pasiva básica y gratuita."},
+  {t:"Instalar toldos y aleros anchos para bloquear el sol alto del verano.", ok:true,
+   why:"El sol de verano es más alto; un alero bien dimensionado bloquea su radiación sin impedir la entrada del sol bajo de invierno."},
+  {t:"Colocar ventanas enormes al oeste sin protección solar.", ok:false,
+   why:"La fachada oeste recibe el sol de la tarde, el más caluroso. Sin protección, provoca sobrecalentamiento y dispara el consumo de refrigeración."},
+  {t:"Usar muros gruesos de piedra volcánica local.", ok:true,
+   why:"La piedra volcánica tiene gran inercia térmica: amortigua las oscilaciones de temperatura y reduce la demanda energética. Además, es local."},
+  {t:"Eliminar la vegetación del patio para ganar espacio.", ok:false,
+   why:"La vegetación da sombra, enfría por evapotranspiración y filtra el aire. Eliminarla empeora el confort y aumenta el consumo."},
+  {t:"Ventilar cruzando aberturas en fachadas opuestas para aprovechar los alisios.", ok:true,
+   why:"La ventilación cruzada es un sistema pasivo muy eficaz en Canarias gracias a los alisios. Renueva el aire y enfría sin energía."},
+  {t:"Sellar por completo la vivienda sin ninguna entrada de aire exterior.", ok:false,
+   why:"Una vivienda hermética sin ventilación adecuada acumula humedad, CO₂ y contaminantes. Es insalubre y aumenta el consumo."},
+  {t:"Pintar la cubierta de color blanco para reflejar la radiación solar.", ok:true,
+   why:"Los colores claros reflejan la radiación y reducen la temperatura superficial. Es una estrategia de enfriamiento pasivo sencilla y eficaz."},
+  {t:"Instalar aire acondicionado a máxima potencia en lugar de mejorar el aislamiento.", ok:false,
+   why:"Es la solución más cara, contaminante e ineficiente. Primero se reduce la demanda (aislamiento, sombras, ventilación) y luego se climatiza."},
+  {t:"Colocar un muro Trombe orientado al sur para acumular calor.", ok:true,
+   why:"El muro Trombe capta y almacena calor durante el día y lo cede por la noche. Es una solución pasiva clásica de calefacción solar."}
+];
+
+let respondidas = 0, acertadas = 0;
+
+function pintaResumenClasifica(){
+  document.getElementById('clasificaResumen').textContent =
+    `Has acertado ${acertadas} de ${clasificaData.length}. ` +
+    (acertadas >= 8 ? '¡Dominas los principios de la arquitectura bioclimática!' :
+     acertadas >= 5 ? 'Buen resultado. Repasa las que has fallado.' :
+     'Vuelve a leer la teoría de arquitectura bioclimática y prueba de nuevo.');
+}
+
+/* Marca una tarjeta como respondida (al pulsar y también al restaurar) */
+function marcaClasifica(c, btns, fb, item, elegido){
+  const acierto = elegido === item.ok;
+  btns.forEach(x=>{
+    x.disabled = true;
+    if((x.dataset.v === '1') === item.ok) x.classList.add('correct');
+  });
+  if(!acierto){
+    btns.forEach(x=>{ if((x.dataset.v === '1') === elegido) x.classList.add('wrong'); });
+  }
+  fb.classList.add('show');
+  fb.innerHTML = (acierto ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>No exactamente.</strong> ') + item.why;
+  c.classList.add('done');
+}
+
+(function initClasifica(){
+  const grid = document.getElementById('clasificaGrid');
+  const guardadas = act('clasifica').respuestas || [];
+  clasificaData.forEach((item, i)=>{
+    const c = document.createElement('div');
+    c.className = 'clas-card';
+    c.innerHTML = `
+      <p>${item.t}</p>
+      <div class="clas-btns">
+        <button data-v="1">✔ Bioclimático</button>
+        <button data-v="0">✘ No bioclimático</button>
+      </div>
+      <div class="clas-fb"></div>
+    `;
+    const btns = c.querySelectorAll('button');
+    const fb = c.querySelector('.clas-fb');
+    btns.forEach(b=>{
+      b.addEventListener('click', ()=>{
+        const elegido = b.dataset.v === '1';
+        marcaClasifica(c, btns, fb, item, elegido);
+        respondidas++;
+        if(elegido === item.ok) acertadas++;
+        act('clasifica').respuestas[i] = elegido;   // se guarda la realización
+        guardarEstado();
+        if(respondidas === clasificaData.length){
+          if(acertadas > estado.scores.clasifica){
+            estado.scores.clasifica = acertadas;
+            guardarEstado();
+          }
+          pintaResumenClasifica();
+          actualizarCertificado();
+          completarReto('clasifica', '¡Reto de clasificación bioclimática completado!');
+        }
+      });
+    });
+    // Restaurar la respuesta guardada de sesiones anteriores
+    if(typeof guardadas[i] === 'boolean'){
+      marcaClasifica(c, btns, fb, item, guardadas[i]);
+      respondidas++;
+      if(guardadas[i] === item.ok) acertadas++;
+    }
+    grid.appendChild(c);
+  });
+  if(respondidas === clasificaData.length && respondidas > 0){
+    pintaResumenClasifica();
+  }
+})();
+
+/* ================================================================
+   7. RETO 2 · MEMORIA
+================================================================ */
+const parejasData = [
+  {id:'p1', termino:'Muro Trombe',        definicion:'Muro que capta y cede calor'},
+  {id:'p2', termino:'Inercia térmica',    definicion:'Amortigua los cambios de temperatura'},
+  {id:'p3', termino:'Ventilación cruzada',definicion:'Aberturas opuestas para renovar el aire'},
+  {id:'p4', termino:'Alisios',            definicion:'Vientos constantes del NE en Canarias'},
+  {id:'p5', termino:'Ecotransporte',      definicion:'Movilidad de bajas emisiones'},
+  {id:'p6', termino:'Insularidad',        definicion:'Condición de territorio rodeado de mar'},
+  {id:'p7', termino:'Orografía',          definicion:'Conjunto de relieves de un territorio'},
+  {id:'p8', termino:'El Hierro',          definicion:'Isla 100 % renovable con bombeo'}
+];
+
+let memPrimera = null;
+let memBloqueado = false;
+let memMovimientos = 0;
+let memParejasOk = 0;
+
+function shuffle(arr){
+  const a = [...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function initMemoria(restaurar){
+  const datos = act('memoria');
+  const grid = document.getElementById('memGrid');
+  grid.innerHTML = '';
+  memPrimera = null;
+  memBloqueado = false;
+
+  let cartas = null;
+  if(restaurar && Array.isArray(datos.layout) && datos.layout.length === parejasData.length*2 &&
+     datos.layout.every(c => c && parejasData.some(p=>p.id===c.id) && (c.tipo==='termino' || c.tipo==='definicion'))){
+    // Se recupera la partida guardada, con el mismo orden de cartas
+    cartas = datos.layout.map(c=>{
+      const p = parejasData.find(x=>x.id===c.id);
+      return {id:c.id, tipo:c.tipo, contenido: c.tipo==='termino' ? p.termino : p.definicion};
+    });
+  } else {
+    // Partida nueva: se baraja y se guarda el orden para poder continuarla otro día
+    cartas = [];
+    parejasData.forEach(p=>{
+      cartas.push({id:p.id, tipo:'termino', contenido:p.termino});
+      cartas.push({id:p.id, tipo:'definicion', contenido:p.definicion});
+    });
+    shuffle(cartas);
+    datos.layout = cartas.map(c=>({id:c.id, tipo:c.tipo}));
+    datos.encontradas = [];
+    datos.movimientos = 0;
+    datos.terminado = false;
+    guardarEstado();
+  }
+
+  if(!Array.isArray(datos.encontradas)) datos.encontradas = [];
+  memMovimientos = datos.movimientos || 0;
+  memParejasOk = datos.encontradas.length;
+  document.getElementById('memMov').textContent = memMovimientos;
+  document.getElementById('memParejas').textContent = memParejasOk;
+  document.getElementById('memMensaje').textContent = '';
+
+  cartas.forEach((carta, idx)=>{
+    const div = document.createElement('div');
+    div.className = 'mem-card';
+    div.dataset.id = carta.id;
+    div.dataset.idx = idx;
+    div.dataset.tipo = carta.tipo;
+    div.innerHTML = `
+      <div class="mem-inner">
+        <div class="mem-face mem-front">?</div>
+        <div class="mem-face mem-back">${carta.contenido}</div>
+      </div>
+    `;
+    if(datos.encontradas.includes(carta.id)){
+      div.classList.add('matched', 'flipped'); // parejas ya encontradas
+    }
+    div.addEventListener('click', ()=>clickMemoria(div));
+    grid.appendChild(div);
+  });
+
+  if(datos.terminado){
+    document.getElementById('memMensaje').innerHTML =
+      `🎉 ¡Has encontrado todas las parejas en <strong>${memMovimientos} movimientos</strong>!`;
+  }
+}
+
+function clickMemoria(el){
+  if(memBloqueado) return;
+  if(el.classList.contains('matched') || el.classList.contains('flipped')) return;
+
+  el.classList.add('flipped');
+
+  if(!memPrimera){
+    memPrimera = el;
+    return;
+  }
+
+  memMovimientos++;
+  document.getElementById('memMov').textContent = memMovimientos;
+  act('memoria').movimientos = memMovimientos;   // se guarda el avance
+  guardarEstado();
+
+  const a = memPrimera;
+  const b = el;
+
+  if(a.dataset.id === b.dataset.id && a.dataset.tipo !== b.dataset.tipo){
+    a.classList.add('matched');
+    b.classList.add('matched');
+    memPrimera = null;
+    memParejasOk++;
+    document.getElementById('memParejas').textContent = memParejasOk;
+    act('memoria').encontradas.push(a.dataset.id);   // se guarda la pareja encontrada
+    guardarEstado();
+    if(memParejasOk === parejasData.length){
+      act('memoria').terminado = true;
+      document.getElementById('memMensaje').innerHTML =
+        `🎉 ¡Has encontrado todas las parejas en <strong>${memMovimientos} movimientos</strong>!`;
+      if(estado.scores.memoria === 0 || memMovimientos < estado.scores.memoria){
+        estado.scores.memoria = memMovimientos;
+      }
+      estado.scores.memoriaOk = true;
+      guardarEstado();
+      actualizarCertificado();
+      completarReto('memoria', '¡Juego de memoria completado!');
+    }
+  } else {
+    memBloqueado = true;
+    setTimeout(()=>{
+      a.classList.remove('flipped');
+      b.classList.remove('flipped');
+      memPrimera = null;
+      memBloqueado = false;
+    }, 900);
+  }
+}
+
+document.getElementById('btnMemReiniciar').addEventListener('click', ()=>initMemoria(false));
+initMemoria(true); // al abrir la app se recupera la partida guardada, si existe
+
+/* ================================================================
+   8. RETO 3 · SIMULADOR BIOCLIMÁTICO
+================================================================ */
+const bioData = {
+  vivienda: [
+    {t:"Orientación sur del salón principal", p:12},
+    {t:"Aleros y toldos para el sol de verano", p:10},
+    {t:"Muros gruesos de piedra volcánica local", p:12},
+    {t:"Ventilación cruzada aprovechando los alisios", p:10},
+    {t:"Patio interior con vegetación", p:10},
+    {t:"Cubierta con aislamiento térmico reforzado", p:10},
+    {t:"Vidrios dobles con cámara de aire", p:8},
+    {t:"Placas solares fotovoltaicas en cubierta", p:10},
+    {t:"Captación solar térmica para agua caliente", p:8},
+    {t:"Recogida de agua de lluvia para riego", p:5},
+    {t:"Pintura clara en cubierta y fachadas", p:5}
+  ],
+  oficina: [
+    {t:"Orientación norte para evitar sobrecalentamiento", p:12},
+    {t:"Fachada acristalada con doble piel ventilada", p:12},
+    {t:"Ventilación cruzada y chimenea solar", p:10},
+    {t:"Lamas y celosías regulables en fachadas este/oeste", p:10},
+    {t:"Iluminación LED con sensor de presencia", p:10},
+    {t:"Enfriamiento evaporativo en patios", p:8},
+    {t:"Cubierta verde ajardinada", p:10},
+    {t:"Placas fotovoltaicas para autoconsumo", p:10},
+    {t:"Aislamiento térmico reforzado", p:8},
+    {t:"Recarga de vehículos eléctricos en aparcamiento", p:5},
+    {t:"Reutilización de aguas grises para sanitarios", p:5}
+  ],
+  colegio: [
+    {t:"Aulas orientadas al norte y sur (nunca al oeste)", p:12},
+    {t:"Aleros y pérgolas en patios y zonas de paso", p:10},
+    {t:"Ventilación cruzada natural en todas las aulas", p:12},
+    {t:"Vegetación abundante en patios y alrededores", p:10},
+    {t:"Cubiertas ventiladas con cámara de aire", p:8},
+    {t:"Pintura clara en todas las superficies exteriores", p:8},
+    {t:"Placas fotovoltaicas para cubrir parte de la demanda", p:12},
+    {t:"Captación de agua de lluvia para riego del huerto", p:8},
+    {t:"Iluminación LED con detectores de presencia", p:8},
+    {t:"Materiales locales y de baja energía incorporada", p:7},
+    {t:"Espacios exteriores de sombra para educación al aire libre", p:5}
+  ]
+};
+
+let bioMaxPct = 0;
+
+function renderBioclimatica(){
+  const prod = document.getElementById('selEdificio').value;
+  const items = bioData[prod];
+  const guardados = act('bioclimatica').checks || {};
+  const list = document.getElementById('bioList');
+  list.innerHTML = '';
+  items.forEach((item,i)=>{
+    const lbl = document.createElement('label');
+    lbl.className = 'switch-item';
+    const marcado = Array.isArray(guardados[prod]) && guardados[prod][i];
+    lbl.innerHTML = `
+      <input type="checkbox" data-p="${item.p}" id="bio${i}"${marcado ? ' checked' : ''}>
+      <span class="switch-box"></span>
+      <span class="switch-txt">${item.t} <em style="font-size:.78rem;color:var(--gris);font-style:normal">(+${item.p})</em></span>
+    `;
+    list.appendChild(lbl);
+  });
+  actualizarBio();
+}
+function actualizarBio(){
+  const prod = document.getElementById('selEdificio').value;
+  const list = document.getElementById('bioList');
+  const checks = list.querySelectorAll('input');
+  let suma = 0;
+  const marcadas = [];
+  checks.forEach(c=>{ marcadas.push(c.checked); if(c.checked) suma += parseInt(c.dataset.p,10); });
+  const max = [...checks].reduce((a,c)=>a+parseInt(c.dataset.p,10),0);
+  const pct = Math.round(suma/max*100);
+
+  // Se guarda la configuración del simulador (edificio y estrategias activas)
+  const datosBio = act('bioclimatica');
+  datosBio.edificio = prod;
+  datosBio.checks = datosBio.checks || {};
+  datosBio.checks[prod] = marcadas;
+  guardarEstado();
+
+  let msg;
+  if(pct===0) msg = 'Activa estrategias para ver cómo mejora la eficiencia bioclimática.';
+  else if(pct<40) msg = '🔴 Edificio poco eficiente. Gran parte del confort dependerá de climatización artificial.';
+  else if(pct<70) msg = '🟠 Eficiencia parcial. Hay buenas decisiones, pero quedan mejoras importantes.';
+  else if(pct<100) msg = '🟢 Buen diseño bioclimático. El consumo energético se reduce de forma notable.';
+  else msg = '🏆 ¡Edificio ejemplar! Máxima eficiencia pasiva, renovables integradas y mínimo impacto ambiental.';
+  document.getElementById('bioResultado').textContent = msg;
+
+  let color = '#dc2626';
+  if(pct >= 75) color = '#16a34a';
+  else if(pct >= 50) color = '#14b8a6';
+  else if(pct >= 30) color = '#f59e0b';
+  document.getElementById('gaugeBio').style.background = `conic-gradient(${color} ${pct*3.6}deg, #334155 0deg)`;
+  document.getElementById('gaugeBioNum').innerHTML = pct + '<span style="font-size:1rem">%</span>';
+  document.getElementById('gaugeBioNum').style.color = color;
+
+  if(pct > bioMaxPct){
+    bioMaxPct = pct;
+    estado.scores.bioclimatica = pct;
+    guardarEstado();
+    actualizarCertificado();
+  }
+  if(pct >= 100){
+    completarReto('bioclimatica', '¡Simulador bioclimático completado!');
+  }
+}
+document.getElementById('selEdificio').addEventListener('change', renderBioclimatica);
+document.getElementById('bioList').addEventListener('change', actualizarBio);
+
+// Restaurar el último edificio configurado
+(function(){
+  const ed = act('bioclimatica').edificio;
+  if(ed && bioData[ed]) document.getElementById('selEdificio').value = ed;
+})();
+renderBioclimatica();
+
+/* ================================================================
+   9. RETO 4 · ECOTRANSPORTE
+================================================================ */
+const transporteData = {
+  caminar:        {nombre:'🚶 Caminar',          g:0,   icono:'🚶', detalle:'Cero emisiones directas. El único impacto es el calzado y la ropa, con huella muy baja por km.'},
+  bici:           {nombre:'🚲 Bicicleta',        g:0,   icono:'🚲', detalle:'Cero emisiones en uso. La huella de fabricación se reparte entre miles de km. Ideal para distancias cortas y medias.'},
+  guagua:         {nombre:'🚌 Guagua urbana',    g:50,  icono:'🚌', detalle:'Emisiones moderadas repartidas entre muchas personas. Con alta ocupación, es uno de los modos más eficientes.'},
+  tranvia:        {nombre:'🚊 Tranvía',          g:30,  icono:'🚊', detalle:'Eléctrico y de gran capacidad. Su impacto depende del mix eléctrico: en Canarias, cada vez más renovable.'},
+  coche_electrico:{nombre:'🚗 Coche eléctrico',  g:40,  icono:'🚗', detalle:'Cero emisiones locales. Su huella depende de cómo se genere la electricidad y de la fabricación de la batería.'},
+  coche_gasolina: {nombre:'🚙 Coche gasolina',   g:170, icono:'🚙', detalle:'Alto impacto por persona. Con 1 solo ocupante, es uno de los modos menos eficientes para desplazarse.'},
+  avion:          {nombre:'✈️ Avión interinsular', g:250, icono:'✈️', detalle:'Emisiones muy altas por pasajero y km. Imprescindible en algunos trayectos, pero conviene evitarlo cuando hay alternativas.'},
+  ferry:          {nombre:'🚢 Ferry interinsular', g:90, icono:'🚢', detalle:'Esencial para mercancías y vehículos entre islas. Su impacto por pasajero es intermedio; mejora con ocupación alta y motores eficientes.'}
+};
+
+document.getElementById('rangoDist').addEventListener('input', (e)=>{
+  document.getElementById('distLabel').textContent = e.target.value + ' km';
+});
+
+function pintaEcoResultado(){
+  const datos = act('ecotransporte');
+  const d = transporteData[datos.transporte];
+  const dist = datos.distancia;
+  const out = document.getElementById('ecoResultado');
+  const totalG = d.g * dist;
+  const totalKg = totalG / 1000;
+  const maxG = 250 * dist;
+  const pct = Math.min(100, Math.round(totalG / maxG * 100));
+  let color = '#059669';
+  if(pct > 60) color = '#dc2626';
+  else if(pct > 30) color = '#d97706';
+  else if(pct > 5) color = '#14b8a6';
+
+  out.innerHTML = `
+    <h4 style="color:var(--azul-oscuro);margin-bottom:.4rem">${d.nombre} · ${dist} km</h4>
+    <p style="font-size:.95rem;color:var(--gris-oscuro);margin-bottom:.3rem">
+      Emisiones estimadas: <strong>${totalKg.toFixed(2)} kg CO₂e</strong>
+      <span style="font-size:.82rem;color:var(--gris)">(${d.g} g CO₂e/pasajero·km)</span>
+    </p>
+    <div class="barra"><div style="width:${pct}%;background:${color}"></div></div>
+    <p style="font-size:.88rem;color:var(--gris-oscuro);margin:0">${d.detalle}</p>
+    <p style="font-size:.8rem;color:var(--gris);margin-top:.5rem">
+      * Datos orientativos basados en la AEMA, ITU y estudios de movilidad insular.
+    </p>
+  `;
+}
+
+document.getElementById('btnEco').addEventListener('click', ()=>{
+  const datos = act('ecotransporte');
+  datos.transporte = document.getElementById('selTransporte').value;
+  datos.distancia = parseInt(document.getElementById('rangoDist').value, 10);
+  datos.calculado = true;                        // se guarda la consulta realizada
+  guardarEstado();
+  pintaEcoResultado();
+  estado.scores.ecotransporte = 1;
+  guardarEstado();
+  actualizarCertificado();
+  completarReto('ecotransporte', '¡Has consultado las emisiones del ecotransporte!');
+});
+
+// Restaurar la última consulta realizada al reabrir la app
+(function(){
+  const datos = act('ecotransporte');
+  if(datos.calculado && transporteData[datos.transporte]){
+    document.getElementById('selTransporte').value = datos.transporte;
+    document.getElementById('rangoDist').value = datos.distancia;
+    document.getElementById('distLabel').textContent = datos.distancia + ' km';
+    pintaEcoResultado();
+  }
+})();
+
+/* ================================================================
+   10. RETO 5 · DILEMAS CANARIAS
+================================================================ */
+const dilemas = [
+  {
+    q:"En tu municipio van a construir un nuevo barrio. Te piden asesorar sobre la orientación de las viviendas y las zonas comunes. ¿Qué propones?",
+    ops:[
+      {t:"Orientar todas las viviendas al oeste para aprovechar las vistas al mar.", ok:false, why:"La fachada oeste recibe el sol de la tarde más caluroso. Sin protección, dispara el consumo de refrigeración y el malestar térmico."},
+      {t:"Orientar los salones al sur, proteger las fachadas este/oeste con celosías y vegetación, y reservar zonas verdes con especies locales.", ok:true, why:"¡Excelente! Combina orientación bioclimática, protección solar y vegetación autóctona de bajo consumo hídrico, adaptada al clima canario."},
+      {t:"Orientar las viviendas al norte para que estén siempre frescas.", ok:false, why:"Sin sol en invierno, aumentaría la demanda de calefacción. La orientación norte es buena para algunas estancias, pero no como única estrategia."}
+    ]
+  },
+  {
+    q:"Tu centro educativo quiere reducir su huella de carbono en los desplazamientos. Te piden proponer medidas. ¿Cuál eliges?",
+    ops:[
+      {t:"Comprar más plazas de aparcamiento para que cada alumno/a pueda venir en coche propio.", ok:false, why:"Aumentar el aparcamiento incentiva el coche privado y agrava el problema. No es una medida de ecotransporte."},
+      {t:"Fomentar el transporte público escolar, crear aparcabicis seguros, organizar rutas a pie y promover el coche compartido entre familias.", ok:true, why:"¡Correcto! Combina varias medidas de la jerarquía de movilidad sostenible, reduce emisiones y mejora la salud y la convivencia."},
+      {t:"Comprar un autobús diésel para el centro sin valorar otras opciones.", ok:false, why:"Aunque mejora respecto al coche individual, no es la mejor opción: un autobús eléctrico o híbrido tendría mucho menor impacto."}
+    ]
+  },
+  {
+    q:"En tu isla se plantea instalar un parque eólico. Algunos vecinos se quejan del impacto visual y del ruido. ¿Cómo lo analizas con pensamiento científico?",
+    ops:[
+      {t:"Rechazarlo sin más: las renovables siempre dañan el paisaje.", ok:false, why:"Es una postura sin análisis científico. Las renovables tienen impactos, pero también beneficios ambientales medibles que deben sopesarse con datos."},
+      {t:"Analizar datos reales de generación, emisiones evitadas, ruido medido y alternativas de ubicación, y buscar un diseño consensuado que minimice los impactos.", ok:true, why:"¡Perfecto! El pensamiento científico exige medir, comparar y buscar la mejor solución entre varias opciones, valorando el bienestar colectivo."},
+      {t:"Aceptarlo sin más porque las renovables son siempre buenas.", ok:false, why:"Tampoco es una postura científica. Hay que evaluar cada caso con datos: ubicación, tecnología, impacto real y alternativas."}
+    ]
+  }
+];
+
+let dilemasRespondidos = 0, dilemasAciertos = 0;
+
+function pintaResumenDilemas(){
+  document.getElementById('dilemasMsg').innerHTML =
+    `Has tomado decisiones sostenibles en <strong>${dilemasAciertos} de ${dilemas.length}</strong> casos. ` +
+    (dilemasAciertos >= 2 ? '¡Tienes un buen criterio científico y sostenible!' : 'Repasa los dilemas fallados y vuelve a intentarlo.');
+}
+
+/* Marca un dilema como respondido (al pulsar y también al restaurar) */
+function marcaDilema(btns, fb, d, j){
+  const opcion = d.ops[j];
+  btns.forEach(x=>x.disabled = true);
+  btns.forEach(x=>{
+    const idx = parseInt(x.dataset.j, 10);
+    if(d.ops[idx].ok) x.classList.add('correct');
+  });
+  if(!opcion.ok) btns[j].classList.add('wrong');
+  fb.innerHTML = (opcion.ok ? '✅ <strong>Decisión sostenible.</strong> ' : '❌ <strong>Decisión mejorable.</strong> ') + opcion.why;
+  fb.classList.add('show');
+}
+
+(function initDilemas(){
+  const cont = document.getElementById('dilemasContainer');
+  const guardadas = act('dilemas').respuestas || [];
+  dilemas.forEach((d, i)=>{
+    const div = document.createElement('div');
+    div.className = 'dilema-card';
+    div.innerHTML = `
+      <div class="dc-head">
+        <span class="dc-ico">🌋</span>
+        <div>
+          <p class="dc-titulo">Dilema ${i+1}</p>
+          <p class="dc-desc">${d.q}</p>
+        </div>
+      </div>
+      <div class="dilema-opciones">
+        ${d.ops.map((o,j)=>`
+          <button class="dilema-op" data-i="${i}" data-j="${j}">
+            <span class="do-letra">${String.fromCharCode(65+j)}</span>
+            <span>${o.t}</span>
+          </button>
+        `).join('')}
+      </div>
+      <div class="dilema-fb"></div>
+    `;
+    cont.appendChild(div);
+    const btns = div.querySelectorAll('.dilema-op');
+    const fb = div.querySelector('.dilema-fb');
+    btns.forEach(b=>{
+      b.addEventListener('click', ()=>{
+        const j = parseInt(b.dataset.j, 10);
+        marcaDilema(btns, fb, d, j);
+        if(d.ops[j].ok) dilemasAciertos++;
+        dilemasRespondidos++;
+        act('dilemas').respuestas[i] = j;   // se guarda la decisión tomada
+        guardarEstado();
+        if(dilemasRespondidos === dilemas.length){
+          if(dilemasAciertos > estado.scores.dilemas){
+            estado.scores.dilemas = dilemasAciertos;
+            guardarEstado();
+            actualizarCertificado();
+          }
+          pintaResumenDilemas();
+          completarReto('dilemas', '¡Dilemas de Canarias completados!');
+        }
+      });
+    });
+    // Restaurar la decisión guardada de sesiones anteriores
+    if(typeof guardadas[i] === 'number' && guardadas[i] >= 0 && guardadas[i] < d.ops.length){
+      marcaDilema(btns, fb, d, guardadas[i]);
+      if(d.ops[guardadas[i]].ok) dilemasAciertos++;
+      dilemasRespondidos++;
+    }
+  });
+  if(dilemasRespondidos === dilemas.length && dilemasRespondidos > 0){
+    pintaResumenDilemas();
+  }
+})();
+
+/* ================================================================
+   11. VOCABULARIO
+================================================================ */
+const vocabulario = [
+  {ico:'🏠', t:'Arquitectura bioclimática', d:'Diseño de edificios que aprovecha las condiciones climáticas del entorno (sol, viento, vegetación) para lograr confort con el mínimo consumo energético, mediante estrategias pasivas y materiales adecuados.'},
+  {ico:'🧱', t:'Muro Trombe', d:'Muro orientado al sol que acumula calor durante el día y lo cede lentamente por la noche, calentando el interior de forma pasiva. Combina inercia térmica y captación solar.'},
+  {ico:'🌡️', t:'Inercia térmica', d:'Propiedad de los materiales de almacenar y liberar calor lentamente. Amortigua las oscilaciones de temperatura y mejora el confort interior. Los muros gruesos de piedra son un ejemplo clásico.'},
+  {ico:'💨', t:'Ventilación cruzada', d:'Sistema pasivo que renueva el aire y enfría el edificio mediante aberturas en fachadas opuestas. En Canarias, aprovecha los alisios para refrigerar sin consumo energético.'},
+  {ico:'☀️', t:'Captación solar pasiva', d:'Aprovechamiento directo de la radiación solar sin sistemas mecánicos: ventanas orientadas al sur, muros acumuladores, invernaderos adosados, etc.'},
+  {ico:'🌿', t:'Cubierta verde', d:'Cubierta cubierta de vegetación que aporta aislamiento térmico, retiene agua de lluvia, capta CO₂ y reduce el efecto isla de calor urbano.'},
+  {ico:'🍃', t:'Evapotranspiración', d:'Proceso por el que las plantas liberan vapor de agua a la atmósfera, enfriando el aire circundante. Es la base del enfriamiento natural mediante vegetación.'},
+  {ico:'🏛️', t:'Alero', d:'Elemento arquitectónico horizontal que sobresale de la fachada. Bien dimensionado, bloquea el sol alto del verano y deja pasar el sol bajo del invierno.'},
+  {ico:'🏡', t:'Patio interior', d:'Espacio abierto central que regula la temperatura, aporta luz natural y facilita la ventilación. Es un elemento tradicional de la arquitectura canaria y mediterránea.'},
+  {ico:'🚲', t:'Ecotransporte', d:'Conjunto de modos de movilidad que minimizan el impacto ambiental: caminar, bicicleta, transporte público, vehículo eléctrico compartido, etc.'},
+  {ico:'📊', t:'g CO₂e/pkm', d:'Unidad de medida del impacto ambiental del transporte: gramos de CO₂ equivalente por pasajero y kilómetro. Permite comparar modos muy distintos en igualdad de condiciones.'},
+  {ico:'🔋', t:'Vehículo eléctrico', d:'Vehículo propulsado por motor eléctrico alimentado por batería. Su sostenibilidad depende del mix eléctrico, la fabricación de la batería y su reciclaje al final de la vida.'},
+  {ico:'🌬️', t:'Alisios', d:'Vientos constantes que soplan del noreste en Canarias. Son un recurso natural clave para la energía eólica y para la ventilación pasiva de edificios.'},
+  {ico:'🌋', t:'Insularidad', d:'Condición de un territorio rodeado de mar. En Canarias implica dependencia del transporte marítimo y aéreo, sobrecoste energético y necesidad de autosuficiencia.'},
+  {ico:'⛰️', t:'Orografía', d:'Conjunto de relieves de un territorio. La orografía volcánica de Canarias condiciona la movilidad, el clima local y el diseño arquitectónico.'},
+  {ico:'💧', t:'Desalación', d:'Proceso de obtención de agua dulce a partir de agua de mar. En Canarias es esencial, pero consume mucha energía; la ósmosis inversa con recuperación energética reduce el impacto.'},
+  {ico:'⚡', t:'Autosuficiencia energética', d:'Capacidad de un territorio para cubrir su demanda energética con recursos propios. En Canarias es un objetivo estratégico basado en renovables.'},
+  {ico:'♻️', t:'Economía circular insular', d:'Modelo que busca cerrar los ciclos de materiales en territorios limitados como las islas, reduciendo la dependencia exterior y los residuos.'},
+  {ico:'🔬', t:'Pensamiento científico', d:'Forma de razonar basada en la observación, la medición, la comparación y la argumentación con datos. Permite tomar decisiones tecnológicas informadas y responsables.'},
+  {ico:'🌍', t:'Desarrollo sostenible', d:'Modelo de desarrollo que satisface las necesidades del presente sin comprometer las de las generaciones futuras. Integra dimensión ambiental, social y económica.'}
+];
+
+(function initVoc(){
+  const grid = document.getElementById('vocGrid');
+  const defBox = document.getElementById('vocDef');
+  vocabulario.forEach((v)=>{
+    const b = document.createElement('button');
+    b.className = 'voc-term';
+    b.innerHTML = `<span style="font-size:1.1rem">${v.ico}</span><span>${v.t}</span>`;
+    b.addEventListener('click', ()=>{
+      const yaActivo = b.classList.contains('active');
+      grid.querySelectorAll('.voc-term').forEach(x=>x.classList.remove('active'));
+      if(yaActivo){
+        defBox.classList.remove('show');
+        setTimeout(()=>{ defBox.innerHTML=''; }, 500);
+        return;
+      }
+      b.classList.add('active');
+      defBox.innerHTML = `<h4>${v.ico} ${v.t}</h4><p>${v.d}</p>`;
+      defBox.classList.add('show');
+    });
+    grid.appendChild(b);
+  });
+})();
+
+/* ================================================================
+   12. QUIZ FINAL
+================================================================ */
+const preguntasQuiz = [
+  {q:"¿Qué busca la arquitectura bioclimática?",
+   o:["Construir rascacielos acristalados sin protección solar.",
+      "Acondicionar todas las estancias con aire acondicionado de gran potencia.",
+      "Adaptar el diseño del edificio al clima del lugar.",
+      "Emplear únicamente materiales importados de gran calidad."],
+   c:2, e:"La arquitectura bioclimática aprovecha el sol, el viento, la vegetación y los materiales locales para reducir la demanda energética del edificio."},
+  {q:"En el hemisferio norte, ¿qué orientación es más favorable para captar sol en invierno?",
+   o:["Sur.","Norte.","Este.","Oeste."],
+   c:0, e:"La fachada sur recibe la mayor radiación solar en invierno en el hemisferio norte. Es la orientación preferente para las estancias principales."},
+  {q:"¿Qué es un muro Trombe?",
+   o:["Un muro decorativo de colores.",
+      "Un muro acumulador de calor solar.",
+      "Un muro que impide toda entrada de luz.",
+      "Un muro fabricado con plásticos."],
+   c:1, e:"El muro Trombe combina inercia térmica y captación solar: absorbe calor durante el día y lo libera lentamente por la noche."},
+  {q:"¿Cuál de estos modos de transporte tiene menor impacto ambiental por pasajero y km?",
+   o:["Avión.","Ferry.","Coche gasolina con un solo ocupante.","Bicicleta."],
+   c:3, e:"La bicicleta tiene emisiones prácticamente nulas en uso. Es el modo más eficiente para distancias cortas y medias."},
+  {q:"¿De qué depende principalmente la sostenibilidad de un coche eléctrico?",
+   o:["Solo del precio de compra del vehículo y de su marca.",
+      "De la electricidad que usa y de su batería.",
+      "Del color de la carrocería y de la potencia del motor.",
+      "Únicamente del tiempo que tarda en recargar."],
+   c:1, e:"Un coche eléctrico es tan limpio como la electricidad que usa y tan sostenible como la gestión de su batería al final de su vida útil."},
+  {q:"¿Qué característica del territorio canario condiciona especialmente la movilidad?",
+   o:["La ausencia de carreteras asfaltadas.",
+      "El exceso de población en las islas.",
+      "La insularidad y la orografía.",
+      "La falta de vehículos."],
+   c:2, e:"La insularidad (dependencia del mar y el aire) y la orografía (pendientes fuertes) condicionan fuertemente la movilidad en Canarias."},
+  {q:"¿Para qué aprovecha Canarias principalmente los alisios?",
+   o:["Para la navegación deportiva de altura y las regatas costeras.",
+      "Para regar los cultivos de las zonas altas de las islas.",
+      "Para la desalación del agua de mar.",
+      "Para la energía eólica y la ventilación pasiva."],
+   c:3, e:"Los alisios son un recurso natural clave: alimentan parques eólicos y permiten la ventilación cruzada natural en edificios."},
+  {q:"¿Qué isla canaria es pionera en autosuficiencia con renovables?",
+   o:["La Gomera.","Lanzarote.","El Hierro.","Fuerteventura."],
+   c:2, e:"El Hierro cuenta con un sistema pionero que combina eólica y bombeo hidroeléctrico, acercándose a la autosuficiencia con renovables."},
+  {q:"¿Qué significa 'utilizar el pensamiento científico' al analizar la arquitectura y el transporte?",
+   o:["Medir, comparar y argumentar con datos.",
+      "Opinar según la intuición.",
+      "Elegir siempre lo más barato.",
+      "Copiar soluciones de otros países sin adaptarlas."],
+   c:0, e:"El pensamiento científico implica observar, medir, comparar alternativas y argumentar con datos, buscando la solución más adecuada a cada contexto."},
+  {q:"¿Cuál de estas medidas contribuye al ecotransporte en Canarias?",
+   o:["Ampliar los aparcamientos gratuitos del centro urbano.",
+      "Fomentar la guagua, la bici y el coche compartido.",
+      "Bajar el precio de la gasolina.",
+      "Construir nuevas autopistas entre ciudades."],
+   c:1, e:"Priorizar el transporte público, la bici y el coche compartido reduce emisiones, mejora la salud y disminuye la dependencia energética."}
+];
+
+let quizRespondidas = 0, quizAciertos = 0;
+
+function pintaResultadoQuiz(){
+  document.getElementById('quizScore').textContent = quizAciertos + '/' + preguntasQuiz.length;
+  const pct = Math.round(quizAciertos / preguntasQuiz.length * 100);
+  let titulo, msg;
+  if(pct === 100){ titulo = '🏆 ¡Perfecto!'; msg = 'Dominas los principios de la arquitectura bioclimática y el ecotransporte en Canarias.'; }
+  else if(pct >= 75){ titulo = '🌟 ¡Muy bien!'; msg = 'Tienes una comprensión sólida. Repasa las preguntas falladas para afinar los detalles.'; }
+  else if(pct >= 50){ titulo = '👍 Buen intento'; msg = 'Vas por el camino correcto. Vuelve a las secciones de bioclimática, ecotransporte y Canarias.'; }
+  else { titulo = '📚 A seguir aprendiendo'; msg = 'Revisa con calma cada bloque y vuelve a intentarlo.'; }
+  document.getElementById('quizTitle').textContent = titulo;
+  document.getElementById('quizMsg').textContent = msg;
+  document.getElementById('quizResult').classList.add('show');
+}
+
+(function initQuiz(){
+  const cont = document.getElementById('quizContainer');
+  const guardadas = act('quiz').respuestas || [];
+  preguntasQuiz.forEach((p, i)=>{
+    const div = document.createElement('div');
+    div.className = 'q reveal';
+    div.innerHTML = `
+      <span class="q-num">PREGUNTA ${i+1}</span>
+      <h4>${p.q}</h4>
+      <div class="opts">
+        ${p.o.map((o,j)=>`
+          <button class="opt" data-i="${i}" data-j="${j}">
+            <span class="letter">${String.fromCharCode(65+j)}</span>
+            <span>${o}</span>
+          </button>`).join('')}
+      </div>
+      <div class="expl"></div>
+    `;
+    cont.appendChild(div);
+    io.observe(div);
+    const btns = div.querySelectorAll('.opt');
+    const expl = div.querySelector('.expl');
+    btns.forEach(b=>{
+      b.addEventListener('click', ()=>{
+        const j = parseInt(b.dataset.j,10);
+        btns.forEach(x=>x.disabled = true);
+        btns.forEach(x=>{
+          if(parseInt(x.dataset.j,10) === p.c) x.classList.add('correct');
+        });
+        if(j !== p.c) b.classList.add('wrong');
+        else quizAciertos++;
+        expl.innerHTML = (j === p.c ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>Respuesta incorrecta.</strong> ') + p.e;
+        expl.classList.add('show');
+        quizRespondidas++;
+        act('quiz').respuestas[i] = j;   // se guarda la respuesta
+        guardarEstado();
+        if(quizRespondidas === preguntasQuiz.length) mostrarResultadoQuiz();
+      });
+    });
+    // Restaurar la respuesta guardada de sesiones anteriores
+    if(typeof guardadas[i] === 'number' && guardadas[i] >= 0 && guardadas[i] < p.o.length){
+      const j = guardadas[i];
+      btns.forEach(x=>x.disabled = true);
+      btns.forEach(x=>{
+        if(parseInt(x.dataset.j,10) === p.c) x.classList.add('correct');
+      });
+      if(j !== p.c) btns[j].classList.add('wrong');
+      else quizAciertos++;
+      expl.innerHTML = (j === p.c ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>Respuesta incorrecta.</strong> ') + p.e;
+      expl.classList.add('show');
+      quizRespondidas++;
+    }
+  });
+  // Si ya se había completado, se vuelve a mostrar el resultado
+  if(quizRespondidas === preguntasQuiz.length && quizRespondidas > 0){
+    pintaResultadoQuiz();
+  }
+})();
+
+function mostrarResultadoQuiz(){
+  pintaResultadoQuiz();
+  document.getElementById('quizResult').scrollIntoView({behavior:'smooth', block:'center'});
+  if(quizAciertos > estado.scores.quiz){
+    estado.scores.quiz = quizAciertos;
+    guardarEstado();
+    actualizarCertificado();
+  }
+  completarReto('quiz', '¡Cuestionario final completado! ' + quizAciertos + '/' + preguntasQuiz.length);
+}
+
+/* ================================================================
+   13. CERTIFICADO Y PDF RASTERIZADO
+================================================================ */
+function actualizarCertificado(){
+  const stats = document.getElementById('certStats');
+  const nombreEl = document.getElementById('certNombre');
+  const warn = document.getElementById('certWarn');
+  const btn = document.getElementById('btnCertificado');
+
+  nombreEl.textContent = estado.nombre || '—';
+
+  const s = estado.scores;
+  const nRetos = estado.retos.length;
+
+  const items = [
+    {num: (s.clasifica>0 ? s.clasifica + '/10' : '—'), lbl:'Bioclimática'},
+    {num: (s.memoriaOk ? s.memoria + ' mov.' : '—'), lbl:'Memoria'},
+    {num: (s.bioclimatica>0 ? s.bioclimatica + '%' : '—'), lbl:'Simulador bio'},
+    {num: (s.ecotransporte ? '✓' : '—'), lbl:'Ecotransporte'},
+    {num: (s.dilemas>0 ? s.dilemas + '/3' : '—'), lbl:'Dilemas'},
+    {num: (s.quiz>0 ? s.quiz + '/10' : '—'), lbl:'Cuestionario'},
+    {num: nRetos + '/' + RETOS_TOTALES, lbl:'Retos totales'}
+  ];
+
+  stats.innerHTML = items.map(it=>`
+    <div class="cert-stat">
+      <div class="num">${it.num}</div>
+      <div class="lbl">${it.lbl}</div>
+    </div>
+  `).join('');
+
+  if(nRetos === 0){
+    warn.style.display = 'block';
+    btn.disabled = true;
+    btn.style.opacity = .55;
+    btn.style.cursor = 'not-allowed';
+  } else {
+    warn.style.display = 'none';
+    btn.disabled = false;
+    btn.style.opacity = 1;
+    btn.style.cursor = 'pointer';
+  }
+}
+
+document.getElementById('btnCertificado').addEventListener('click', ()=>{
+  if(!estado.nombre){ toast('Introduce tu nombre primero'); return; }
+  if(estado.retos.length === 0){ toast('Completa al menos un reto para obtener el certificado'); return; }
+  generarPDFRasterizado();
+});
+
+function generarPDFRasterizado(){
+  if(!(window.jspdf && window.jspdf.jsPDF)){
+    toast('No se ha podido cargar la librería PDF. Recarga la página.');
+    return;
+  }
+  try{
+    // --- 1) Reducimos DPI a 200: menos memoria, misma calidad visual ---
+    const DPI = 200;
+    const W_MM = 297, H_MM = 210;
+    const W = Math.round(W_MM / 25.4 * DPI);
+    const H = Math.round(H_MM / 25.4 * DPI);
+    const mm = v => Math.round(v / 25.4 * DPI);
+
+    // --- 2) Canvas con comprobación ---
+    const canvas = document.createElement('canvas');
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext('2d');
+    if(!ctx){
+      toast('Tu navegador no soporta canvas 2D.');
+      return;
+    }
+
+    // --- 3) Fondo y bordes ---
+    ctx.fillStyle = '#f0fdf4';
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.strokeStyle = '#065f46';
+    ctx.lineWidth = mm(2);
+    ctx.strokeRect(mm(10), mm(10), W - mm(20), H - mm(20));
+    ctx.lineWidth = mm(0.5);
+    ctx.strokeRect(mm(14), mm(14), W - mm(28), H - mm(28));
+
+    ctx.fillStyle = '#065f46';
+    ctx.fillRect(mm(14), mm(14), mm(20), mm(3));
+    ctx.fillRect(mm(14), mm(14), mm(3), mm(20));
+    ctx.fillRect(W - mm(34), mm(14), mm(20), mm(3));
+    ctx.fillRect(W - mm(17), mm(14), mm(3), mm(20));
+    ctx.fillRect(mm(14), H - mm(17), mm(20), mm(3));
+    ctx.fillRect(mm(14), H - mm(34), mm(3), mm(20));
+    ctx.fillRect(W - mm(34), H - mm(17), mm(20), mm(3));
+    ctx.fillRect(W - mm(17), H - mm(34), mm(3), mm(20));
+
+    // --- 4) Encabezado ---
+    ctx.fillStyle = '#065f46';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = `bold ${mm(9)}px Arial, sans-serif`;
+    ctx.fillText('CERTIFICADO DE APROVECHAMIENTO', W/2, mm(38));
+
+    ctx.fillStyle = '#64748b';
+    ctx.font = `${mm(4)}px Arial, sans-serif`;
+    ctx.fillText('Arquitectura Bioclimática y Ecotransporte · Canarias Sostenible', W/2, mm(48));
+
+    ctx.strokeStyle = '#d97706';
+    ctx.lineWidth = mm(0.8);
+    ctx.beginPath();
+    ctx.moveTo(W/2 - mm(70), mm(53));
+    ctx.lineTo(W/2 + mm(70), mm(53));
+    ctx.stroke();
+
+    // --- 5) Datos personales ---
+    ctx.fillStyle = '#475569';
+    ctx.font = `${mm(4.5)}px Arial, sans-serif`;
+    ctx.fillText('Se certifica que', W/2, mm(68));
+
+    ctx.fillStyle = '#0f172a';
+    ctx.font = `bold ${mm(14)}px Arial, sans-serif`;
+    ctx.fillText(estado.nombre, W/2, mm(85));
+
+    ctx.fillStyle = '#334155';
+    ctx.font = `${mm(4)}px Arial, sans-serif`;
+    ctx.fillText('ha completado las actividades interactivas sobre el criterio 6.2: análisis científico de los', W/2, mm(97));
+    ctx.fillText('beneficios de la arquitectura bioclimática y el ecotransporte para el desarrollo sostenible de Canarias.', W/2, mm(104));
+
+    // --- 6) Tabla de resultados ---
+    const s = estado.scores;
+    const resultados = [
+      ['Clasificación bioclimática', (s.clasifica    > 0 ? s.clasifica + ' / 10' : 'No realizada')],
+      ['Juego de memoria',           (s.memoriaOk            ? s.memoria   + ' movimientos' : 'No realizado')],
+      ['Simulador bioclimático',     (s.bioclimatica > 0 ? s.bioclimatica + ' %' : 'No realizado')],
+      ['Ecotransporte',              (s.ecotransporte        ? 'Consultado' : 'No consultado')],
+      ['Dilemas de Canarias',        (s.dilemas      > 0 ? s.dilemas     + ' / 3' : 'No realizado')],
+      ['Cuestionario final',         (s.quiz         > 0 ? s.quiz        + ' / 10' : 'No realizado')],
+      ['Retos completados',          estado.retos.length + ' / ' + RETOS_TOTALES]
+    ];
+
+    const tableX  = mm(55);
+    const tableY  = mm(116);
+    const rowH    = mm(8);
+    const colW1   = mm(110);
+    const colW2   = mm(75);
+
+    // Cabecera
+    ctx.fillStyle = '#065f46';
+    ctx.fillRect(tableX, tableY, colW1 + colW2, mm(8));
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `bold ${mm(3.5)}px Arial, sans-serif`;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('ACTIVIDAD', tableX + mm(4), tableY + mm(4));
+    ctx.fillText('RESULTADO', tableX + colW1 + mm(4), tableY + mm(4));
+
+    // Filas
+    resultados.forEach((row, i)=>{
+      const y = tableY + mm(8) + i * rowH;
+      if(i % 2 === 0){
+        ctx.fillStyle = '#f0fdf4';
+        ctx.fillRect(tableX, y, colW1 + colW2, rowH);
+      }
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = mm(0.2);
+      ctx.strokeRect(tableX, y, colW1 + colW2, rowH);
+
+      ctx.fillStyle = '#1e293b';
+      ctx.font = `${mm(3.5)}px Arial, sans-serif`;
+      ctx.fillText(row[0], tableX + mm(4), y + rowH/2);
+
+      ctx.font = `bold ${mm(3.5)}px Arial, sans-serif`;
+      ctx.fillText(row[1], tableX + colW1 + mm(4), y + rowH/2);
+    });
+
+    // --- 7) Pie de página ---
+    const fecha = new Date().toLocaleDateString('es-ES', {day:'numeric', month:'long', year:'numeric'});
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#64748b';
+    ctx.font = `${mm(3.5)}px Arial, sans-serif`;
+    ctx.fillText('Fecha de emisión: ' + fecha, W/2, H - mm(24));
+    ctx.font = `${mm(3)}px Arial, sans-serif`;
+    ctx.fillText('Este certificado acredita la realización de las actividades interactivas de la aplicación educativa.', W/2, H - mm(17));
+
+    // --- 8) Conversión a imagen (JPEG es más ligero y fiable que PNG) ---
+    let imgData;
+    try {
+      imgData = canvas.toDataURL('image/jpeg', 0.92);
+    } catch(e){
+      console.error('toDataURL falló:', e);
+      toast('El dispositivo no puede generar la imagen del certificado.');
+      return;
+    }
+    if(!imgData || imgData === 'data:,' || imgData.length < 100){
+      toast('No se pudo generar la imagen del certificado.');
+      return;
+    }
+
+    // --- 9) Generamos el PDF ---
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
+    doc.addImage(imgData, 'JPEG', 0, 0, W_MM, H_MM);
+    doc.save('Certificado_CanariasSostenible_' + estado.nombre.replace(/[^a-zA-Z0-9]/g,'_') + '.pdf');
+    toast('¡Certificado descargado!');
+
+  } catch(err){
+    console.error('Error al generar PDF:', err);
+    toast('Error: ' + (err && err.message ? err.message : 'No se pudo generar el PDF'));
+  }
+}
+
+/* ================================================================
+   14. INICIALIZACIÓN
+================================================================ */
+restaurando = false; // a partir de aquí los avisos vuelven a mostrarse
+mostrarLogin();
+actualizarProgreso();
+actualizarBadgesRetos();
+</script>
+</body>
+</html>
