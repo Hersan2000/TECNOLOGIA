@@ -1,0 +1,2404 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proyectos Tecnológicos de Carácter Social · Comunidad y Voluntariado</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --verde:#059669; --verde-claro:#d1fae5; --verde-oscuro:#065f46;
+  --azul:#2563eb; --azul-claro:#dbeafe; --azul-oscuro:#1e3a8a;
+  --ambar:#d97706; --ambar-claro:#fef3c7; --ambar-oscuro:#92400e;
+  --rojo:#dc2626; --rojo-claro:#fee2e2; --rojo-oscuro:#991b1b;
+  --morado:#7c3aed; --morado-claro:#ede9fe;
+  --rosa:#db2777; --rosa-claro:#fce7f3;
+  --gris:#64748b; --gris-claro:#f1f5f9; --gris-oscuro:#1e293b;
+  --blanco:#fff; --negro:#0f172a;
+  --sombra:0 10px 30px rgba(15,23,42,.08);
+  --sombra-lg:0 20px 50px rgba(15,23,42,.14);
+  --radio:20px;
+  --fuente:'Segoe UI',system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0; font-family:var(--fuente); background:var(--gris-claro); color:var(--negro); line-height:1.7; -webkit-font-smoothing:antialiased;}
+body.locked{overflow:hidden}
+h1,h2,h3,h4{line-height:1.2; margin:0 0 .5rem}
+p{margin:0 0 1rem}
+
+/* LOGIN */
+#loginOverlay{
+  position:fixed; inset:0; z-index:2000;
+  background:radial-gradient(1000px 600px at 20% 10%,#7c3aed 0%,transparent 60%),
+             radial-gradient(900px 500px at 85% 90%,#db2777 0%,transparent 55%),
+             linear-gradient(160deg,#1e1b4b,#0f172a);
+  display:grid; place-items:center; padding:1.2rem;
+  transition:opacity .6s, visibility .6s;
+}
+#loginOverlay.hidden{opacity:0; visibility:hidden; pointer-events:none}
+.login-card{
+  background:#fff; border-radius:26px; padding:2.2rem 2rem;
+  max-width:500px; width:100%; box-shadow:0 30px 70px rgba(0,0,0,.4);
+  text-align:center; position:relative; overflow:hidden;
+  animation:aparecer .6s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes aparecer{from{opacity:0;transform:translateY(24px) scale(.96)}to{opacity:1;transform:none}}
+.login-card::before{content:""; position:absolute; top:0; left:0; right:0; height:6px;
+  background:linear-gradient(90deg,var(--morado),var(--rosa),var(--azul),var(--verde));}
+.login-emoji{font-size:3.4rem; line-height:1; margin-bottom:.5rem; display:block}
+.login-card h1{font-size:1.55rem; color:var(--morado); letter-spacing:-.4px}
+.login-card p.sub{font-size:.94rem; color:var(--gris); margin-bottom:1.5rem}
+.login-card input{width:100%; font-family:inherit; font-size:1.02rem; padding:.95rem 1.1rem;
+  border-radius:14px; border:2px solid #e2e8f0; background:#f8fafc; color:var(--negro);
+  transition:.2s; text-align:center; font-weight:600; margin-bottom:1rem;}
+.login-card input:focus{outline:none; border-color:var(--morado); background:#fff; box-shadow:0 0 0 5px rgba(124,58,237,.14);}
+.login-card .btn{width:100%; justify-content:center}
+.login-error{font-size:.82rem; color:var(--rojo); margin-top:.7rem; min-height:1.2em; font-weight:700}
+.welcome-back{background:var(--morado-claro); border:1.5px solid #c4b5fd; border-radius:14px;
+  padding:1rem; margin-bottom:1.2rem; font-size:.92rem; color:var(--morado);}
+.welcome-back strong{font-size:1.05rem}
+.login-btns{display:flex; gap:.6rem; flex-wrap:wrap; justify-content:center}
+.login-btns .btn{flex:1; min-width:130px; justify-content:center}
+
+/* PROGRESO */
+#progresoGlobal{position:fixed; top:0; left:0; right:0; height:5px; background:rgba(255,255,255,.2); z-index:1000;}
+#progresoBarra{height:100%; width:0%; transition:width .6s cubic-bezier(.2,.8,.2,1);
+  background:linear-gradient(90deg,var(--morado),var(--rosa),var(--azul),var(--verde));
+  box-shadow:0 0 12px rgba(124,58,237,.6);}
+
+/* NAV */
+nav{position:sticky; top:0; z-index:900; background:rgba(255,255,255,.9); backdrop-filter:blur(14px);
+  border-bottom:1px solid #e2e8f0; padding:.55rem .8rem;}
+.nav-inner{max-width:1200px; margin:0 auto; display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;}
+.nav-brand{font-weight:800; font-size:.92rem; letter-spacing:.5px; color:var(--morado);
+  display:flex; align-items:center; gap:.45rem; margin-right:auto;}
+.nav-brand .dot{width:11px;height:11px;border-radius:50%;background:linear-gradient(135deg,var(--morado),var(--rosa));}
+.nav-user{font-size:.8rem; font-weight:800; color:var(--morado);
+  background:var(--morado-claro); padding:.3rem .8rem; border-radius:999px;
+  display:flex; align-items:center; gap:.35rem;}
+.nav-links{display:flex; gap:.3rem; flex-wrap:wrap}
+.nav-links a{font-size:.8rem; font-weight:600; text-decoration:none; color:var(--gris-oscuro);
+  padding:.35rem .7rem; border-radius:999px; transition:.25s; white-space:nowrap;}
+.nav-links a:hover{background:var(--morado-claro); color:var(--morado)}
+.nav-links a.active{background:var(--morado); color:#fff}
+#progresoPill{font-size:.72rem; font-weight:800; color:var(--morado); background:var(--morado-claro);
+  padding:.3rem .7rem; border-radius:999px; white-space:nowrap;}
+
+/* HERO */
+header.hero{position:relative; overflow:hidden; color:#fff;
+  background:radial-gradient(1200px 600px at 15% -10%,#4c1d95 0%,transparent 60%),
+             radial-gradient(900px 500px at 90% 10%,#831843 0%,transparent 55%),
+             linear-gradient(160deg,#1e1b4b,#0f172a);
+  padding:4.5rem 1.2rem 4rem;}
+.blob{position:absolute; border-radius:50%; filter:blur(70px); opacity:.4; animation:flotar 14s ease-in-out infinite}
+.blob.b1{width:340px;height:340px;background:#7c3aed;top:-90px;left:-60px}
+.blob.b2{width:280px;height:280px;background:#db2777;bottom:-110px;right:-40px;animation-delay:-5s}
+.blob.b3{width:220px;height:220px;background:#2563eb;top:40%;right:25%;animation-delay:-9s}
+@keyframes flotar{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(28px,-32px) scale(1.12)}}
+.hero-inner{position:relative; max-width:1000px; margin:0 auto; text-align:center}
+.badge-top{display:inline-flex; align-items:center; gap:.5rem; font-size:.76rem; font-weight:800;
+  letter-spacing:1.4px; text-transform:uppercase; color:#c4b5fd;
+  background:rgba(124,58,237,.18); border:1px solid rgba(196,181,253,.4);
+  padding:.42rem 1rem; border-radius:999px; margin-bottom:1.2rem;}
+header.hero h1{font-size:clamp(1.85rem,5.2vw,3.3rem); font-weight:900; letter-spacing:-1px; margin-bottom:.7rem;}
+header.hero h1 span{background:linear-gradient(90deg,#c4b5fd,#f9a8d4,#93c5fd,#6ee7b7);
+  -webkit-background-clip:text; background-clip:text; color:transparent;}
+.hero-sub{max-width:800px; margin:0 auto 1.6rem; color:#cbd5e1; font-size:clamp(.95rem,2.2vw,1.1rem)}
+.hero-sub strong{color:#c4b5fd}
+.hero-chips{display:flex; gap:.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:2rem}
+.chip{font-size:.74rem; font-weight:800; letter-spacing:.6px; padding:.34rem .8rem; border-radius:999px;
+  background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.22); color:#e2e8f0;}
+.hero-cta{display:flex; gap:.7rem; justify-content:center; flex-wrap:wrap}
+.btn{display:inline-flex; align-items:center; gap:.45rem; cursor:pointer; border:none;
+  font-family:inherit; font-size:.92rem; font-weight:800; padding:.8rem 1.5rem; border-radius:999px;
+  text-decoration:none; transition:transform .2s, box-shadow .2s, background .2s;}
+.btn-primary{background:linear-gradient(135deg,var(--morado),#4c1d95); color:#fff; box-shadow:0 10px 26px rgba(124,58,237,.4)}
+.btn-primary:hover{transform:translateY(-3px); box-shadow:0 16px 34px rgba(124,58,237,.5)}
+.btn-ghost{background:rgba(255,255,255,.1); color:#fff; border:1.5px solid rgba(255,255,255,.3)}
+.btn-ghost:hover{background:rgba(255,255,255,.2); transform:translateY(-3px)}
+.btn-rosa{background:linear-gradient(135deg,var(--rosa),#831843); color:#fff; box-shadow:0 10px 26px rgba(219,39,119,.4)}
+.btn-rosa:hover{transform:translateY(-3px)}
+.btn-azul{background:linear-gradient(135deg,var(--azul),var(--azul-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(37,99,235,.4)}
+.btn-azul:hover{transform:translateY(-3px)}
+.btn-ambar{background:linear-gradient(135deg,var(--ambar),var(--ambar-oscuro)); color:#fff; box-shadow:0 10px 26px rgba(217,119,6,.4)}
+.btn-ambar:hover{transform:translateY(-3px)}
+
+/* LAYOUT */
+main{max-width:1200px; margin:0 auto; padding:0 1.1rem 5rem}
+section{padding:3.2rem 0 1rem; scroll-margin-top:70px}
+.sec-head{margin-bottom:1.8rem}
+.kicker{display:inline-block; font-size:.72rem; font-weight:900; letter-spacing:1.6px; text-transform:uppercase;
+  color:var(--morado); background:var(--morado-claro); padding:.3rem .75rem; border-radius:999px; margin-bottom:.7rem;}
+.kicker.rosa{color:var(--rosa); background:var(--rosa-claro)}
+.kicker.azul{color:var(--azul-oscuro); background:var(--azul-claro)}
+.kicker.ambar{color:var(--ambar-oscuro); background:var(--ambar-claro)}
+.kicker.rojo{color:var(--rojo-oscuro); background:var(--rojo-claro)}
+.kicker.verde{color:var(--verde-oscuro); background:var(--verde-claro)}
+.sec-head h2{font-size:clamp(1.5rem,3.6vw,2.15rem); font-weight:900; letter-spacing:-.6px}
+.sec-head p.lead{color:var(--gris); max-width:900px; font-size:1rem}
+.reveal{opacity:0; transform:translateY(26px); transition:opacity .7s cubic-bezier(.2,.8,.2,1), transform .7s cubic-bezier(.2,.8,.2,1)}
+.reveal.in{opacity:1; transform:none}
+
+/* PILARES */
+.pilar{background:#fff; border-radius:16px; padding:1.3rem; border:1px solid #e2e8f0;
+  border-top:5px solid var(--morado); box-shadow:var(--sombra); transition:.3s;}
+.pilar:hover{transform:translateY(-6px); box-shadow:var(--sombra-lg)}
+.pilar .ico{font-size:2rem; display:block; margin-bottom:.5rem}
+.pilar h4{font-size:1.05rem; color:var(--morado)}
+.pilar p{font-size:.9rem; color:var(--gris); margin:0}
+
+/* TEORÍA */
+.teoria{
+  background:#fff; border-radius:var(--radio); padding:1.6rem; box-shadow:var(--sombra);
+  border:1px solid #e2e8f0; margin-bottom:1.4rem;
+}
+.teoria h3{
+  color:var(--morado); font-size:1.15rem; margin-bottom:.8rem;
+  display:flex; align-items:center; gap:.5rem;
+}
+.teoria h3 .th-ico{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:34px; height:34px; border-radius:10px;
+  background:var(--morado-claro); color:var(--morado);
+  font-size:1rem;
+}
+.teoria h4{
+  color:var(--morado); font-size:1rem; margin-top:1.2rem; margin-bottom:.5rem;
+  padding-left:.6rem; border-left:4px solid var(--morado);
+}
+.teoria p{font-size:.94rem; color:var(--gris-oscuro); margin-bottom:.8rem}
+.teoria ul, .teoria ol{font-size:.92rem; color:var(--gris-oscuro); margin:0 0 1rem; padding-left:1.3rem}
+.teoria li{margin-bottom:.35rem}
+.teoria li strong{color:var(--morado)}
+.teoria .destacado{
+  background:linear-gradient(150deg,var(--morado-claro),#fff);
+  border-left:4px solid var(--morado); border-radius:0 12px 12px 0;
+  padding:.9rem 1.1rem; margin:1rem 0; font-size:.92rem;
+  color:var(--morado);
+}
+.teoria.rosa .th-ico{background:var(--rosa-claro); color:var(--rosa)}
+.teoria.rosa h3{color:var(--rosa)}
+.teoria.rosa h4{color:var(--rosa); border-color:var(--rosa)}
+.teoria.rosa li strong{color:var(--rosa)}
+.teoria.rosa .destacado{background:linear-gradient(150deg,var(--rosa-claro),#fff); border-color:var(--rosa); color:var(--rosa)}
+.teoria.azul .th-ico{background:var(--azul-claro); color:var(--azul-oscuro)}
+.teoria.azul h3{color:var(--azul-oscuro)}
+.teoria.azul h4{color:var(--azul-oscuro); border-color:var(--azul)}
+.teoria.azul li strong{color:var(--azul-oscuro)}
+.teoria.azul .destacado{background:linear-gradient(150deg,var(--azul-claro),#fff); border-color:var(--azul); color:var(--azul-oscuro)}
+.teoria.verde .th-ico{background:var(--verde-claro); color:var(--verde-oscuro)}
+.teoria.verde h3{color:var(--verde-oscuro)}
+.teoria.verde h4{color:var(--verde-oscuro); border-color:var(--verde)}
+.teoria.verde li strong{color:var(--verde-oscuro)}
+.teoria.verde .destacado{background:linear-gradient(150deg,var(--verde-claro),#fff); border-color:var(--verde); color:var(--verde-oscuro)}
+.teoria .ejemplo{
+  background:#f8fafc; border-radius:10px; padding:.7rem .9rem;
+  font-size:.85rem; color:var(--gris-oscuro); margin:.5rem 0;
+  border-left:3px solid var(--gris);
+}
+.teoria .tabla-tipos{
+  width:100%; border-collapse:collapse; margin:.8rem 0 1rem;
+  font-size:.86rem;
+}
+.teoria .tabla-tipos th, .teoria .tabla-tipos td{
+  padding:.6rem .7rem; text-align:left;
+  border-bottom:1px solid #e2e8f0;
+}
+.teoria .tabla-tipos th{
+  background:var(--morado-claro); color:var(--morado);
+  font-weight:900; font-size:.78rem; text-transform:uppercase; letter-spacing:.4px;
+}
+.teoria.rosa .tabla-tipos th{background:var(--rosa-claro); color:var(--rosa)}
+.teoria.azul .tabla-tipos th{background:var(--azul-claro); color:var(--azul-oscuro)}
+.teoria .tabla-tipos tr:nth-child(even) td{background:#f8fafc}
+.teoria .grid-teoria{
+  display:grid; gap:.8rem; grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  margin:1rem 0;
+}
+.teoria .bloque-teoria{
+  background:#f8fafc; border-radius:12px; padding:.9rem 1rem;
+  border-top:3px solid var(--morado);
+}
+.teoria.rosa .bloque-teoria{border-color:var(--rosa)}
+.teoria.azul .bloque-teoria{border-color:var(--azul)}
+.teoria.verde .bloque-teoria{border-color:var(--verde)}
+.teoria .bloque-teoria h5{
+  font-size:.88rem; font-weight:900; color:var(--morado);
+  margin:0 0 .4rem;
+}
+.teoria.rosa .bloque-teoria h5{color:var(--rosa)}
+.teoria.azul .bloque-teoria h5{color:var(--azul-oscuro)}
+.teoria.verde .bloque-teoria h5{color:var(--verde-oscuro)}
+.teoria .bloque-teoria p{font-size:.85rem; margin:0; color:var(--gris)}
+
+/* ACTIVIDADES */
+.actividad{background:#fff; border-radius:var(--radio); padding:1.6rem; box-shadow:var(--sombra);
+  border:1px solid #e2e8f0; margin-top:1.6rem;}
+.actividad h3{color:var(--morado); font-size:1.15rem; margin-bottom:.3rem}
+.actividad .intro{font-size:.93rem; color:var(--gris); margin-bottom:1rem}
+
+/* RETO 1: ORDENA FASES */
+.fases-lista{display:flex; flex-direction:column; gap:.6rem; max-width:720px; margin:0 auto}
+.fase-item{
+  display:flex; align-items:center; gap:.7rem; padding:.85rem 1rem;
+  background:#fff; border:2px solid #e2e8f0; border-radius:14px;
+  transition:.3s; box-shadow:0 2px 8px rgba(15,23,42,.05);
+}
+.fase-item .fase-num{
+  flex:0 0 32px; height:32px; border-radius:10px; background:var(--morado);
+  color:#fff; display:grid; place-items:center; font-weight:900; font-size:.9rem;
+}
+.fase-item .fase-txt{flex:1; font-size:.92rem; font-weight:600; color:var(--gris-oscuro)}
+.fase-item .fase-ctrl{display:flex; flex-direction:column; gap:2px}
+.fase-item .fase-ctrl button{
+  width:30px; height:22px; border:none; background:var(--gris-claro); color:var(--gris-oscuro);
+  cursor:pointer; border-radius:6px; font-weight:900; font-size:.75rem;
+  display:grid; place-items:center; transition:.15s;
+}
+.fase-item .fase-ctrl button:hover:not(:disabled){background:var(--morado); color:#fff}
+.fase-item .fase-ctrl button:disabled{opacity:.3; cursor:not-allowed}
+.fase-item.correcta{border-color:#16a34a; background:#f0fdf4}
+.fase-item.correcta .fase-num{background:#16a34a}
+.fase-item.incorrecta{border-color:var(--rojo); background:#fef2f2}
+.fase-item.incorrecta .fase-num{background:var(--rojo)}
+#btnComprobarFases{display:block; margin:1.2rem auto 0; font-size:.9rem}
+#fasesResultado{text-align:center; margin-top:1rem; font-weight:800; min-height:1.4em; color:var(--morado)}
+
+/* RETO 2: VERDADERO/FALSO */
+.vf-info{display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; margin-bottom:1rem; font-size:.9rem; font-weight:800;}
+.vf-info span{background:var(--azul-claro); color:var(--azul-oscuro); padding:.4rem .9rem; border-radius:999px;}
+.vf-grid{display:grid; gap:.7rem; grid-template-columns:repeat(auto-fit,minmax(310px,1fr))}
+.vf-card{
+  background:#fff; border:2px solid #e2e8f0; border-radius:14px; padding:.9rem 1rem;
+  transition:.25s; display:flex; flex-direction:column; gap:.6rem;
+}
+.vf-card p{margin:0; font-weight:600; font-size:.9rem; color:var(--negro)}
+.vf-btns{display:flex; gap:.5rem}
+.vf-btns button{
+  flex:1; font-family:inherit; font-size:.85rem; font-weight:800; cursor:pointer;
+  padding:.55rem .4rem; border-radius:10px; border:2px solid #e2e8f0; background:#f8fafc; color:var(--gris-oscuro);
+  transition:.2s;
+}
+.vf-btns button:hover:not(:disabled){border-color:var(--azul); background:var(--azul-claro); color:var(--azul-oscuro)}
+.vf-btns button:disabled{cursor:default; opacity:.55}
+.vf-btns button.correct{background:#dcfce7; border-color:#16a34a; color:#15803d; opacity:1}
+.vf-btns button.wrong{background:#fee2e2; border-color:#dc2626; color:#b91c1c; opacity:1}
+.vf-card.done{border-color:var(--azul); background:#eff6ff}
+.vf-fb{font-size:.82rem; border-radius:10px; padding:0; max-height:0; overflow:hidden; transition:.35s; color:var(--gris-oscuro)}
+.vf-fb.show{max-height:240px; padding:.6rem .75rem; background:#f8fafc; border-left:3px solid var(--azul)}
+#vfResumen{text-align:center; margin-top:1rem; font-weight:800; color:var(--azul-oscuro); min-height:1.4em}
+
+/* RETO 3: EMPAREJA COLUMNAS */
+.empara-wrap{display:grid; gap:1.5rem; grid-template-columns:1fr 1fr; max-width:880px; margin:0 auto}
+@media(max-width:700px){.empara-wrap{grid-template-columns:1fr}}
+.empara-col h4{
+  font-size:.82rem; font-weight:900; letter-spacing:.8px; text-transform:uppercase;
+  color:var(--gris); text-align:center; margin-bottom:.7rem;
+}
+.empara-btn{
+  display:block; width:100%; text-align:left; font-family:inherit; font-size:.86rem; font-weight:600;
+  padding:.75rem .9rem; border-radius:12px; border:2px solid #e2e8f0; background:#fff;
+  color:var(--gris-oscuro); margin-bottom:.5rem; cursor:pointer; transition:.2s;
+}
+.empara-btn:hover:not(:disabled){border-color:var(--rosa); background:var(--rosa-claro); color:var(--rosa)}
+.empara-btn.selected{border-color:var(--rosa); background:var(--rosa-claro); color:var(--rosa); transform:scale(1.02)}
+.empara-btn.matched{border-color:#16a34a; background:#f0fdf4; color:#15803d; cursor:default; opacity:.85}
+.empara-btn.matched::after{content:" ✓"; font-weight:900; color:#16a34a}
+.empara-btn.error{animation:shake .4s; border-color:var(--rojo); background:#fee2e2}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+#emparaInfo{text-align:center; margin-top:1.2rem; font-weight:800; color:var(--rosa); min-height:1.4em}
+
+/* RETO 4: CONSTRUCTOR DE PROYECTO */
+.constructor-wrap{display:grid; gap:1.4rem; grid-template-columns:1.3fr .7fr}
+@media(max-width:900px){.constructor-wrap{grid-template-columns:1fr}}
+.constru-item{
+  display:flex; align-items:flex-start; gap:.75rem; padding:.75rem .9rem; border-radius:12px;
+  cursor:pointer; transition:.22s; border:1.5px solid transparent; font-size:.88rem;
+}
+.constru-item:hover{background:#f8fafc; border-color:#e2e8f0}
+.constru-item input{position:absolute; opacity:0; pointer-events:none}
+.constru-box{
+  flex:0 0 22px; height:22px; border-radius:6px; background:#fff; border:2px solid #cbd5e1;
+  position:relative; transition:.25s; margin-top:2px;
+}
+.constru-box::after{
+  content:"✓"; position:absolute; inset:0; display:grid; place-items:center;
+  color:#fff; font-weight:900; font-size:.85rem; opacity:0; transition:.2s;
+}
+.constru-item input:checked + .constru-box{background:var(--morado); border-color:var(--morado)}
+.constru-item input:checked + .constru-box::after{opacity:1}
+.constru-item input:checked ~ .constru-txt{color:var(--morado); font-weight:700}
+.constru-txt{flex:1}
+.constru-txt small{display:block; color:var(--gris); font-size:.76rem; font-weight:600; margin-top:2px}
+.meters-box{
+  background:linear-gradient(160deg,#4c1d95,#1e1b4b); border-radius:var(--radio); padding:1.4rem 1.2rem;
+  color:#fff; position:sticky; top:80px; height:fit-content;
+}
+.meters-box h4{color:#c4b5fd; font-size:.95rem; margin-bottom:1rem; text-align:center; letter-spacing:.4px}
+.meter{margin-bottom:.85rem}
+.meter-head{display:flex; justify-content:space-between; font-size:.78rem; font-weight:800; color:#e9d5ff; margin-bottom:.3rem}
+.meter-bar{height:10px; border-radius:999px; background:rgba(255,255,255,.13); overflow:hidden}
+.meter-bar div{height:100%; width:0%; border-radius:999px; transition:width .5s ease, background .3s}
+.meter.ambiental .meter-bar div{background:linear-gradient(90deg,#10b981,#34d399)}
+.meter.social .meter-bar div{background:linear-gradient(90deg,#db2777,#f472b6)}
+.meter.educativo .meter-bar div{background:linear-gradient(90deg,#2563eb,#60a5fa)}
+.meter.innovacion .meter-bar div{background:linear-gradient(90deg,#d97706,#fbbf24)}
+#construResumen{margin-top:1rem; font-size:.84rem; color:#c4b5fd; text-align:center; min-height:2.5em}
+
+/* RETO 5: PRESUPUESTO PARTICIPATIVO */
+.presu-head{
+  background:linear-gradient(150deg,#fdf4ff,#fff); border-left:6px solid var(--rosa);
+  border-radius:0 16px 16px 0; padding:1.1rem 1.3rem; margin-bottom:1.2rem;
+}
+.presu-head h4{color:var(--rosa); font-size:1rem; margin-bottom:.3rem}
+.presu-head p{font-size:.88rem; color:var(--gris-oscuro); margin:0}
+.presu-budget{
+  display:flex; justify-content:space-between; align-items:center; gap:1rem;
+  background:#fff; border:2px solid var(--rosa-claro); border-radius:14px;
+  padding:.9rem 1.2rem; margin-bottom:1.1rem; flex-wrap:wrap;
+}
+.presu-budget .pb-info{font-size:.88rem; font-weight:800; color:var(--gris-oscuro)}
+.presu-budget .pb-info strong{color:var(--rosa); font-size:1.15rem}
+.presu-budget .pb-bar{
+  flex:1; min-width:200px; height:12px; background:var(--gris-claro); border-radius:999px; overflow:hidden;
+}
+.presu-budget .pb-bar div{
+  height:100%; width:0%; background:linear-gradient(90deg,var(--rosa),var(--morado));
+  transition:width .4s ease;
+}
+.presu-grid{display:grid; gap:.7rem; grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.presu-card{
+  background:#fff; border:2px solid #e2e8f0; border-radius:14px; padding:1rem 1.1rem;
+  cursor:pointer; transition:.25s; position:relative;
+}
+.presu-card:hover{border-color:var(--rosa); transform:translateY(-3px); box-shadow:var(--sombra)}
+.presu-card.selected{border-color:var(--rosa); background:linear-gradient(150deg,#fdf4ff,#fff)}
+.presu-card.disabled{opacity:.45; cursor:not-allowed; transform:none}
+.presu-card .pc-ico{font-size:1.6rem; display:block; margin-bottom:.3rem}
+.presu-card .pc-titulo{font-weight:900; color:var(--gris-oscuro); font-size:.9rem; margin-bottom:.3rem}
+.presu-card .pc-desc{font-size:.82rem; color:var(--gris); margin:0 0 .5rem}
+.presu-card .pc-cost{font-weight:900; color:var(--rosa); font-size:.85rem}
+.presu-card .pc-benef{font-size:.78rem; color:var(--gris); display:block; margin-top:.2rem}
+.presu-card .pc-check{
+  position:absolute; top:.7rem; right:.7rem; width:24px; height:24px; border-radius:50%;
+  background:#fff; border:2px solid #e2e8f0; display:grid; place-items:center;
+  font-size:.75rem; font-weight:900; color:transparent; transition:.25s;
+}
+.presu-card.selected .pc-check{background:var(--rosa); border-color:var(--rosa); color:#fff}
+#presuResumen{margin-top:1.2rem; text-align:center; font-weight:800; color:var(--rosa); min-height:1.6em}
+
+/* QUIZ */
+.q{background:#fff; border-radius:16px; padding:1.3rem 1.4rem; box-shadow:var(--sombra);
+  border:1px solid #e2e8f0; margin-bottom:1rem;}
+.q-num{display:inline-block; font-size:.72rem; font-weight:900; letter-spacing:1px; color:#fff;
+  background:var(--morado); padding:.2rem .6rem; border-radius:8px; margin-bottom:.6rem;}
+.q h4{font-size:1rem; margin-bottom:.9rem}
+.opts{display:grid; gap:.5rem}
+.opt{text-align:left; font-family:inherit; font-size:.9rem; font-weight:600; cursor:pointer;
+  padding:.7rem .9rem; border-radius:12px; border:2px solid #e2e8f0; background:#f8fafc; color:var(--gris-oscuro);
+  transition:.2s; display:flex; gap:.6rem; align-items:flex-start;}
+.opt:hover:not(:disabled){border-color:var(--morado); background:var(--morado-claro); color:var(--morado); transform:translateX(4px)}
+.opt:disabled{cursor:default}
+.opt .letter{flex:0 0 24px; height:24px; border-radius:7px; background:#e2e8f0; color:var(--gris-oscuro);
+  display:grid; place-items:center; font-size:.75rem; font-weight:900;}
+.opt.correct{background:#dcfce7; border-color:#16a34a; color:#14532d}
+.opt.correct .letter{background:#16a34a; color:#fff}
+.opt.wrong{background:#fee2e2; border-color:#dc2626; color:#7f1d1d}
+.opt.wrong .letter{background:#dc2626; color:#fff}
+.expl{margin-top:.85rem; font-size:.86rem; background:#f0fdf4; border-left:4px solid var(--verde);
+  padding:.7rem .9rem; border-radius:0 10px 10px 0; color:var(--gris-oscuro); display:none;}
+.expl.show{display:block}
+#quizResult{display:none;text-align:center;padding:1.8rem;border-radius:var(--radio);color:#fff;
+  background:linear-gradient(135deg,#4c1d95,#1e1b4b);box-shadow:var(--sombra-lg)}
+#quizResult.show{display:block; animation:aparecer .5s}
+#quizScore{font-size:3rem;font-weight:900;line-height:1;margin-bottom:.4rem}
+
+/* VOCABULARIO */
+.voc-grid{display:grid; gap:.6rem; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); margin-bottom:1rem}
+.voc-term{text-align:left; font-family:inherit; font-size:.88rem; font-weight:800; cursor:pointer;
+  padding:.85rem 1rem; border-radius:14px; border:2px solid #e2e8f0; background:#fff;
+  color:var(--gris-oscuro); transition:.25s; display:flex; align-items:center; gap:.5rem;}
+.voc-term:hover{border-color:var(--morado); background:var(--morado-claro); color:var(--morado); transform:translateY(-3px)}
+.voc-term.active{background:var(--morado); color:#fff; border-color:var(--morado)}
+#vocDef{max-height:0; overflow:hidden; transition:max-height .5s cubic-bezier(.2,.8,.2,1), padding .3s;
+  background:linear-gradient(150deg,#4c1d95,#1e1b4b); color:#fff; border-radius:16px; padding:0 1.4rem;}
+#vocDef.show{max-height:440px; padding:1.3rem 1.4rem}
+#vocDef h4{color:#c4b5fd; font-size:1.05rem; margin-bottom:.5rem}
+#vocDef p{color:#e9d5ff; font-size:.92rem; margin:0}
+
+/* CERTIFICADO */
+#certificado{
+  background:linear-gradient(150deg,#4c1d95,#1e1b4b); color:#fff; border-radius:26px;
+  padding:2.4rem 1.8rem; box-shadow:var(--sombra-lg); text-align:center; position:relative; overflow:hidden;
+}
+#certificado::before{content:""; position:absolute; inset:14px; border:2px solid rgba(196,181,253,.35);
+  border-radius:18px; pointer-events:none;}
+#certificado h2{color:#c4b5fd; font-size:1.5rem; margin-bottom:.3rem}
+#certificado p.sub{color:#e9d5ff; font-size:.95rem; max-width:560px; margin:0 auto 1.4rem}
+.cert-name{font-size:clamp(1.6rem,5vw,2.4rem); font-weight:900; letter-spacing:-.5px; margin:.6rem 0 1rem;
+  background:linear-gradient(90deg,#c4b5fd,#f9a8d4,#93c5fd,#6ee7b7);
+  -webkit-background-clip:text; background-clip:text; color:transparent;}
+.cert-stats{display:grid; gap:.7rem; grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  max-width:820px; margin:0 auto 1.6rem;}
+.cert-stat{background:rgba(255,255,255,.09); border:1px solid rgba(196,181,253,.3);
+  border-radius:14px; padding:.8rem .6rem; text-align:center;}
+.cert-stat .num{font-size:1.35rem; font-weight:900; color:#fbbf24; line-height:1}
+.cert-stat .lbl{font-size:.7rem; color:#e9d5ff; text-transform:uppercase; letter-spacing:.9px; font-weight:800; margin-top:.3rem}
+.cert-warn{background:rgba(251,191,36,.14); border:1px solid rgba(251,191,36,.4);
+  color:#fde68a; font-size:.86rem; padding:.7rem 1rem; border-radius:12px;
+  max-width:600px; margin:0 auto 1.2rem;}
+.cert-note{font-size:.78rem; color:#94a3b8; margin-top:1rem; max-width:560px; margin-left:auto; margin-right:auto;}
+
+/* Toast */
+#toast{
+  position:fixed; bottom:1.4rem; left:50%; transform:translate(-50%,140%); z-index:1200;
+  background:var(--negro); color:#fff; font-weight:700; font-size:.88rem; padding:.85rem 1.4rem;
+  border-radius:999px; box-shadow:var(--sombra-lg); transition:transform .45s cubic-bezier(.2,.8,.2,1);
+  display:flex; align-items:center; gap:.55rem; max-width:92vw; text-align:center;
+}
+#toast.show{transform:translate(-50%,0)}
+
+footer{background:var(--negro); color:#94a3b8; text-align:center; padding:2.6rem 1.2rem; font-size:.85rem;}
+footer strong{color:#c4b5fd}
+
+@media(max-width:640px){
+  .nav-brand span.txt{display:none}
+}
+</style>
+</head>
+<body class="locked">
+
+<div id="loginOverlay">
+  <div class="login-card" id="loginCard"></div>
+</div>
+
+<div id="progresoGlobal"><div id="progresoBarra"></div></div>
+
+<nav>
+  <div class="nav-inner">
+    <div class="nav-brand"><span class="dot"></span><span class="txt">Comunidad Tech</span></div>
+    <div class="nav-user">👤 <span id="navUserName">—</span></div>
+    <div class="nav-links">
+      <a href="#intro">Inicio</a>
+      <a href="#comunidades">Comunidades</a>
+      <a href="#voluntariado">Voluntariado</a>
+      <a href="#servicio">Servicio</a>
+      <a href="#quiz">Quiz</a>
+      <a href="#certificado">Certificado</a>
+    </div>
+    <div id="progresoPill">0 / 6 retos</div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+  <div class="hero-inner">
+    <div class="badge-top">🤝 Tecnología con propósito social</div>
+    <h1>Proyectos tecnológicos <span>de carácter social</span></h1>
+    <p class="hero-sub">
+      Hola, <strong id="heroNombre">amigo/a</strong>. Vas a descubrir cómo las
+      <strong>comunidades abiertas</strong>, el <strong>voluntariado tecnológico</strong> y los
+      <strong>proyectos de servicio a la comunidad</strong> pueden transformar tu entorno próximo
+      y construir una sociedad más justa, inclusiva y sostenible.
+    </p>
+    <div class="hero-chips">
+      <span class="chip">🌐 Comunidades abiertas</span>
+      <span class="chip">🤝 Voluntariado</span>
+      <span class="chip">🏘️ Servicio comunitario</span>
+      <span class="chip">🌍 Responsabilidad social</span>
+    </div>
+    <div class="hero-cta">
+      <a href="#intro" class="btn btn-primary">🚀 Empezar</a>
+      <a href="#certificado" class="btn btn-ghost">🏆 Mi certificado</a>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============ INTRO ==================== -->
+  <section id="intro">
+    <div class="sec-head reveal">
+      <span class="kicker">Punto de partida</span>
+      <h2>La tecnología al servicio de las personas</h2>
+      <p class="lead">
+        El criterio 6.3 nos invita a <strong>identificar y valorar, basándonos en fundamentos
+        científicos</strong>, la repercusión y los beneficios de los proyectos tecnológicos de
+        carácter social: comunidades abiertas, voluntariado tecnológico y proyectos de servicio a
+        la comunidad. Todo ello para <strong>mejorar el entorno próximo</strong> y adoptar un
+        estilo de vida sostenible y socialmente responsable.
+      </p>
+    </div>
+
+    <div class="teoria reveal">
+      <h3><span class="th-ico">📘</span> El criterio 6.3 en detalle</h3>
+      <div class="destacado">
+        <strong>6.3.</strong> Identificar y valorar, basándose en fundamentos científicos, la
+        repercusión y los beneficios del desarrollo de proyectos tecnológicos de carácter social
+        por medio de comunidades abiertas, acciones de voluntariado o proyectos de servicio a la
+        comunidad para mejorar el entorno próximo, adoptando de forma consciente un estilo de vida
+        sostenible y socialmente responsable. <em>(Descriptores: CCL1, STEM5, CC4)</em>
+      </div>
+
+      <h4>Las tres vías del cambio social tecnológico</h4>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>🌐 Comunidades abiertas</h5>
+          <p>Personas que colaboran libremente para crear conocimiento, software o datos accesibles a todo el mundo.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🤝 Voluntariado tecnológico</h5>
+          <p>Personas que dedican su tiempo y sus conocimientos tecnológicos a causas sociales sin ánimo de lucro.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🏘️ Servicio a la comunidad</h5>
+          <p>Proyectos que aplican tecnología para resolver necesidades reales del entorno próximo.</p>
+        </div>
+      </div>
+
+      <h4>¿Por qué es importante basarse en fundamentos científicos?</h4>
+      <p>
+        No basta con "querer ayudar": hay que <strong>medir el impacto real</strong> de lo que
+        hacemos. El pensamiento científico nos permite:
+      </p>
+      <ul>
+        <li><strong>Detectar necesidades reales</strong> con datos, no con suposiciones.</li>
+        <li><strong>Diseñar soluciones eficaces</strong> y adecuadas al contexto.</li>
+        <li><strong>Evaluar los resultados</strong> antes, durante y después del proyecto.</li>
+        <li><strong>Aprender de los errores</strong> y mejorar en cada iteración.</li>
+        <li><strong>Comunicar el impacto</strong> con transparencia y rigor.</li>
+      </ul>
+
+      <h4>Beneficios de un proyecto tecnológico social bien hecho</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Dimensión</th>
+          <th>Beneficio</th>
+        </tr>
+        <tr>
+          <td><strong>Social</strong></td>
+          <td>Mejora la vida de personas y colectivos concretos del entorno.</td>
+        </tr>
+        <tr>
+          <td><strong>Educativa</strong></td>
+          <td>Desarrolla competencias técnicas, colaborativas y ciudadanas.</td>
+        </tr>
+        <tr>
+          <td><strong>Ambiental</strong></td>
+          <td>Reduce residuos, emisiones o consumo de recursos en la comunidad.</td>
+        </tr>
+        <tr>
+          <td><strong>Económica</strong></td>
+          <td>Genera valor local, ahorro y empleabilidad.</td>
+        </tr>
+        <tr>
+          <td><strong>Cultural</strong></td>
+          <td>Pone en valor el patrimonio y la identidad del territorio.</td>
+        </tr>
+      </table>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> la tecnología no es solo un fin en sí misma: es una
+        <em>herramienta al servicio de las personas</em>. Los proyectos tecnológicos de carácter
+        social demuestran que se puede innovar y, al mismo tiempo, mejorar la vida de quienes nos
+        rodean.
+      </div>
+    </div>
+
+    <div class="grid g4">
+      <div class="pilar reveal">
+        <span class="ico">🌐</span>
+        <h4>Comunidades abiertas</h4>
+        <p>Colaboración libre y desinteresada para crear bienes comunes digitales.</p>
+      </div>
+      <div class="pilar reveal" style="border-top-color:var(--rosa)">
+        <span class="ico">🤝</span>
+        <h4>Voluntariado</h4>
+        <p>Tiempo y conocimiento al servicio de causas sociales.</p>
+      </div>
+      <div class="pilar reveal" style="border-top-color:var(--azul)">
+        <span class="ico">🏘️</span>
+        <h4>Servicio comunitario</h4>
+        <p>Proyectos que resuelven necesidades del entorno próximo.</p>
+      </div>
+      <div class="pilar reveal" style="border-top-color:var(--verde)">
+        <span class="ico">🌍</span>
+        <h4>Responsabilidad social</h4>
+        <p>Estilo de vida sostenible y comprometido con la comunidad.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ COMUNIDADES ABIERTAS ==================== -->
+  <section id="comunidades">
+    <div class="sec-head reveal">
+      <span class="kicker">Bloque 1</span>
+      <h2>🌐 Comunidades abiertas: crear juntos</h2>
+      <p class="lead">
+        Las comunidades abiertas son grupos de personas que colaboran libremente —a menudo sin
+        conocerse— para crear y compartir conocimiento, software, datos o soluciones tecnológicas
+        accesibles a todo el mundo.
+      </p>
+    </div>
+
+    <div class="teoria reveal">
+      <h3><span class="th-ico">🌐</span> ¿Qué es una comunidad abierta?</h3>
+      <p>
+        Una <strong>comunidad abierta</strong> es un colectivo en el que cualquier persona puede
+        participar, aportar y beneficiarse de los resultados. Sus principios fundamentales son:
+      </p>
+      <ul>
+        <li><strong>Acceso libre</strong>: los resultados están disponibles para cualquiera.</li>
+        <li><strong>Participación abierta</strong>: no hace falta ser experto para contribuir.</li>
+        <li><strong>Colaboración</strong>: el trabajo se construye entre muchas manos.</li>
+        <li><strong>Transparencia</strong>: los procesos son públicos y verificables.</li>
+        <li><strong>Reutilización</strong>: lo creado puede usarse y mejorarse libremente.</li>
+      </ul>
+
+      <h4>Ejemplos de comunidades abiertas</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Comunidad</th>
+          <th>Qué hace</th>
+          <th>Impacto</th>
+        </tr>
+        <tr>
+          <td><strong>Wikipedia</strong></td>
+          <td>Enciclopedia libre escrita por voluntarios de todo el mundo.</td>
+          <td>Más de 60 millones de artículos en 300 idiomas; acceso gratuito al conocimiento.</td>
+        </tr>
+        <tr>
+          <td><strong>OpenStreetMap</strong></td>
+          <td>Mapa del mundo construido colaborativamente.</td>
+          <td>Datos cartográficos libres usados en emergencias, apps y planificación.</td>
+        </tr>
+        <tr>
+          <td><strong>GitHub / GitLab</strong></td>
+          <td>Plataformas para compartir y colaborar en software libre.</td>
+          <td>Millones de proyectos abiertos usados por empresas, gobiernos y ONG.</td>
+        </tr>
+        <tr>
+          <td><strong>Software libre</strong> (Linux, LibreOffice, Blender)</td>
+          <td>Programas cuyo código fuente es accesible y modificable.</td>
+          <td>Reduce la dependencia tecnológica, abarata costes y democratiza el acceso.</td>
+        </tr>
+        <tr>
+          <td><strong>Creative Commons</strong></td>
+          <td>Licencias que permiten compartir y reutilizar obras.</td>
+          <td>Fotos, músicas, textos y materiales educativos reutilizables legalmente.</td>
+        </tr>
+        <tr>
+          <td><strong>Arduino / Raspberry Pi</strong></td>
+          <td>Comunidades de hardware y software libre.</td>
+          <td>Prototipos educativos, proyectos de robótica, sensores ciudadanos.</td>
+        </tr>
+        <tr>
+          <td><strong>FixMyStreet</strong></td>
+          <td>Plataforma ciudadana para reportar problemas urbanos.</td>
+          <td>Mejora de servicios municipales, transparencia y participación.</td>
+        </tr>
+        <tr>
+          <td><strong>Guifi.net</strong></td>
+          <td>Red de telecomunicaciones comunitaria.</td>
+          <td>Acceso a internet en zonas rurales sin cobertura comercial.</td>
+        </tr>
+      </table>
+
+      <h4>¿Por qué funcionan las comunidades abiertas?</h4>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>🎯 Motivación intrínseca</h5>
+          <p>Las personas participan por aprender, ayudar, reconocimiento o pasión, no solo por dinero.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🔄 Mejora continua</h5>
+          <p>Cuantas más personas revisan, más errores se detectan y más rápido se mejora.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>💡 Innovación distribuida</h5>
+          <p>Ideas de miles de personas en contextos distintos generan soluciones muy creativas.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🌍 Escala global</h5>
+          <p>Un proyecto abierto puede tener impacto en cualquier lugar del mundo.</p>
+        </div>
+      </div>
+
+      <h4>Beneficios de las comunidades abiertas</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Beneficio</th>
+          <th>Descripción</th>
+        </tr>
+        <tr>
+          <td><strong>Acceso democrático</strong></td>
+          <td>Conocimiento y herramientas disponibles sin barreras económicas.</td>
+        </tr>
+        <tr>
+          <td><strong>Sostenibilidad</strong></td>
+          <td>Reutilizar software y datos ahorra recursos y energía.</td>
+        </tr>
+        <tr>
+          <td><strong>Transparencia</strong></td>
+          <td>Cualquiera puede auditar, verificar y mejorar.</td>
+        </tr>
+        <tr>
+          <td><strong>Adaptabilidad</strong></td>
+          <td>Se puede modificar para necesidades locales específicas.</td>
+        </tr>
+        <tr>
+          <td><strong>Independencia tecnológica</strong></td>
+          <td>Menos dependencia de grandes corporaciones.</td>
+        </tr>
+        <tr>
+          <td><strong>Educación</strong></td>
+          <td>Participar enseña programación, idiomas, trabajo en equipo.</td>
+        </tr>
+      </table>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> las comunidades abiertas demuestran que <em>compartir es
+        más potente que competir</em>. Miles de personas colaborando libremente pueden crear cosas
+        que ninguna empresa podría hacer sola.
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ VOLUNTARIADO ==================== -->
+  <section id="voluntariado">
+    <div class="sec-head reveal">
+      <span class="kicker rosa">Bloque 2</span>
+      <h2>🤝 Voluntariado tecnológico: tiempo y conocimiento al servicio de los demás</h2>
+      <p class="lead">
+        El voluntariado tecnológico consiste en dedicar tiempo y conocimientos tecnológicos a
+        causas sociales, sin ánimo de lucro, para mejorar la vida de personas o comunidades
+        concretas.
+      </p>
+    </div>
+
+    <div class="teoria rosa reveal">
+      <h3><span class="th-ico">🤝</span> ¿Qué es el voluntariado tecnológico?</h3>
+      <p>
+        El <strong>voluntariado tecnológico</strong> es la acción solidaria que pone las
+        competencias digitales al servicio de quienes más lo necesitan. Puede adoptar muchas
+        formas: desde enseñar a personas mayores a usar el móvil hasta programar software para una
+        ONG, reparar ordenadores para familias sin recursos o digitalizar archivos históricos.
+      </p>
+
+      <h4>Tipos de voluntariado tecnológico</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Tipo</th>
+          <th>Qué se hace</th>
+          <th>Ejemplo</th>
+        </tr>
+        <tr>
+          <td><strong>Alfabetización digital</strong></td>
+          <td>Enseñar a usar dispositivos y servicios digitales.</td>
+          <td>Talleres para personas mayores sobre banca online y videollamadas.</td>
+        </tr>
+        <tr>
+          <td><strong>Mentoría tecnológica</strong></td>
+          <td>Acompañar a personas que quieren aprender a programar o usar herramientas.</td>
+          <td>Mentorías para chicas que quieren estudiar ingeniería.</td>
+        </tr>
+        <tr>
+          <td><strong>Desarrollo de software social</strong></td>
+          <td>Crear o mantener software para ONG y asociaciones.</td>
+          <td>App para gestión de voluntarios, web para asociación vecinal.</td>
+        </tr>
+        <tr>
+          <td><strong>Reparación y reacondicionamiento</strong></td>
+          <td>Recuperar dispositivos para donarlos.</td>
+          <td>Restaurar ordenadores para familias sin recursos.</td>
+        </tr>
+        <tr>
+          <td><strong>Datos y ciencia ciudadana</strong></td>
+          <td>Recoger y analizar datos para causas ambientales o sociales.</td>
+          <td>Medir calidad del aire, mapear barreras de accesibilidad.</td>
+        </tr>
+        <tr>
+          <td><strong>Cibervoluntariado de emergencia</strong></td>
+          <td>Apoyar tecnológicamente en catástrofes o crisis.</td>
+          <td>Redes de comunicación en zonas afectadas por erupciones.</td>
+        </tr>
+      </table>
+
+      <h4>Organizaciones de referencia</h4>
+      <ul>
+        <li><strong>Cibervoluntarios</strong> (España): formación digital para colectivos en riesgo de exclusión.</li>
+        <li><strong>TechSoup</strong>: conecta empresas tecnológicas con ONG para donar software y formación.</li>
+        <li><strong>Code.org</strong>: voluntarios que enseñan programación en escuelas.</li>
+        <li><strong>Random Hacks of Kindness</strong>: hackatones para resolver problemas humanitarios.</li>
+        <li><strong>Médicos sin Fronteras - MSF Tech</strong>: tecnología para misiones humanitarias.</li>
+        <li><strong>Cruz Roja - Voluntariado digital</strong>: acompañamiento telefónico a personas solas.</li>
+      </ul>
+
+      <h4>Beneficios del voluntariado tecnológico</h4>
+      <div class="grid-teoria">
+        <div class="bloque-teoria">
+          <h5>👥 Para quien lo recibe</h5>
+          <p>Acceso a tecnología, formación, acompañamiento y oportunidades.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>💼 Para quien lo hace</h5>
+          <p>Desarrolla competencias, amplía su red, gana perspectiva social.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🌍 Para la sociedad</h5>
+          <p>Reduce la brecha digital, fomenta la cohesión y refuerza valores.</p>
+        </div>
+        <div class="bloque-teoria">
+          <h5>🔬 Fundamento científico</h5>
+          <p>El impacto se mide con indicadores: personas formadas, horas dedicadas, mejoras logradas.</p>
+        </div>
+      </div>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> el voluntariado tecnológico demuestra que <em>el
+        conocimiento compartido multiplica su valor</em>. Una hora de tu tiempo puede cambiar la
+        vida digital de otra persona.
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SERVICIO A LA COMUNIDAD ==================== -->
+  <section id="servicio">
+    <div class="sec-head reveal">
+      <span class="kicker azul">Bloque 3</span>
+      <h2>🏘️ Proyectos de servicio a la comunidad: transformar el entorno próximo</h2>
+      <p class="lead">
+        Los proyectos de servicio a la comunidad aplican tecnología para resolver necesidades
+        reales del entorno cercano, con la participación activa de quienes se benefician de ellos.
+      </p>
+    </div>
+
+    <div class="teoria azul reveal">
+      <h3><span class="th-ico">🏘️</span> Aprendizaje-servicio y proyectos comunitarios</h3>
+      <p>
+        Un <strong>proyecto de servicio a la comunidad</strong> es una iniciativa que combina
+        <strong>aprendizaje</strong> (adquirir competencias) y <strong>servicio</strong> (mejorar
+        el entorno). Esta metodología se conoce como <strong>aprendizaje-servicio</strong> y es una
+        de las más potentes para desarrollar la ciudadanía activa.
+      </p>
+
+      <h4>Fases de un proyecto de servicio a la comunidad</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Fase</th>
+          <th>Qué se hace</th>
+        </tr>
+        <tr>
+          <td><strong>1. Detectar</strong></td>
+          <td>Observar el entorno y detectar una necesidad real con datos.</td>
+        </tr>
+        <tr>
+          <td><strong>2. Analizar</strong></td>
+          <td>Investigar la causa, las personas afectadas y el contexto.</td>
+        </tr>
+        <tr>
+          <td><strong>3. Idear</strong></td>
+          <td>Proponer soluciones tecnológicas creativas y viables.</td>
+        </tr>
+        <tr>
+          <td><strong>4. Planificar</strong></td>
+          <td>Definir objetivos, recursos, equipo y calendario.</td>
+        </tr>
+        <tr>
+          <td><strong>5. Ejecutar</strong></td>
+          <td>Construir la solución, colaborar y ajustar sobre la marcha.</td>
+        </tr>
+        <tr>
+          <td><strong>6. Evaluar</strong></td>
+          <td>Medir el impacto con indicadores y aprender del proceso.</td>
+        </tr>
+        <tr>
+          <td><strong>7. Difundir</strong></td>
+          <td>Compartir los resultados y liberar los materiales para que otros los reutilicen.</td>
+        </tr>
+      </table>
+
+      <h4>Ejemplos de proyectos tecnológicos comunitarios</h4>
+      <table class="tabla-tipos">
+        <tr>
+          <th>Proyecto</th>
+          <th>Necesidad que resuelve</th>
+          <th>Tecnología</th>
+        </tr>
+        <tr>
+          <td><strong>Mapa de accesibilidad del barrio</strong></td>
+          <td>Falta de información sobre barreras arquitectónicas.</td>
+          <td>OpenStreetMap + fotos geolocalizadas + app móvil.</td>
+        </tr>
+        <tr>
+          <td><strong>Red de sensores de calidad del aire</strong></td>
+          <td>Desconocimiento de la contaminación real en el barrio.</td>
+          <td>Sensores Arduino + datos abiertos + web pública.</td>
+        </tr>
+        <tr>
+          <td><strong>Huerto urbano con IoT</strong></td>
+          <td>Falta de espacios verdes y de educación ambiental.</td>
+          <td>Riego automatizado + sensores de humedad + app.</td>
+        </tr>
+        <tr>
+          <td><strong>App de trueque vecinal</strong></td>
+          <td>Desperdicio de objetos útiles y falta de conexión vecinal.</td>
+          <td>Aplicación web + geolocalización + reputación.</td>
+        </tr>
+        <tr>
+          <td><strong>Digitalización de archivos locales</strong></td>
+          <td>Pérdida de patrimonio documental del municipio.</td>
+          <td>Escáner + OCR + repositorio digital abierto.</td>
+        </tr>
+        <tr>
+          <td><strong>Red de acompañamiento a mayores</strong></td>
+          <td>Soledad no deseada en personas mayores.</td>
+          <td>App de videollamadas + formación digital + voluntariado.</td>
+        </tr>
+        <tr>
+          <td><strong>Taller de reparación de dispositivos</strong></td>
+          <td>Residuos electrónicos y brecha digital.</td>
+          <td>Reparación + software libre + donación a familias.</td>
+        </tr>
+      </table>
+
+      <h4>¿Cómo medir el impacto?</h4>
+      <p>
+        Un proyecto de servicio a la comunidad debe evaluarse con <strong>indicadores medibles</strong>.
+        Algunos ejemplos:
+      </p>
+      <ul>
+        <li><strong>Personas beneficiadas</strong> directamente (número, perfil, contexto).</li>
+        <li><strong>Horas de voluntariado</strong> dedicadas al proyecto.</li>
+        <li><strong>Mejora concreta</strong> lograda (barreras eliminadas, kg de residuos evitados, personas formadas).</li>
+        <li><strong>Sostenibilidad</strong> del proyecto en el tiempo (¿se mantiene sin ayuda externa?).</li>
+        <li><strong>Reutilización</strong> por otras comunidades (código abierto, materiales liberados).</li>
+        <li><strong>Satisfacción</strong> de las personas participantes y beneficiarias.</li>
+      </ul>
+
+      <div class="destacado">
+        <strong>💡 Idea clave:</strong> un buen proyecto de servicio a la comunidad <em>no se hace
+        para la comunidad, sino con la comunidad</em>. Las personas beneficiarias son también
+        protagonistas del proceso.
+      </div>
+
+      <h4>Adoptar un estilo de vida sostenible y socialmente responsable</h4>
+      <p>
+        Participar en proyectos tecnológicos sociales no es algo puntual: es una forma de entender
+        la vida. Adoptar un estilo sostenible y responsable implica:
+      </p>
+      <ul>
+        <li><strong>Consumir de forma consciente</strong>: elegir productos duraderos, reparables y éticos.</li>
+        <li><strong>Compartir conocimiento</strong>: liberar lo que creas, enseñar lo que sabes.</li>
+        <li><strong>Participar en tu comunidad</strong>: colaborar con asociaciones, colegios, ONG.</li>
+        <li><strong>Actuar localmente</strong>: mejorar tu barrio, tu pueblo, tu isla.</li>
+        <li><strong>Pensar globalmente</strong>: entender que lo local forma parte de un sistema global.</li>
+        <li><strong>Exigir responsabilidad</strong>: a empresas, gobiernos y a ti mismo.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ RETO 1: ORDENA LAS FASES ==================== -->
+  <section id="reto1">
+    <div class="actividad reveal" style="border-top:6px solid var(--morado)">
+      <span class="kicker">🎮 Reto 1 · Ordena las fases</span>
+      <h3>Reconstruye el proyecto de servicio comunitario</h3>
+      <p class="intro">
+        Las fases de un proyecto de aprendizaje-servicio se han desordenado. Usa las flechas
+        ▲▼ para colocarlas en el orden correcto. Cuando creas que están bien, pulsa
+        <strong>Comprobar</strong>.
+      </p>
+      <div class="fases-lista" id="fasesLista"></div>
+      <button class="btn btn-primary" id="btnComprobarFases">✅ Comprobar orden</button>
+      <div id="fasesResultado"></div>
+    </div>
+  </section>
+
+  <!-- ============ RETO 2: VERDADERO O FALSO ==================== -->
+  <section id="reto2">
+    <div class="actividad reveal" style="border-top:6px solid var(--azul)">
+      <span class="kicker azul">🎮 Reto 2 · Verdadero o falso</span>
+      <h3>¿Mito o realidad?</h3>
+      <p class="intro">
+        Decide si cada afirmación sobre comunidades abiertas, voluntariado y proyectos de servicio
+        es verdadera o falsa. Recibirás feedback inmediato con la explicación.
+      </p>
+      <div class="vf-info">
+        <span>✅ Acertadas: <strong id="vfAciertos">0</strong></span>
+        <span>📋 Total: <strong id="vfTotal">0</strong> / 8</span>
+      </div>
+      <div class="vf-grid" id="vfGrid"></div>
+      <div id="vfResumen"></div>
+    </div>
+  </section>
+
+  <!-- ============ RETO 3: EMPAREJA COLUMNAS ==================== -->
+  <section id="reto3">
+    <div class="actividad reveal" style="border-top:6px solid var(--rosa)">
+      <span class="kicker rosa">🎮 Reto 3 · Empareja columnas</span>
+      <h3>Necesidad ↔ Solución tecnológica</h3>
+      <p class="intro">
+        Haz clic en una <strong>necesidad</strong> de la izquierda y luego en la
+        <strong>solución</strong> que le corresponde a la derecha. Si aciertas, ambas se marcarán
+        en verde. ¡Encuentra las 6 parejas!
+      </p>
+      <div class="empara-wrap">
+        <div class="empara-col">
+          <h4>Necesidades</h4>
+          <div id="emparaNecesidades"></div>
+        </div>
+        <div class="empara-col">
+          <h4>Soluciones</h4>
+          <div id="emparaSoluciones"></div>
+        </div>
+      </div>
+      <div id="emparaInfo">Parejas encontradas: 0 / 6</div>
+    </div>
+  </section>
+
+  <!-- ============ RETO 4: CONSTRUCTOR DE PROYECTO ==================== -->
+  <section id="reto4">
+    <div class="actividad reveal" style="border-top:6px solid var(--verde)">
+      <span class="kicker verde">🎮 Reto 4 · Constructor de proyecto</span>
+      <h3>Diseña tu proyecto tecnológico comunitario</h3>
+      <p class="intro">
+        Vas a diseñar un proyecto para mejorar tu barrio. Activa los componentes que consideres
+        adecuados y observa cómo evolucionan los cuatro indicadores de impacto: ambiental, social,
+        educativo e innovación.
+      </p>
+      <div class="constructor-wrap">
+        <div id="construList" style="display:grid;gap:.2rem"></div>
+        <div class="meters-box">
+          <h4>📊 Impacto del proyecto</h4>
+          <div class="meter ambiental">
+            <div class="meter-head"><span>🌱 Ambiental</span><span id="mAmbiental">0%</span></div>
+            <div class="meter-bar"><div id="barAmbiental"></div></div>
+          </div>
+          <div class="meter social">
+            <div class="meter-head"><span>👥 Social</span><span id="mSocial">0%</span></div>
+            <div class="meter-bar"><div id="barSocial"></div></div>
+          </div>
+          <div class="meter educativo">
+            <div class="meter-head"><span>🎓 Educativo</span><span id="mEducativo">0%</span></div>
+            <div class="meter-bar"><div id="barEducativo"></div></div>
+          </div>
+          <div class="meter innovacion">
+            <div class="meter-head"><span>💡 Innovación</span><span id="mInnovacion">0%</span></div>
+            <div class="meter-bar"><div id="barInnovacion"></div></div>
+          </div>
+          <div id="construResumen">Activa componentes para construir tu proyecto.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ RETO 5: PRESUPUESTO PARTICIPATIVO ==================== -->
+  <section id="reto5">
+    <div class="actividad reveal" style="border-top:6px solid var(--rosa)">
+      <span class="kicker rosa">🎮 Reto 5 · Presupuesto participativo</span>
+      <h3>Reparte 1.000 € entre proyectos comunitarios</h3>
+      <div class="presu-head">
+        <h4>📖 ¿Qué es un presupuesto participativo?</h4>
+        <p>
+          Es un proceso en el que la ciudadanía decide cómo se reparte una parte del presupuesto
+          público. Es una herramienta clave de democracia directa y de responsabilidad social.
+          Tu misión aquí es <strong>optimizar el impacto social</strong> con los recursos disponibles.
+        </p>
+      </div>
+      <div class="presu-budget">
+        <div class="pb-info">💰 Disponible: <strong id="presuRestante">1000 €</strong></div>
+        <div class="pb-bar"><div id="presuBarra"></div></div>
+      </div>
+      <div class="presu-grid" id="presuGrid"></div>
+      <div id="presuResumen">Selecciona proyectos hasta agotar el presupuesto.</div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ==================== -->
+  <section id="quiz">
+    <div class="sec-head reveal">
+      <span class="kicker ambar">🎯 Reto final · Cuestionario</span>
+      <h2>Comprueba lo que has aprendido</h2>
+      <p class="lead">10 preguntas sobre comunidades abiertas, voluntariado tecnológico, proyectos de servicio y responsabilidad social.</p>
+    </div>
+    <div id="quizContainer"></div>
+    <div id="quizResult">
+      <div id="quizScore">0/10</div>
+      <h3 id="quizTitle" style="color:#fff">¡Buen trabajo!</h3>
+      <p id="quizMsg" style="color:#e9d5ff;max-width:560px;margin:0 auto"></p>
+    </div>
+  </section>
+
+  <!-- ============ VOCABULARIO ==================== -->
+  <section id="vocabulario">
+    <div class="actividad reveal" style="border-top:6px solid var(--morado)">
+      <span class="kicker">📚 Vocabulario clave</span>
+      <h3>Diccionario interactivo</h3>
+      <p class="intro">Pulsa sobre cualquier término para ver su explicación detallada.</p>
+      <div class="voc-grid" id="vocGrid"></div>
+      <div id="vocDef"></div>
+    </div>
+  </section>
+
+  <!-- ============ CERTIFICADO ==================== -->
+  <section id="certificado">
+    <div id="certificado">
+      <h2>🏆 Tu certificado de aprovechamiento</h2>
+      <p class="sub">Al completar las actividades obtendrás un certificado personalizado con tus resultados, que podrás descargar en PDF.</p>
+
+      <div class="cert-name" id="certNombre">—</div>
+
+      <div class="cert-stats" id="certStats"></div>
+
+      <div class="cert-warn" id="certWarn" style="display:none">
+        ⚠️ Aún no has completado ninguna actividad. Termina al menos una para generar tu certificado.
+      </div>
+
+      <button class="btn btn-rosa" id="btnCertificado" style="font-size:1rem;padding:.95rem 2rem">
+        📄 Descargar certificado en PDF
+      </button>
+      <p class="cert-note">El PDF se genera como imagen rasterizada: el texto no es editable ni seleccionable, garantizando su integridad.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p style="margin-bottom:.4rem"><strong>Comunidad Tech</strong> · Comunidades abiertas · Voluntariado · Servicio comunitario · Responsabilidad social</p>
+  <p style="margin:0;font-size:.8rem">Aplicación educativa interactiva · Criterio 6.3 · Tecnología 4.º ESO · Tu progreso y tus actividades realizadas se guardan en este navegador</p>
+</footer>
+
+<div id="toast"></div>
+
+<script>
+/* ================================================================
+   1. ESTADO PERSISTENTE
+================================================================ */
+const LS_KEY = 'tecnoComunidad_v2';
+const RETOS_TOTALES = 6;
+
+/* Estado detallado de cada actividad: se guarda TODO lo que el usuario
+   ha realizado (respuestas, selecciones, orden...), no solo el resumen,
+   para poder restaurarlo tal cual al volver a abrir la aplicación. */
+function actividadesVacias(){
+  return {
+    fases:       {orden:null, completado:false},
+    vf:          {respuestas:[]},
+    empara:      {parejas:[]},
+    constructor: {seleccion:[]},
+    presupuesto: {seleccion:[]},
+    quiz:        {respuestas:[]}
+  };
+}
+
+let estado = {
+  nombre: '',
+  retos: [],
+  scores: {
+    fases: 0,
+    vf: 0,
+    empara: 0,
+    constructor: 0,
+    presupuesto: 0,
+    quiz: 0
+  },
+  iniciado: null,
+  actividades: actividadesVacias()
+};
+
+function guardarEstado(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(estado)); }catch(e){} }
+function cargarEstado(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(raw){
+      const d = JSON.parse(raw);
+      if(d && typeof d === 'object'){
+        estado = Object.assign(estado, d);
+        estado.scores = Object.assign({fases:0,vf:0,empara:0,constructor:0,presupuesto:0,quiz:0}, d.scores || {});
+        estado.retos = Array.isArray(d.retos) ? d.retos : [];
+        const act = actividadesVacias();
+        if(d.actividades && typeof d.actividades === 'object'){
+          if(d.actividades.fases && typeof d.actividades.fases === 'object'){
+            act.fases = Object.assign(act.fases, d.actividades.fases);
+          }
+          ['vf','empara','constructor','presupuesto','quiz'].forEach(k=>{
+            if(d.actividades[k] && typeof d.actividades[k] === 'object'){
+              act[k] = Object.assign(act[k], d.actividades[k]);
+            }
+          });
+        }
+        if(!Array.isArray(act.fases.orden)) act.fases.orden = null;
+        ['vf|respuestas','empara|parejas','constructor|seleccion','presupuesto|seleccion','quiz|respuestas'].forEach(par=>{
+          const [k, sub] = par.split('|');
+          if(!Array.isArray(act[k][sub])) act[k][sub] = [];
+        });
+        estado.actividades = act;
+      }
+    }
+  }catch(e){}
+}
+/* Cargamos el estado ANTES de inicializar las actividades,
+   para poder restaurarlas tal y como las dejó el usuario. */
+cargarEstado();
+
+/* ================================================================
+   2. PROGRESO
+================================================================ */
+function actualizarProgreso(){
+  const n = estado.retos.length;
+  document.getElementById('progresoPill').textContent = n + ' / ' + RETOS_TOTALES + ' retos';
+  document.getElementById('progresoBarra').style.width = (n / RETOS_TOTALES * 100) + '%';
+}
+let restaurando = false; // true mientras se restaura el estado guardado (evita toasts al reabrir)
+function completarReto(id, msg){
+  if(!estado.retos.includes(id)) estado.retos.push(id);
+  guardarEstado();
+  actualizarProgreso();
+  actualizarCertificado();
+  if(msg && !restaurando) toast(msg);
+}
+let toastTimer;
+function toast(texto){
+  const t = document.getElementById('toast');
+  t.innerHTML = '🏅 ' + texto;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 3500);
+}
+
+/* ================================================================
+   3. LOGIN
+================================================================ */
+const overlay = document.getElementById('loginOverlay');
+const card = document.getElementById('loginCard');
+
+function mostrarLogin(){
+  if(estado.nombre){
+    card.innerHTML = `
+      <span class="login-emoji">🤝</span>
+      <h1>¡Hola de nuevo!</h1>
+      <p class="sub">Hemos guardado tu progreso y tus actividades realizadas en este navegador.</p>
+      <div class="welcome-back">
+        Continuar como <strong>${escaparHTML(estado.nombre)}</strong><br>
+        <span style="font-size:.82rem">Retos completados: ${estado.retos.length} / ${RETOS_TOTALES}</span>
+      </div>
+      <div class="login-btns">
+        <button class="btn btn-primary" id="btnContinuar">▶ Continuar</button>
+        <button class="btn btn-ghost" id="btnCambiar" style="background:#f1f5f9;color:#0f172a;border-color:#e2e8f0">👤 Cambiar nombre</button>
+      </div>
+    `;
+    document.getElementById('btnContinuar').addEventListener('click', iniciarApp);
+    document.getElementById('btnCambiar').addEventListener('click', ()=>{
+      estado.nombre = '';
+      estado.retos = [];
+      estado.scores = {fases:0,vf:0,empara:0,constructor:0,presupuesto:0,quiz:0};
+      estado.iniciado = null;
+      estado.actividades = actividadesVacias();
+      guardarEstado();
+      location.reload(); // reinicia también las actividades en pantalla
+    });
+  } else {
+    renderLoginForm();
+  }
+}
+
+function renderLoginForm(){
+  card.innerHTML = `
+    <span class="login-emoji">🤝</span>
+    <h1>Bienvenido/a a Comunidad Tech</h1>
+    <p class="sub">Antes de empezar, dinos cómo te llamas. Tu progreso y tus actividades se guardarán en este navegador para que puedas continuar cuando quieras.</p>
+    <input type="text" id="inputNombre" placeholder="Escribe tu nombre" maxlength="40" autocomplete="off">
+    <button class="btn btn-primary" id="btnEntrar">🚀 Comenzar la aventura</button>
+    <div class="login-error" id="loginError"></div>
+  `;
+  const inp = document.getElementById('inputNombre');
+  const btn = document.getElementById('btnEntrar');
+  const err = document.getElementById('loginError');
+  const submit = ()=>{
+    const v = inp.value.trim();
+    if(v.length < 2){ err.textContent = 'Por favor, introduce al menos 2 caracteres.'; inp.focus(); return; }
+    estado.nombre = v;
+    estado.iniciado = new Date().toISOString();
+    guardarEstado();
+    iniciarApp();
+  };
+  btn.addEventListener('click', submit);
+  inp.addEventListener('keydown', e=>{ if(e.key === 'Enter') submit(); });
+  setTimeout(()=>inp.focus(), 200);
+}
+
+function iniciarApp(){
+  overlay.classList.add('hidden');
+  document.body.classList.remove('locked');
+  document.getElementById('navUserName').textContent = estado.nombre;
+  document.getElementById('heroNombre').textContent = estado.nombre;
+  actualizarProgreso();
+  actualizarCertificado();
+  if(hayDetalleActividades()){
+    toast('Sesión restaurada: tus actividades realizadas siguen visibles');
+  }
+}
+
+function hayDetalleActividades(){
+  const a = estado.actividades;
+  return !!(
+    (a.fases && (a.fases.completado || a.fases.orden)) ||
+    (a.vf.respuestas && a.vf.respuestas.length) ||
+    (a.empara.parejas && a.empara.parejas.length) ||
+    (a.constructor.seleccion && a.constructor.seleccion.length) ||
+    (a.presupuesto.seleccion && a.presupuesto.seleccion.length) ||
+    (a.quiz.respuestas && a.quiz.respuestas.length)
+  );
+}
+
+function escaparHTML(s){
+  return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ================================================================
+   4. REVEAL
+================================================================ */
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach((e,i)=>{
+    if(e.isIntersecting){
+      setTimeout(()=>e.target.classList.add('in'), i*70);
+      io.unobserve(e.target);
+    }
+  });
+},{threshold:.12, rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+/* ================================================================
+   5. NAV ACTIVO
+================================================================ */
+const secciones = [...document.querySelectorAll('section[id]')];
+const navLinks = [...document.querySelectorAll('.nav-links a')];
+window.addEventListener('scroll', ()=>{
+  let actual = '';
+  secciones.forEach(s=>{ if(window.scrollY >= s.offsetTop - 120) actual = s.id; });
+  navLinks.forEach(a=>a.classList.toggle('active', a.getAttribute('href') === '#'+actual));
+});
+
+/* ================================================================
+   6. RETO 1 · ORDENA LAS FASES
+================================================================ */
+const fasesCorrectas = [
+  "Detectar la necesidad real del entorno con datos",
+  "Analizar la causa y las personas afectadas",
+  "Idear soluciones tecnológicas creativas",
+  "Planificar objetivos, recursos, equipo y calendario",
+  "Ejecutar el proyecto colaborando y ajustando",
+  "Evaluar el impacto con indicadores medibles"
+];
+
+let fasesActuales = [];
+let fasesCompletado = false;
+
+function shuffle(arr){
+  const a = [...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function initFases(){
+  const guardado = estado.actividades.fases;
+  if(Array.isArray(guardado.orden) && guardado.orden.length === fasesCorrectas.length &&
+     guardado.orden.every(f=>fasesCorrectas.includes(f))){
+    // Restaurar el orden que dejó el usuario en la sesión anterior
+    fasesActuales = [...guardado.orden];
+  }else{
+    fasesActuales = shuffle([...fasesCorrectas]);
+    // Evitar que ya esté resuelto por azar
+    while(fasesActuales.every((f,i)=>f === fasesCorrectas[i])){
+      fasesActuales = shuffle([...fasesCorrectas]);
+    }
+  }
+  fasesCompletado = !!guardado.completado && fasesActuales.every((f,i)=>f === fasesCorrectas[i]);
+  renderFases();
+  const res = document.getElementById('fasesResultado');
+  if(fasesCompletado){
+    // Mostrar el reto tal y como quedó resuelto
+    document.querySelectorAll('.fase-item').forEach(el=>el.classList.add('correcta'));
+    res.innerHTML = '🎉 ¡Perfecto! Has ordenado correctamente las 6 fases.';
+    res.style.color = '#16a34a';
+    const btn = document.getElementById('btnComprobarFases');
+    btn.disabled = true;
+    btn.style.opacity = .6;
+    btn.style.cursor = 'default';
+  }else{
+    res.textContent = '';
+  }
+}
+
+function renderFases(){
+  const cont = document.getElementById('fasesLista');
+  cont.innerHTML = '';
+  fasesActuales.forEach((fase, i)=>{
+    const div = document.createElement('div');
+    div.className = 'fase-item';
+    div.innerHTML = `
+      <span class="fase-num">${i+1}</span>
+      <span class="fase-txt">${fase}</span>
+      <div class="fase-ctrl">
+        <button data-dir="-1" data-i="${i}" ${i===0?'disabled':''}>▲</button>
+        <button data-dir="1" data-i="${i}" ${i===fasesActuales.length-1?'disabled':''}>▼</button>
+      </div>
+    `;
+    cont.appendChild(div);
+  });
+  cont.querySelectorAll('button').forEach(b=>{
+    if(fasesCompletado) b.disabled = true;
+    b.addEventListener('click', ()=>{
+      if(fasesCompletado) return;
+      const dir = parseInt(b.dataset.dir, 10);
+      const i = parseInt(b.dataset.i, 10);
+      const j = i + dir;
+      if(j < 0 || j >= fasesActuales.length) return;
+      [fasesActuales[i], fasesActuales[j]] = [fasesActuales[j], fasesActuales[i]];
+      estado.actividades.fases.orden = [...fasesActuales];
+      guardarEstado();
+      renderFases();
+    });
+  });
+}
+
+document.getElementById('btnComprobarFases').addEventListener('click', ()=>{
+  if(fasesCompletado) return;
+  let correctas = 0;
+  const items = document.querySelectorAll('.fase-item');
+  fasesActuales.forEach((fase, i)=>{
+    if(fase === fasesCorrectas[i]){
+      correctas++;
+      items[i].classList.add('correcta');
+    } else {
+      items[i].classList.add('incorrecta');
+    }
+  });
+  estado.actividades.fases.orden = [...fasesActuales];
+  const res = document.getElementById('fasesResultado');
+  if(correctas === fasesCorrectas.length){
+    fasesCompletado = true;
+    res.innerHTML = '🎉 ¡Perfecto! Has ordenado correctamente las 6 fases.';
+    res.style.color = '#16a34a';
+    estado.actividades.fases.completado = true;
+    if(estado.scores.fases < 6) estado.scores.fases = 6;
+    guardarEstado();
+    actualizarCertificado();
+    completarReto('fases', '¡Reto de ordenar fases completado!');
+    const btnC = document.getElementById('btnComprobarFases');
+    btnC.disabled = true;
+    btnC.style.opacity = .6;
+    btnC.style.cursor = 'default';
+    document.querySelectorAll('.fase-item .fase-ctrl button').forEach(b=>b.disabled = true);
+  } else {
+    res.innerHTML = `Tienes <strong>${correctas} de ${fasesCorrectas.length}</strong> fases en la posición correcta. Vuelve a intentarlo.`;
+    res.style.color = '#dc2626';
+    guardarEstado();
+    setTimeout(()=>{
+      document.querySelectorAll('.fase-item').forEach(el=>{
+        el.classList.remove('correcta','incorrecta');
+      });
+    }, 2200);
+    if(correctas > estado.scores.fases){
+      estado.scores.fases = correctas;
+      guardarEstado();
+      actualizarCertificado();
+    }
+  }
+});
+
+initFases();
+
+/* ================================================================
+   7. RETO 2 · VERDADERO O FALSO
+================================================================ */
+const vfData = [
+  {t:"Las comunidades abiertas solo sirven para compartir software libre.", v:false,
+   why:"Las comunidades abiertas también crean enciclopedias (Wikipedia), mapas (OpenStreetMap), bancos de imágenes, materiales educativos y mucho más."},
+  {t:"El voluntariado tecnológico puede mejorar la vida de personas del entorno próximo.", v:true,
+   why:"Enseñar a usar el móvil a una persona mayor o reparar ordenadores para familias sin recursos mejora directamente su calidad de vida."},
+  {t:"Para participar en una comunidad abierta hay que ser un experto.", v:false,
+   why:"La mayoría de las comunidades permiten contribuir en distintos niveles: traducir, corregir, documentar, organizar… No hace falta ser experto."},
+  {t:"Wikipedia es un ejemplo de comunidad abierta.", v:true,
+   why:"Wikipedia es escrita y revisada por miles de voluntarios de todo el mundo, y su contenido es libre y gratuito."},
+  {t:"Los proyectos de servicio a la comunidad no tienen impacto real medible.", v:false,
+   why:"Todo proyecto bien diseñado se evalúa con indicadores: personas beneficiadas, horas de voluntariado, mejoras logradas, etc."},
+  {t:"OpenStreetMap permite mapear el mundo de forma colaborativa.", v:true,
+   why:"OpenStreetMap es un mapa libre construido por voluntarios; se usa en apps, emergencias, planificación urbana y proyectos sociales."},
+  {t:"El software libre impide que las empresas ganen dinero con él.", v:false,
+   why:"Muchas empresas ganan dinero ofreciendo soporte, formación, personalización o servicios sobre software libre."},
+  {t:"Cualquier persona puede contribuir a una comunidad abierta según sus capacidades.", v:true,
+   why:"Las comunidades abiertas valoran todo tipo de aportaciones: código, traducción, diseño, documentación, difusión, moderación…"}
+];
+
+let vfAciertos = 0, vfTotal = 0;
+
+function responderVF(i, elegido){
+  const c = document.querySelectorAll('#vfGrid .vf-card')[i];
+  if(!c || c.classList.contains('done')) return;
+  const item = vfData[i];
+  const btns = c.querySelectorAll('.vf-btns button');
+  const fb = c.querySelector('.vf-fb');
+  const acierto = (elegido === true) === item.v;
+  btns.forEach(x=>{
+    x.disabled = true;
+    if((x.dataset.v === '1') === item.v) x.classList.add('correct');
+  });
+  if(!acierto){
+    btns.forEach(x=>{ if((x.dataset.v === '1') === (elegido === true)) x.classList.add('wrong'); });
+  }
+  fb.classList.add('show');
+  fb.innerHTML = (acierto ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>No exactamente.</strong> ') + item.why;
+  c.classList.add('done');
+  vfTotal++;
+  if(acierto) vfAciertos++;
+  // Guardar la respuesta para poder restaurarla al reabrir la app
+  estado.actividades.vf.respuestas[i] = (elegido === true);
+  guardarEstado();
+  document.getElementById('vfAciertos').textContent = vfAciertos;
+  document.getElementById('vfTotal').textContent = vfTotal;
+  if(vfTotal === vfData.length){
+    if(vfAciertos > estado.scores.vf){
+      estado.scores.vf = vfAciertos;
+      guardarEstado();
+      actualizarCertificado();
+    }
+    document.getElementById('vfResumen').textContent =
+      `Has acertado ${vfAciertos} de ${vfData.length}. ` +
+      (vfAciertos >= 7 ? '¡Dominas los conceptos clave!' :
+       vfAciertos >= 5 ? 'Buen resultado. Repasa las que has fallado.' :
+       'Vuelve a leer la teoría y prueba de nuevo.');
+    completarReto('vf', '¡Reto de verdadero/falso completado!');
+  }
+}
+
+(function initVF(){
+  const grid = document.getElementById('vfGrid');
+  vfData.forEach((item, i)=>{
+    const c = document.createElement('div');
+    c.className = 'vf-card';
+    c.innerHTML = `
+      <p>${item.t}</p>
+      <div class="vf-btns">
+        <button data-v="1">✔ Verdadero</button>
+        <button data-v="0">✘ Falso</button>
+      </div>
+      <div class="vf-fb"></div>
+    `;
+    c.querySelectorAll('.vf-btns button').forEach(b=>{
+      b.addEventListener('click', ()=> responderVF(i, b.dataset.v === '1'));
+    });
+    grid.appendChild(c);
+  });
+  // Restaurar las respuestas guardadas en sesiones anteriores
+  restaurando = true;
+  estado.actividades.vf.respuestas.forEach((r, i)=>{
+    if(i < vfData.length && (r === true || r === false)) responderVF(i, r);
+  });
+  restaurando = false;
+})();
+
+/* ================================================================
+   8. RETO 3 · EMPAREJA COLUMNAS
+================================================================ */
+const emparaData = [
+  {id:'e1', nec:'Personas mayores que se sienten solas', sol:'App de acompañamiento por videollamada'},
+  {id:'e2', nec:'Basura y desperfectos en el barrio sin reportar', sol:'Plataforma de reporte ciudadano geolocalizado'},
+  {id:'e3', nec:'Falta de información sobre barreras de accesibilidad', sol:'Mapeo colaborativo en OpenStreetMap'},
+  {id:'e4', nec:'Pequeños comercios con poca visibilidad', sol:'Directorio comunitario en línea de comercio local'},
+  {id:'e5', nec:'Contaminación del aire desconocida en el barrio', sol:'Red de sensores ciudadanos de calidad del aire'},
+  {id:'e6', nec:'Brecha digital en familias sin recursos', sol:'Talleres de alfabetización digital y donación de equipos'}
+];
+
+let emparaSeleccionNec = null;
+let emparaParejas = 0;
+
+function initEmpara(){
+  emparaSeleccionNec = null;
+  emparaParejas = 0;
+
+  const necCont = document.getElementById('emparaNecesidades');
+  const solCont = document.getElementById('emparaSoluciones');
+  necCont.innerHTML = '';
+  solCont.innerHTML = '';
+
+  const needs = shuffle([...emparaData]);
+  const sols = shuffle([...emparaData]);
+
+  needs.forEach(item=>{
+    const b = document.createElement('button');
+    b.className = 'empara-btn';
+    b.dataset.id = item.id;
+    b.dataset.tipo = 'nec';
+    b.textContent = item.nec;
+    b.addEventListener('click', ()=>clickEmpara(b));
+    necCont.appendChild(b);
+  });
+
+  sols.forEach(item=>{
+    const b = document.createElement('button');
+    b.className = 'empara-btn';
+    b.dataset.id = item.id;
+    b.dataset.tipo = 'sol';
+    b.textContent = item.sol;
+    b.addEventListener('click', ()=>clickEmpara(b));
+    solCont.appendChild(b);
+  });
+
+  // Restaurar las parejas ya encontradas en sesiones anteriores
+  const guardadas = (estado.actividades.empara.parejas || [])
+    .filter(id => emparaData.some(d => d.id === id));
+  guardadas.forEach(id=>{
+    const bn = necCont.querySelector('.empara-btn[data-id="'+id+'"]');
+    const bs = solCont.querySelector('.empara-btn[data-id="'+id+'"]');
+    if(bn && bs){ bn.classList.add('matched'); bs.classList.add('matched'); }
+  });
+  emparaParejas = guardadas.length;
+
+  actualizarEmparaInfo();
+  if(emparaParejas === emparaData.length){
+    document.getElementById('emparaInfo').innerHTML =
+      '🎉 <strong>¡Has emparejado las 6 parejas!</strong> Has comprendido cómo la tecnología puede responder a necesidades reales del entorno.';
+    completarReto('empara');
+  }
+}
+
+function clickEmpara(btn){
+  if(btn.classList.contains('matched')) return;
+
+  if(btn.dataset.tipo === 'nec'){
+    // Seleccionar/deseleccionar necesidad
+    document.querySelectorAll('#emparaNecesidades .empara-btn').forEach(b=>b.classList.remove('selected'));
+    if(emparaSeleccionNec === btn){
+      emparaSeleccionNec = null;
+    } else {
+      emparaSeleccionNec = btn;
+      btn.classList.add('selected');
+    }
+    return;
+  }
+
+  // Clic en solución
+  if(!emparaSeleccionNec){
+    // Si no hay necesidad seleccionada, marcamos error suave
+    btn.classList.add('error');
+    setTimeout(()=>btn.classList.remove('error'), 500);
+    return;
+  }
+
+  if(btn.dataset.id === emparaSeleccionNec.dataset.id){
+    // Acierto
+    btn.classList.add('matched');
+    emparaSeleccionNec.classList.remove('selected');
+    emparaSeleccionNec.classList.add('matched');
+    emparaSeleccionNec = null;
+    emparaParejas++;
+    // Guardar la pareja encontrada para poder restaurarla
+    if(!estado.actividades.empara.parejas.includes(btn.dataset.id)){
+      estado.actividades.empara.parejas.push(btn.dataset.id);
+    }
+    guardarEstado();
+    actualizarEmparaInfo();
+    if(emparaParejas === emparaData.length){
+      document.getElementById('emparaInfo').innerHTML =
+        '🎉 <strong>¡Has emparejado las 6 parejas!</strong> Has comprendido cómo la tecnología puede responder a necesidades reales del entorno.';
+      if(estado.scores.empara < 6){
+        estado.scores.empara = 6;
+        guardarEstado();
+        actualizarCertificado();
+      }
+      completarReto('empara', '¡Reto de emparejar completado!');
+    }
+  } else {
+    // Fallo
+    btn.classList.add('error');
+    emparaSeleccionNec.classList.add('error');
+    const necRef = emparaSeleccionNec;
+    setTimeout(()=>{
+      btn.classList.remove('error');
+      necRef.classList.remove('error');
+    }, 500);
+    // Quitamos la selección tras el fallo
+    setTimeout(()=>{
+      if(emparaSeleccionNec === necRef){
+        necRef.classList.remove('selected');
+        emparaSeleccionNec = null;
+      }
+    }, 500);
+  }
+}
+
+function actualizarEmparaInfo(){
+  document.getElementById('emparaInfo').textContent = `Parejas encontradas: ${emparaParejas} / ${emparaData.length}`;
+}
+
+initEmpara();
+
+/* ================================================================
+   9. RETO 4 · CONSTRUCTOR DE PROYECTO
+================================================================ */
+const construData = [
+  {t:"Mapeo colaborativo de barreras de accesibilidad", d:"Datos abiertos en OpenStreetMap", amb:6, soc:15, edu:8, inn:8},
+  {t:"Talleres de alfabetización digital para mayores", d:"Formación y acompañamiento", amb:2, soc:18, edu:15, inn:5},
+  {t:"Red de sensores ciudadanos de calidad del aire", d:"Hardware abierto + datos públicos", amb:15, soc:12, edu:10, inn:15},
+  {t:"Plataforma de trueque vecinal de objetos", d:"App web + geolocalización", amb:18, soc:10, edu:6, inn:8},
+  {t:"Taller de reparación de dispositivos electrónicos", d:"Reduce residuos + forma personas", amb:15, soc:12, edu:12, inn:8},
+  {t:"Huerto urbano con riego automatizado", d:"Sensores + Arduino + educación ambiental", amb:14, soc:10, edu:14, inn:10},
+  {t:"Digitalización de archivos históricos locales", d:"Preservación del patrimonio", amb:4, soc:10, edu:14, inn:10},
+  {t:"Web comunitaria para pequeños comercios", d:"Directorio local + mapas", amb:3, soc:14, edu:6, inn:6},
+  {t:"App de acompañamiento a personas mayores", d:"Videollamadas + voluntariado digital", amb:2, soc:20, edu:6, inn:10},
+  {t:"Licencias abiertas para todos los materiales creados", d:"Conocimiento reutilizable por otras comunidades", amb:6, soc:8, edu:12, inn:12},
+  {t:"Evaluación con indicadores y memoria pública", d:"Transparencia y aprendizaje continuo", amb:4, soc:10, edu:15, inn:8},
+  {t:"Colaboración con asociaciones locales del barrio", d:"Alianzas y participación ciudadana", amb:3, soc:16, edu:8, inn:5}
+];
+
+let construCompletado = false;
+
+function renderConstructor(){
+  const cont = document.getElementById('construList');
+  cont.innerHTML = '';
+  construData.forEach((item, i)=>{
+    const lbl = document.createElement('label');
+    lbl.className = 'constru-item';
+    lbl.innerHTML = `
+      <input type="checkbox" data-i="${i}">
+      <span class="constru-box"></span>
+      <span class="constru-txt">
+        ${item.t}
+        <small>${item.d}</small>
+      </span>
+    `;
+    lbl.querySelector('input').addEventListener('change', ()=>{
+      sincronizarConstructor();
+      actualizarConstructor();
+    });
+    cont.appendChild(lbl);
+  });
+  // Restaurar los componentes activados en sesiones anteriores
+  (estado.actividades.constructor.seleccion || []).forEach(i=>{
+    const inp = cont.querySelector('input[data-i="'+i+'"]');
+    if(inp) inp.checked = true;
+  });
+  actualizarConstructor();
+}
+
+function sincronizarConstructor(){
+  estado.actividades.constructor.seleccion =
+    [...document.querySelectorAll('#construList input')]
+      .filter(c=>c.checked)
+      .map(c=>parseInt(c.dataset.i, 10));
+  guardarEstado();
+}
+
+function actualizarConstructor(){
+  const checks = document.querySelectorAll('#construList input');
+  let a=0, s=0, e=0, inn=0;
+  let activos = 0;
+  checks.forEach(c=>{
+    if(c.checked){
+      const i = parseInt(c.dataset.i, 10);
+      a += construData[i].amb;
+      s += construData[i].soc;
+      e += construData[i].edu;
+      inn += construData[i].inn;
+      activos++;
+    }
+  });
+  // Normalizamos a porcentajes (máximo teórico por categoría)
+  const maxA = construData.reduce((x,d)=>x+d.amb,0);
+  const maxS = construData.reduce((x,d)=>x+d.soc,0);
+  const maxE = construData.reduce((x,d)=>x+d.edu,0);
+  const maxI = construData.reduce((x,d)=>x+d.inn,0);
+
+  const pA = Math.round(a/maxA*100);
+  const pS = Math.round(s/maxS*100);
+  const pE = Math.round(e/maxE*100);
+  const pI = Math.round(inn/maxI*100);
+
+  document.getElementById('mAmbiental').textContent = pA + '%';
+  document.getElementById('mSocial').textContent = pS + '%';
+  document.getElementById('mEducativo').textContent = pE + '%';
+  document.getElementById('mInnovacion').textContent = pI + '%';
+
+  document.getElementById('barAmbiental').style.width = pA + '%';
+  document.getElementById('barSocial').style.width = pS + '%';
+  document.getElementById('barEducativo').style.width = pE + '%';
+  document.getElementById('barInnovacion').style.width = pI + '%';
+
+  const resumen = document.getElementById('construResumen');
+  if(activos === 0){
+    resumen.textContent = 'Activa componentes para construir tu proyecto.';
+  } else {
+    const balance = Math.round((pA + pS + pE + pI) / 4);
+    let nivel;
+    if(balance >= 70) nivel = '🏆 ¡Proyecto equilibrado y muy completo!';
+    else if(balance >= 45) nivel = '🟢 Buen proyecto, con impacto positivo en varias dimensiones.';
+    else if(balance >= 25) nivel = '🟠 Proyecto inicial. Añade más componentes para ampliar el impacto.';
+    else nivel = '🔴 Proyecto muy limitado. Necesita más dimensiones de impacto.';
+    resumen.innerHTML = `${nivel}<br><span style="font-size:.78rem">Componentes activos: <strong>${activos}</strong></span>`;
+
+    // Guardar mejor puntuación
+    const total = pA + pS + pE + pI;
+    if(total > estado.scores.constructor){
+      estado.scores.constructor = total;
+      guardarEstado();
+      actualizarCertificado();
+    }
+    // Consideramos completado si se activan ≥10 componentes
+    if(activos >= 10 && !construCompletado){
+      construCompletado = true;
+      completarReto('constructor', '¡Constructor de proyecto completado!');
+    }
+  }
+}
+
+restaurando = true;
+renderConstructor();
+restaurando = false;
+
+/* ================================================================
+   10. RETO 5 · PRESUPUESTO PARTICIPATIVO
+================================================================ */
+const presuData = [
+  {id:'p1', ico:'📚', titulo:'Taller de alfabetización digital para mayores', desc:'Formación de 4 semanas para 30 personas mayores.', cost:200, benef:30},
+  {id:'p2', ico:'📱', titulo:'App de reporte ciudadano de incidencias', desc:'Permite reportar problemas urbanos geolocalizados.', cost:350, benef:500},
+  {id:'p3', ico:'🌫️', titulo:'Red de sensores de calidad del aire', desc:'10 sensores ciudadanos + web pública de datos.', cost:400, benef:3000},
+  {id:'p4', ico:'🌱', titulo:'Huerto urbano con riego automatizado', desc:'Espacio comunitario con sensores y educación ambiental.', cost:250, benef:80},
+  {id:'p5', ico:'♿', titulo:'Mapeo colaborativo de accesibilidad', desc:'Mapa abierto de barreras del barrio para movilidad reducida.', cost:150, benef:200},
+  {id:'p6', ico:'🤝', titulo:'Plataforma de trueque vecinal', desc:'App web para intercambiar objetos entre vecinos.', cost:200, benef:250}
+];
+
+const PRESU_MAX = 1000;
+let presuSeleccion = new Set();
+
+function renderPresupuesto(){
+  const grid = document.getElementById('presuGrid');
+  grid.innerHTML = '';
+  // Restaurar la selección de proyectos de sesiones anteriores
+  presuSeleccion = new Set(
+    (estado.actividades.presupuesto.seleccion || [])
+      .filter(id => presuData.some(p => p.id === id))
+  );
+  presuData.forEach(item=>{
+    const div = document.createElement('div');
+    div.className = 'presu-card';
+    div.dataset.id = item.id;
+    div.innerHTML = `
+      <div class="pc-check">✓</div>
+      <span class="pc-ico">${item.ico}</span>
+      <div class="pc-titulo">${item.titulo}</div>
+      <p class="pc-desc">${item.desc}</p>
+      <div class="pc-cost">💶 ${item.cost} €</div>
+      <span class="pc-benef">👥 Beneficia a ~${item.benef.toLocaleString('es-ES')} personas</span>
+    `;
+    div.addEventListener('click', ()=>togglePresu(item.id));
+    grid.appendChild(div);
+  });
+  actualizarPresupuesto();
+}
+
+function togglePresu(id){
+  const item = presuData.find(p=>p.id === id);
+  if(!item) return;
+
+  if(presuSeleccion.has(id)){
+    presuSeleccion.delete(id);
+  } else {
+    const gastoActual = [...presuSeleccion].reduce((t,pid)=>{
+      const it = presuData.find(p=>p.id === pid);
+      return t + (it ? it.cost : 0);
+    }, 0);
+    if(gastoActual + item.cost > PRESU_MAX){
+      toast('¡Presupuesto insuficiente!');
+      return;
+    }
+    presuSeleccion.add(id);
+  }
+  actualizarPresupuesto();
+}
+
+function actualizarPresupuesto(){
+  const cards = document.querySelectorAll('.presu-card');
+  let gastado = 0, beneficiados = 0;
+  cards.forEach(c=>{
+    const id = c.dataset.id;
+    const item = presuData.find(p=>p.id === id);
+    if(presuSeleccion.has(id)){
+      c.classList.add('selected');
+      gastado += item.cost;
+      beneficiados += item.benef;
+    } else {
+      c.classList.remove('selected');
+    }
+    // Comprobar si añadir esta tarjeta se pasaría del presupuesto
+    if(!presuSeleccion.has(id)){
+      if(gastado + item.cost > PRESU_MAX){
+        c.classList.add('disabled');
+      } else {
+        c.classList.remove('disabled');
+      }
+    } else {
+      c.classList.remove('disabled');
+    }
+  });
+
+  const restante = PRESU_MAX - gastado;
+  document.getElementById('presuRestante').textContent = restante.toLocaleString('es-ES') + ' €';
+  document.getElementById('presuBarra').style.width = (gastado / PRESU_MAX * 100) + '%';
+
+  // Persistir la selección de proyectos
+  estado.actividades.presupuesto.seleccion = [...presuSeleccion];
+  guardarEstado();
+
+  const resumen = document.getElementById('presuResumen');
+  if(presuSeleccion.size === 0){
+    resumen.textContent = 'Selecciona proyectos hasta agotar el presupuesto.';
+  } else {
+    // Calcular equilibrio entre tipos de impacto
+    const numProyectos = presuSeleccion.size;
+    let mensaje;
+    if(beneficiados >= 3500) mensaje = '🏆 ¡Impacto masivo! Has priorizado proyectos con gran alcance social.';
+    else if(beneficiados >= 1500) mensaje = '🌟 Buen reparto, con impacto notable en la comunidad.';
+    else if(beneficiados >= 500) mensaje = '👍 Impacto moderado. Considera proyectos con mayor alcance.';
+    else mensaje = '📚 Impacto limitado. Prueba a combinar más proyectos y con más beneficiarios.';
+
+    resumen.innerHTML = `${mensaje}<br>
+      <span style="font-size:.85rem">
+        Proyectos elegidos: <strong>${numProyectos}</strong> ·
+        Beneficiarios estimados: <strong>${beneficiados.toLocaleString('es-ES')}</strong>
+      </span>`;
+
+    if(beneficiados > estado.scores.presupuesto){
+      estado.scores.presupuesto = beneficiados;
+      guardarEstado();
+      actualizarCertificado();
+    }
+    // Completar si se eligen ≥3 proyectos y se gastan ≥800€
+    if(numProyectos >= 3 && gastado >= 800){
+      completarReto('presupuesto', '¡Presupuesto participativo completado!');
+    }
+  }
+}
+
+restaurando = true;
+renderPresupuesto();
+restaurando = false;
+
+/* ================================================================
+   11. VOCABULARIO
+================================================================ */
+const vocabulario = [
+  {ico:'🌐', t:'Comunidad abierta', d:'Colectivo en el que cualquier persona puede participar, aportar y beneficiarse libremente de los resultados. Ejemplos: Wikipedia, OpenStreetMap, GitHub.'},
+  {ico:'📖', t:'Conocimiento abierto', d:'Contenido (textos, imágenes, datos, software) que cualquiera puede usar, modificar y compartir libremente, a menudo bajo licencias Creative Commons o GPL.'},
+  {ico:'💻', t:'Software libre', d:'Programa cuyo código fuente es accesible, modificable y redistribuible. Garantiza las cuatro libertades: usar, estudiar, modificar y compartir.'},
+  {ico:'🗺️', t:'OpenStreetMap', d:'Mapa del mundo construido colaborativamente por voluntarios. Sus datos son libres y se usan en apps, emergencias y proyectos sociales.'},
+  {ico:'📚', t:'Wikipedia', d:'Enciclopedia libre escrita por voluntarios de todo el mundo. Es uno de los mayores ejemplos de conocimiento abierto y colaborativo.'},
+  {ico:'🤝', t:'Voluntariado tecnológico', d:'Acción solidaria que dedica tiempo y conocimientos tecnológicos a causas sociales sin ánimo de lucro.'},
+  {ico:'💡', t:'Cibervoluntariado', d:'Modalidad de voluntariado que usa herramientas digitales para acompañar, formar o apoyar a personas y colectivos.'},
+  {ico:'🏘️', t:'Servicio a la comunidad', d:'Proyecto que aplica conocimientos y tecnología para resolver necesidades reales del entorno próximo, con la participación de quienes se benefician.'},
+  {ico:'🎓', t:'Aprendizaje-servicio', d:'Metodología educativa que combina el aprendizaje de competencias con la realización de un servicio a la comunidad.'},
+  {ico:'🔬', t:'Impacto social medible', d:'Efecto real y cuantificable de un proyecto sobre las personas y el entorno: beneficiarios, mejoras logradas, horas de voluntariado, etc.'},
+  {ico:'📊', t:'Indicador', d:'Dato o medida que permite evaluar el grado de cumplimiento de los objetivos de un proyecto (número de beneficiarios, kg de residuos evitados…).'},
+  {ico:'🌍', t:'Responsabilidad social', d:'Compromiso consciente de personas y organizaciones con el impacto social, ambiental y ético de sus acciones.'},
+  {ico:'♻️', t:'Consumo responsable', d:'Elección consciente de productos y servicios teniendo en cuenta su impacto ambiental, social y ético, no solo su precio.'},
+  {ico:'🔧', t:'Reparación y reutilización', d:'Prácticas que alargan la vida útil de los productos, reducen residuos y ahorran recursos. Clave en proyectos sociales de donación de equipos.'},
+  {ico:'🛠️', t:'Hackatón solidario', d:'Encuentro intensivo de programadores y diseñadores para crear soluciones tecnológicas a problemas sociales o humanitarios en poco tiempo.'},
+  {ico:'🌱', t:'Estilo de vida sostenible', d:'Forma de vivir que reduce el impacto ambiental y contribuye a una sociedad más justa: consumir menos, compartir más, reparar antes de tirar.'},
+  {ico:'🗳️', t:'Presupuesto participativo', d:'Proceso en el que la ciudadanía decide cómo se reparte una parte del presupuesto público. Herramienta de democracia directa.'},
+  {ico:'🔓', t:'Datos abiertos', d:'Datos públicos accesibles, reutilizables y redistribuibles por cualquiera. Facilitan la transparencia y la innovación social.'},
+  {ico:'🎯', t:'ODS', d:'Objetivos de Desarrollo Sostenible de la Agenda 2030 de la ONU. Muchos proyectos tecnológicos sociales contribuyen a varios ODS a la vez.'},
+  {ico:'🌐', t:'Brecha digital', d:'Desigualdad en el acceso, uso o aprovechamiento de las tecnologías digitales. El voluntariado tecnológico trabaja para reducirla.'}
+];
+
+(function initVoc(){
+  const grid = document.getElementById('vocGrid');
+  const defBox = document.getElementById('vocDef');
+  vocabulario.forEach((v)=>{
+    const b = document.createElement('button');
+    b.className = 'voc-term';
+    b.innerHTML = `<span style="font-size:1.1rem">${v.ico}</span><span>${v.t}</span>`;
+    b.addEventListener('click', ()=>{
+      const yaActivo = b.classList.contains('active');
+      grid.querySelectorAll('.voc-term').forEach(x=>x.classList.remove('active'));
+      if(yaActivo){
+        defBox.classList.remove('show');
+        setTimeout(()=>{ defBox.innerHTML=''; }, 500);
+        return;
+      }
+      b.classList.add('active');
+      defBox.innerHTML = `<h4>${v.ico} ${v.t}</h4><p>${v.d}</p>`;
+      defBox.classList.add('show');
+    });
+    grid.appendChild(b);
+  });
+})();
+
+/* ================================================================
+   12. QUIZ FINAL
+================================================================ */
+const preguntasQuiz = [
+  {q:"¿Qué caracteriza a una comunidad abierta?",
+   o:["Solo puede participar quien tenga un título universitario.",
+      "Exige pagar una cuota anual para poder entrar.",
+      "Cualquier persona puede participar libremente.",
+      "Está controlada por una única empresa privada."],
+   c:2, e:"Las comunidades abiertas se basan en el acceso libre, la participación abierta y la colaboración entre muchas personas."},
+  {q:"¿Cuál de estos es un ejemplo de comunidad abierta?",
+   o:["OpenStreetMap.",
+      "Una red social privada de suscripción mensual.",
+      "Un videojuego diseñado para un solo jugador.",
+      "Un periódico digital con contenido de pago."],
+   c:0, e:"OpenStreetMap es un mapa del mundo construido colaborativamente por voluntarios, cuyos datos son libres."},
+  {q:"¿Qué es el voluntariado tecnológico?",
+   o:["Trabajar sin cobrar a tiempo completo en una empresa tecnológica a cambio de experiencia.",
+      "Dedicar tiempo y conocimientos tecnológicos a causas sociales.",
+      "Vender dispositivos electrónicos de segunda mano a precio de coste.",
+      "Reparar ordenadores de forma particular cobrando por ello."],
+   c:1, e:"El voluntariado tecnológico pone las competencias digitales al servicio de causas sociales, sin ánimo de lucro."},
+  {q:"¿Qué es el aprendizaje-servicio?",
+   o:["Una práctica remunerada que se realiza en una empresa durante el verano.",
+      "Un tipo de examen final al cierre de una etapa educativa.",
+      "Aprender un oficio observando a un profesional en su trabajo.",
+      "Combinar aprendizaje y servicio a la comunidad."],
+   c:3, e:"El aprendizaje-servicio integra la adquisición de competencias con la realización de un servicio útil a la comunidad."},
+  {q:"¿Qué fase es la PRIMERA en un proyecto de servicio a la comunidad?",
+   o:["Comprar los materiales y el equipo que hará falta.",
+      "Difundir el proyecto en redes sociales para darlo a conocer.",
+      "Detectar la necesidad real con datos.",
+      "Pedir subvenciones a las administraciones públicas."],
+   c:2, e:"Antes de actuar hay que observar, medir y detectar la necesidad real. Sin un diagnóstico previo, el proyecto puede no servir."},
+  {q:"¿Qué significa que un proyecto tiene 'impacto social medible'?",
+   o:["Se puede evaluar con indicadores.",
+      "Que aparece en las noticias y en las redes sociales.",
+      "Que lo afirman sus promotores al presentarlo en público.",
+      "Que consigue muchos seguidores y mucha popularidad."],
+   c:0, e:"El impacto social se mide con indicadores objetivos: número de personas beneficiadas, mejoras concretas, horas de voluntariado, etc."},
+  {q:"¿Cuál es un beneficio de las comunidades abiertas?",
+   o:["Encarecen el precio del software para los usuarios.",
+      "Solo aprovechan sus ventajas las grandes corporaciones.",
+      "Frenan la innovación al no haber competencia directa.",
+      "Democratizan el acceso al conocimiento."],
+   c:3, e:"Las comunidades abiertas reducen la dependencia de grandes corporaciones, abaratan costes y democratizan el acceso al conocimiento."},
+  {q:"¿Qué es un presupuesto participativo?",
+   o:["Un sorteo de dinero entre los vecinos que se inscriben.",
+      "La ciudadanía decide parte del presupuesto público.",
+      "Una multa económica por participar en la vida política.",
+      "Un impuesto especial para financiar asociaciones vecinales."],
+   c:1, e:"El presupuesto participativo es una herramienta de democracia directa en la que la ciudadanía decide el destino de una parte del presupuesto."},
+  {q:"¿Qué actitud refleja un estilo de vida socialmente responsable?",
+   o:["Consumir sin pararse a pensar en las consecuencias.",
+      "Competir con los vecinos en lugar de colaborar con ellos.",
+      "Compartir conocimiento y participar en la comunidad.",
+      "Ignorar los problemas del barrio porque no te afectan."],
+   c:2, e:"El estilo de vida socialmente responsable implica compartir, reparar, reutilizar, participar y actuar localmente pensando en el impacto global."},
+  {q:"¿Qué relación tienen los proyectos tecnológicos sociales con los ODS?",
+   o:["Contribuyen a varios ODS a la vez.",
+      "Ninguna: son temas completamente independientes.",
+      "Solo se relacionan con el ODS 1.",
+      "Los ODS no tienen nada que ver con la tecnología."],
+   c:0, e:"Los proyectos tecnológicos sociales pueden contribuir simultáneamente a varios Objetivos de Desarrollo Sostenible: educación, igualdad, innovación, comunidades sostenibles…"}
+];
+
+let quizRespondidas = 0, quizAciertos = 0;
+const quizBloques = [];
+
+function responderQuiz(i, j){
+  const div = quizBloques[i];
+  if(!div || div.dataset.respondida === '1') return;
+  const p = preguntasQuiz[i];
+  if(typeof j !== 'number' || j < 0 || j >= p.o.length) return;
+  div.dataset.respondida = '1';
+  const btns = div.querySelectorAll('.opt');
+  const expl = div.querySelector('.expl');
+  btns.forEach(x=>x.disabled = true);
+  btns.forEach(x=>{
+    if(parseInt(x.dataset.j,10) === p.c) x.classList.add('correct');
+  });
+  if(j !== p.c){
+    const elegida = div.querySelector('.opt[data-j="'+j+'"]');
+    if(elegida) elegida.classList.add('wrong');
+  } else {
+    quizAciertos++;
+  }
+  expl.innerHTML = (j === p.c ? '✅ <strong>¡Correcto!</strong> ' : '❌ <strong>Respuesta incorrecta.</strong> ') + p.e;
+  expl.classList.add('show');
+  quizRespondidas++;
+  // Guardar la respuesta para poder restaurarla al reabrir la app
+  estado.actividades.quiz.respuestas[i] = j;
+  guardarEstado();
+  if(quizRespondidas === preguntasQuiz.length) mostrarResultadoQuiz(!restaurando);
+}
+
+(function initQuiz(){
+  const cont = document.getElementById('quizContainer');
+  preguntasQuiz.forEach((p, i)=>{
+    const div = document.createElement('div');
+    div.className = 'q reveal';
+    div.innerHTML = `
+      <span class="q-num">PREGUNTA ${i+1}</span>
+      <h4>${p.q}</h4>
+      <div class="opts">
+        ${p.o.map((o,j)=>`
+          <button class="opt" data-i="${i}" data-j="${j}">
+            <span class="letter">${String.fromCharCode(65+j)}</span>
+            <span>${o}</span>
+          </button>`).join('')}
+      </div>
+      <div class="expl"></div>
+    `;
+    cont.appendChild(div);
+    io.observe(div);
+    quizBloques.push(div);
+    div.querySelectorAll('.opt').forEach(b=>{
+      b.addEventListener('click', ()=> responderQuiz(i, parseInt(b.dataset.j,10)));
+    });
+  });
+  // Restaurar las respuestas guardadas en sesiones anteriores
+  restaurando = true;
+  estado.actividades.quiz.respuestas.forEach((r, i)=>{
+    if(i < preguntasQuiz.length && typeof r === 'number') responderQuiz(i, r);
+  });
+  restaurando = false;
+})();
+
+function mostrarResultadoQuiz(hacerScroll){
+  const res = document.getElementById('quizResult');
+  document.getElementById('quizScore').textContent = quizAciertos + '/' + preguntasQuiz.length;
+  const pct = Math.round(quizAciertos / preguntasQuiz.length * 100);
+  let titulo, msg;
+  if(pct === 100){ titulo = '🏆 ¡Perfecto!'; msg = 'Dominas los conceptos clave de los proyectos tecnológicos de carácter social.'; }
+  else if(pct >= 75){ titulo = '🌟 ¡Muy bien!'; msg = 'Tienes una comprensión sólida. Repasa las preguntas falladas para afinar los detalles.'; }
+  else if(pct >= 50){ titulo = '👍 Buen intento'; msg = 'Vas por el camino correcto. Vuelve a las secciones de comunidades, voluntariado y servicio.'; }
+  else { titulo = '📚 A seguir aprendiendo'; msg = 'Revisa con calma cada bloque y vuelve a intentarlo.'; }
+  document.getElementById('quizTitle').textContent = titulo;
+  document.getElementById('quizMsg').textContent = msg;
+  res.classList.add('show');
+  if(hacerScroll) res.scrollIntoView({behavior:'smooth', block:'center'});
+  if(quizAciertos > estado.scores.quiz){
+    estado.scores.quiz = quizAciertos;
+    guardarEstado();
+    actualizarCertificado();
+  }
+  completarReto('quiz', '¡Cuestionario final completado! ' + quizAciertos + '/' + preguntasQuiz.length);
+}
+
+/* ================================================================
+   13. CERTIFICADO Y PDF RASTERIZADO
+================================================================ */
+function actualizarCertificado(){
+  const stats = document.getElementById('certStats');
+  const nombreEl = document.getElementById('certNombre');
+  const warn = document.getElementById('certWarn');
+  const btn = document.getElementById('btnCertificado');
+
+  nombreEl.textContent = estado.nombre || '—';
+
+  const s = estado.scores;
+  const nRetos = estado.retos.length;
+
+  const items = [
+    {num: (s.fases>0 ? s.fases + '/6' : '—'), lbl:'Fases'},
+    {num: (s.vf>0 ? s.vf + '/8' : '—'), lbl:'Verdadero/Falso'},
+    {num: (s.empara>0 ? s.empara + '/6' : '—'), lbl:'Emparejar'},
+    {num: (s.constructor>0 ? Math.round(s.constructor/4) + '%' : '—'), lbl:'Constructor'},
+    {num: (s.presupuesto>0 ? s.presupuesto.toLocaleString('es-ES') : '—'), lbl:'Beneficiarios'},
+    {num: (s.quiz>0 ? s.quiz + '/10' : '—'), lbl:'Cuestionario'},
+    {num: nRetos + '/' + RETOS_TOTALES, lbl:'Retos totales'}
+  ];
+
+  stats.innerHTML = items.map(it=>`
+    <div class="cert-stat">
+      <div class="num">${it.num}</div>
+      <div class="lbl">${it.lbl}</div>
+    </div>
+  `).join('');
+
+  if(nRetos === 0){
+    warn.style.display = 'block';
+    btn.disabled = true;
+    btn.style.opacity = .55;
+    btn.style.cursor = 'not-allowed';
+  } else {
+    warn.style.display = 'none';
+    btn.disabled = false;
+    btn.style.opacity = 1;
+    btn.style.cursor = 'pointer';
+  }
+}
+
+document.getElementById('btnCertificado').addEventListener('click', ()=>{
+  if(!estado.nombre){ toast('Introduce tu nombre primero'); return; }
+  if(estado.retos.length === 0){ toast('Completa al menos un reto para obtener el certificado'); return; }
+  generarPDFRasterizado();
+});
+
+function generarPDFRasterizado(){
+  if(!(window.jspdf && window.jspdf.jsPDF)){
+    toast('No se ha podido cargar la librería PDF. Recarga la página.');
+    return;
+  }
+  try{
+    const DPI = 200;
+    const W_MM = 297, H_MM = 210;
+    const W = Math.round(W_MM / 25.4 * DPI);
+    const H = Math.round(H_MM / 25.4 * DPI);
+    const mm = v => Math.round(v / 25.4 * DPI);
+
+    const canvas = document.createElement('canvas');
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext('2d');
+    if(!ctx){
+      toast('Tu navegador no soporta canvas 2D.');
+      return;
+    }
+
+    // Fondo
+    ctx.fillStyle = '#faf5ff';
+    ctx.fillRect(0, 0, W, H);
+
+    // Bordes
+    ctx.strokeStyle = '#4c1d95';
+    ctx.lineWidth = mm(2);
+    ctx.strokeRect(mm(10), mm(10), W - mm(20), H - mm(20));
+    ctx.lineWidth = mm(0.5);
+    ctx.strokeRect(mm(14), mm(14), W - mm(28), H - mm(28));
+
+    // Esquinas decorativas
+    ctx.fillStyle = '#4c1d95';
+    ctx.fillRect(mm(14), mm(14), mm(20), mm(3));
+    ctx.fillRect(mm(14), mm(14), mm(3), mm(20));
+    ctx.fillRect(W - mm(34), mm(14), mm(20), mm(3));
+    ctx.fillRect(W - mm(17), mm(14), mm(3), mm(20));
+    ctx.fillRect(mm(14), H - mm(17), mm(20), mm(3));
+    ctx.fillRect(mm(14), H - mm(34), mm(3), mm(20));
+    ctx.fillRect(W - mm(34), H - mm(17), mm(20), mm(3));
+    ctx.fillRect(W - mm(17), H - mm(34), mm(3), mm(20));
+
+    // Encabezado
+    ctx.fillStyle = '#4c1d95';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = `bold ${mm(9)}px Arial, sans-serif`;
+    ctx.fillText('CERTIFICADO DE APROVECHAMIENTO', W/2, mm(38));
+
+    ctx.fillStyle = '#64748b';
+    ctx.font = `${mm(4)}px Arial, sans-serif`;
+    ctx.fillText('Proyectos Tecnológicos de Carácter Social · Comunidad Tech', W/2, mm(48));
+
+    ctx.strokeStyle = '#db2777';
+    ctx.lineWidth = mm(0.8);
+    ctx.beginPath();
+    ctx.moveTo(W/2 - mm(75), mm(53));
+    ctx.lineTo(W/2 + mm(75), mm(53));
+    ctx.stroke();
+
+    ctx.fillStyle = '#475569';
+    ctx.font = `${mm(4.5)}px Arial, sans-serif`;
+    ctx.fillText('Se certifica que', W/2, mm(68));
+
+    ctx.fillStyle = '#0f172a';
+    ctx.font = `bold ${mm(14)}px Arial, sans-serif`;
+    ctx.fillText(estado.nombre, W/2, mm(85));
+
+    ctx.fillStyle = '#334155';
+    ctx.font = `${mm(4)}px Arial, sans-serif`;
+    ctx.fillText('ha completado las actividades interactivas sobre el criterio 6.3: análisis científico de los beneficios', W/2, mm(97));
+    ctx.fillText('de los proyectos tecnológicos de carácter social, las comunidades abiertas y el voluntariado.', W/2, mm(104));
+
+    // Tabla
+    const s = estado.scores;
+    const resultados = [
+      ['Ordenar fases del proyecto', (s.fases    > 0 ? s.fases + ' / 6' : 'No realizado')],
+      ['Verdadero o falso',         (s.vf       > 0 ? s.vf    + ' / 8' : 'No realizado')],
+      ['Emparejar necesidad-solución', (s.empara > 0 ? s.empara + ' / 6' : 'No realizado')],
+      ['Constructor de proyecto',   (s.constructor > 0 ? Math.round(s.constructor/4) + ' %' : 'No realizado')],
+      ['Presupuesto participativo', (s.presupuesto > 0 ? s.presupuesto.toLocaleString('es-ES') + ' beneficiarios' : 'No realizado')],
+      ['Cuestionario final',        (s.quiz     > 0 ? s.quiz   + ' / 10' : 'No realizado')],
+      ['Retos completados',         estado.retos.length + ' / ' + RETOS_TOTALES]
+    ];
+
+    const tableX  = mm(50);
+    const tableY  = mm(116);
+    const rowH    = mm(8.5);
+    const colW1   = mm(115);
+    const colW2   = mm(85);
+
+    // Cabecera
+    ctx.fillStyle = '#4c1d95';
+    ctx.fillRect(tableX, tableY, colW1 + colW2, mm(8));
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `bold ${mm(3.5)}px Arial, sans-serif`;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('ACTIVIDAD', tableX + mm(4), tableY + mm(4));
+    ctx.fillText('RESULTADO', tableX + colW1 + mm(4), tableY + mm(4));
+
+    // Filas
+    resultados.forEach((row, i)=>{
+      const y = tableY + mm(8) + i * rowH;
+      if(i % 2 === 0){
+        ctx.fillStyle = '#faf5ff';
+        ctx.fillRect(tableX, y, colW1 + colW2, rowH);
+      }
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = mm(0.2);
+      ctx.strokeRect(tableX, y, colW1 + colW2, rowH);
+
+      ctx.fillStyle = '#1e293b';
+      ctx.font = `${mm(3.5)}px Arial, sans-serif`;
+      ctx.fillText(row[0], tableX + mm(4), y + rowH/2);
+
+      ctx.font = `bold ${mm(3.5)}px Arial, sans-serif`;
+      ctx.fillText(row[1], tableX + colW1 + mm(4), y + rowH/2);
+    });
+
+    // Pie
+    const fecha = new Date().toLocaleDateString('es-ES', {day:'numeric', month:'long', year:'numeric'});
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#64748b';
+    ctx.font = `${mm(3.5)}px Arial, sans-serif`;
+    ctx.fillText('Fecha de emisión: ' + fecha, W/2, H - mm(24));
+    ctx.font = `${mm(3)}px Arial, sans-serif`;
+    ctx.fillText('Este certificado acredita la realización de las actividades interactivas de la aplicación educativa.', W/2, H - mm(17));
+
+    // Conversión a imagen
+    let imgData;
+    try {
+      imgData = canvas.toDataURL('image/jpeg', 0.92);
+    } catch(e){
+      console.error('toDataURL falló:', e);
+      toast('El dispositivo no puede generar la imagen del certificado.');
+      return;
+    }
+    if(!imgData || imgData === 'data:,' || imgData.length < 100){
+      toast('No se pudo generar la imagen del certificado.');
+      return;
+    }
+
+    // Generar PDF
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
+    doc.addImage(imgData, 'JPEG', 0, 0, W_MM, H_MM);
+    doc.save('Certificado_ComunidadTech_' + estado.nombre.replace(/[^a-zA-Z0-9]/g,'_') + '.pdf');
+    toast('¡Certificado descargado!');
+
+  } catch(err){
+    console.error('Error al generar PDF:', err);
+    toast('Error: ' + (err && err.message ? err.message : 'No se pudo generar el PDF'));
+  }
+}
+
+/* ================================================================
+   14. INICIALIZACIÓN
+================================================================ */
+mostrarLogin();
+actualizarProgreso();
+window.addEventListener('beforeunload', guardarEstado);
+</script>
+</body>
+</html>
